@@ -55,10 +55,10 @@ export const useQwery = ({
 				: null;
 
 			if (initalValue instanceof Function) {
-				return await (cachedValue ?? initalValue());
+				return (await cachedValue) ?? (await initalValue());
 			}
 
-			return await (cachedValue ?? initalValue);
+			return (await cachedValue) ?? (await initalValue);
 		};
 
 		const initializeCRDT = async () => {
@@ -97,7 +97,7 @@ export const useQwery = ({
 		const crdt = initializeCRDT();
 
 		const onWindowFocus = async () => {
-			const dispatch = (await crdt).dispatch;
+			const { dispatch } = await crdt;
 
 			const proxiedDispatch = new Proxy(dispatch, {
 				apply: (dispatch, thisArg, args) => {
@@ -130,7 +130,7 @@ export const useQwery = ({
 		JSON.stringify(
 			{
 				renderCount,
-				versions: versions ?? [],
+				versions: JSON.stringify(versions ?? [], null, 2),
 			},
 			null,
 			2,
