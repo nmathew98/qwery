@@ -1,6 +1,7 @@
 import React from "react";
 import { createCRDT } from "@b.s/incremental";
 import { QweryContext } from "..";
+import { useRememberScroll } from "../use-remember-scroll";
 
 export const useQwery = ({
 	queryKey,
@@ -43,6 +44,8 @@ export const useQwery = ({
 			setRenderCount(renderCount => renderCount + 1);
 		},
 	});
+
+	useRememberScroll();
 
 	React.useEffect(() => {
 		const computeInitialValue = async () => {
