@@ -66,13 +66,22 @@ export const useQwery = ({
 
 			crdtRef.current = crdt;
 
-			/// @ts-expect-error
-			subscribe().then(result =>
-				crdt.dispatch(result, {
-					onChange: () =>
-						setRenderCount(renderCount => renderCount + 1),
-				}),
-			);
+			const proxiedDispatch = new Proxy(crdt.dispatch, {
+				apply: (dispatch, thisArg, args) => {
+					const subscribeOptions = {
+						isPersisted: true,
+					};
+
+					const result = Reflect.apply(dispatch, thisArg, [
+						args[0],
+						subscribeOptions,
+					]);
+
+					return result;
+				},
+			});
+
+			subscribe(proxiedDispatch);
 		};
 
 		initializeCRDT();
