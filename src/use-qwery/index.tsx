@@ -16,6 +16,22 @@ export const useQwery = ({
 	// TODO: Update to `CRDT`
 	const crdtRef = React.useRef<null | ReturnType<typeof createCRDT>>(null);
 
+	const proxiedOnChange = new Proxy(onChange, {
+		apply: (onChange, thisArg, args) => {
+			const result = Reflect.apply(onChange, thisArg, args);
+
+			if (!result) {
+				if (queryKey) {
+					context?.makeOnChange?.(queryKey).apply(null, [args[0]]);
+				}
+
+				setRenderCount(renderCount => renderCount + 1);
+			}
+
+			return result;
+		},
+	});
+
 	const proxiedOnSuccess = new Proxy(onSuccess, {
 		apply: (onSuccess, thisArg, args) => {
 			Reflect.apply(onSuccess, thisArg, args);
@@ -42,7 +58,7 @@ export const useQwery = ({
 
 			const crdt = createCRDT({
 				initialValue,
-				onChange: onChange,
+				onChange: proxiedOnChange,
 				onSuccess: proxiedOnSuccess,
 				onError: onError,
 				trackVersions: debug,
