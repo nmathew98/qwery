@@ -11,6 +11,7 @@ export const useQwery = ({
 	onError,
 	subscribe,
 	debug = false,
+	refetchOnWindowFocus = false,
 }: any) => {
 	const [renderCount, setRenderCount] = React.useState(0);
 	const context = React.useContext(QweryContext);
@@ -53,6 +54,10 @@ export const useQwery = ({
 				? context?.getCachedValue?.(queryKey)
 				: null;
 
+			if (initalValue instanceof Function) {
+				return await (cachedValue ?? initalValue());
+			}
+
 			return await (cachedValue ?? initalValue);
 		};
 
@@ -85,9 +90,40 @@ export const useQwery = ({
 			});
 
 			subscribe(proxiedDispatch);
+
+			return crdt;
 		};
 
-		initializeCRDT();
+		const crdt = initializeCRDT();
+
+		const onWindowFocus = async () => {
+			const dispatch = (await crdt).dispatch;
+
+			const proxiedDispatch = new Proxy(dispatch, {
+				apply: (dispatch, thisArg, args) => {
+					const refetchOptions = {
+						isPersisted: true,
+					};
+
+					const result = Reflect.apply(dispatch, thisArg, [
+						args[0],
+						refetchOptions,
+					]);
+
+					return result;
+				},
+			});
+
+			await initalValue(proxiedDispatch);
+		};
+
+		if (refetchOnWindowFocus) {
+			window.addEventListener("focusin", onWindowFocus);
+		}
+
+		return () => {
+			window.removeEventListener("focusin", onWindowFocus);
+		};
 	}, []);
 
 	React.useDebugValue(crdtRef.current?.versions, versions =>
