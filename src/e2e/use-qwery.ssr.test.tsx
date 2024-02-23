@@ -54,12 +54,10 @@ describe("useQwery ssr", () => {
 			);
 		};
 
-		await act(() =>
-			renderSsr(
-				<SsrProviders>
-					<App />
-				</SsrProviders>,
-			),
+		renderSsr(
+			<SsrProviders>
+				<App />
+			</SsrProviders>,
 		);
 
 		await waitFor(() => {
@@ -98,12 +96,10 @@ describe("useQwery ssr", () => {
 			);
 		};
 
-		await act(() =>
-			renderSsr(
-				<QweryProvider store={CACHE}>
-					<App />
-				</QweryProvider>,
-			),
+		renderSsr(
+			<QweryProvider store={CACHE}>
+				<App />
+			</QweryProvider>,
 		);
 
 		await waitFor(() => {
@@ -133,12 +129,10 @@ describe("useQwery ssr", () => {
 			);
 		};
 
-		await act(() =>
-			renderSsr(
-				<SsrProviders>
-					<App />
-				</SsrProviders>,
-			),
+		renderSsr(
+			<SsrProviders>
+				<App />
+			</SsrProviders>,
 		);
 
 		await waitFor(() => {
@@ -168,12 +162,10 @@ describe("useQwery ssr", () => {
 			);
 		};
 
-		await act(() =>
-			renderSsr(
-				<SsrProviders>
-					<App />
-				</SsrProviders>,
-			),
+		renderSsr(
+			<SsrProviders>
+				<App />
+			</SsrProviders>,
 		);
 
 		fireEvent.focusIn(window);
