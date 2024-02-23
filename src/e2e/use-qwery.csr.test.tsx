@@ -46,12 +46,10 @@ describe("useQwery csr", () => {
 			);
 		};
 
-		await act(() =>
-			render(
-				<BrowserProviders>
-					<App />
-				</BrowserProviders>,
-			),
+		render(
+			<BrowserProviders>
+				<App />
+			</BrowserProviders>,
 		);
 
 		await waitFor(() => {
@@ -86,12 +84,10 @@ describe("useQwery csr", () => {
 			);
 		};
 
-		await act(() =>
-			render(
-				<QweryProvider store={CACHE}>
-					<App />
-				</QweryProvider>,
-			),
+		render(
+			<QweryProvider store={CACHE}>
+				<App />
+			</QweryProvider>,
 		);
 
 		await waitFor(() => {
@@ -119,12 +115,10 @@ describe("useQwery csr", () => {
 			);
 		};
 
-		await act(() =>
-			render(
-				<BrowserProviders>
-					<App />
-				</BrowserProviders>,
-			),
+		render(
+			<BrowserProviders>
+				<App />
+			</BrowserProviders>,
 		);
 
 		await waitFor(() => {
@@ -155,12 +149,10 @@ describe("useQwery csr", () => {
 			);
 		};
 
-		await act(() =>
-			render(
-				<BrowserProviders>
-					<App />
-				</BrowserProviders>,
-			),
+		render(
+			<BrowserProviders>
+				<App />
+			</BrowserProviders>,
 		);
 
 		await waitFor(() => {
@@ -191,12 +183,10 @@ describe("useQwery csr", () => {
 			);
 		};
 
-		await act(() =>
-			render(
-				<BrowserProviders>
-					<App />
-				</BrowserProviders>,
-			),
+		render(
+			<BrowserProviders>
+				<App />
+			</BrowserProviders>,
 		);
 
 		fireEvent.focusIn(window);
@@ -239,12 +229,10 @@ describe("useQwery csr", () => {
 			);
 		};
 
-		await act(() =>
-			render(
-				<BrowserProviders>
-					<App />
-				</BrowserProviders>,
-			),
+		render(
+			<BrowserProviders>
+				<App />
+			</BrowserProviders>,
 		);
 
 		await waitFor(() => {
@@ -285,12 +273,10 @@ describe("useQwery csr", () => {
 			);
 		};
 
-		await act(() =>
-			render(
-				<BrowserProviders>
-					<App />
-				</BrowserProviders>,
-			),
+		render(
+			<BrowserProviders>
+				<App />
+			</BrowserProviders>,
 		);
 
 		await waitFor(() => {
