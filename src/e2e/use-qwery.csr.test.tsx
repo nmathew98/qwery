@@ -10,6 +10,7 @@ import {
 	fireEvent,
 } from "@testing-library/react";
 import { createApi } from "./api";
+import { createRedisCache } from "./redis";
 
 describe("useQwery csr", () => {
 	const BrowserProviders = ({ children }) => (
@@ -50,6 +51,46 @@ describe("useQwery csr", () => {
 				<BrowserProviders>
 					<App />
 				</BrowserProviders>,
+			),
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText(`a: ${CACHED_RECORD.a}`)).toBeTruthy();
+			expect(screen.getByText(`b: ${CACHED_RECORD.b}`)).toBeTruthy();
+			expect(screen.getByText(`c: ${CACHED_RECORD.c}`)).toBeTruthy();
+		});
+	});
+
+	it("supports async caches", async () => {
+		const QUERY_KEY = "test";
+		const CACHED_RECORD = {
+			a: 1,
+			b: 1,
+			c: 1,
+		};
+		const CACHE = createRedisCache();
+		CACHE.set(QUERY_KEY, CACHED_RECORD);
+
+		const App = () => {
+			const test = useQwery<{ a: number; b: number; c: number }>({
+				queryKey: QUERY_KEY,
+				onChange: vitest.fn(),
+			});
+
+			return (
+				<>
+					<div>a: {test.data?.a}</div>
+					<div>b: {test.data?.b}</div>
+					<div>c: {test.data?.c}</div>
+				</>
+			);
+		};
+
+		await act(() =>
+			render(
+				<QweryProvider store={CACHE}>
+					<App />
+				</QweryProvider>,
 			),
 		);
 

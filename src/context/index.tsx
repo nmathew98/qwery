@@ -26,7 +26,7 @@ export const QweryProvider: React.FC<
 			return createCacheProvider(store);
 		}
 
-		return createCacheProvider();
+		return createCacheProvider(store);
 	}, []);
 
 	return (
