@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React from "react";
 import ReactDOMServer from "react-dom/server";
 import { describe, it, expect, vitest, afterEach } from "vitest";
 import {
