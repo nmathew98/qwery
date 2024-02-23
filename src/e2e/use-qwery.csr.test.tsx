@@ -1,7 +1,6 @@
 import React from "react";
 import { describe, it, expect, vitest, afterEach } from "vitest";
-import { QweryContext, QweryProvider, makeMonitoredFetch } from "..";
-import { useQwery } from "../use-qwery";
+import { QweryContext, QweryProvider, makeMonitoredFetch, useQwery } from "..";
 import {
 	render,
 	screen,
@@ -17,9 +16,7 @@ describe("useQwery csr", () => {
 		<QweryProvider>{children}</QweryProvider>
 	);
 
-	afterEach(() => {
-		cleanup();
-	});
+	afterEach(cleanup);
 
 	it("caches queries", async () => {
 		const QUERY_KEY = "test";

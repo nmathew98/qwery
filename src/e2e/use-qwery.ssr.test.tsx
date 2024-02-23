@@ -1,9 +1,8 @@
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 import { describe, it, expect, vitest, afterEach } from "vitest";
-import { QweryContext, QweryProvider } from "..";
+import { QweryContext, QweryProvider, useQwery } from "..";
 import { createRedisCache } from "./redis";
-import { useQwery } from "../use-qwery";
 import {
 	render,
 	screen,
@@ -18,9 +17,7 @@ describe("useQwery ssr", () => {
 		<QweryProvider store={createRedisCache()}>{children}</QweryProvider>
 	);
 
-	afterEach(() => {
-		cleanup();
-	});
+	afterEach(cleanup);
 
 	it("caches queries", async () => {
 		const QUERY_KEY = "test";
@@ -49,15 +46,11 @@ describe("useQwery ssr", () => {
 			);
 		};
 
-		const ui = (
+		renderSsr(
 			<SsrProviders>
 				<App />
-			</SsrProviders>
+			</SsrProviders>,
 		);
-		const container = document.createElement("div");
-		document.body.appendChild(container);
-		container.innerHTML = ReactDOMServer.renderToString(ui);
-		render(ui, { hydrate: true, container });
 
 		await waitFor(() => {
 			expect(screen.getByText(`a: ${CACHED_RECORD.a}`)).toBeTruthy();
@@ -84,15 +77,11 @@ describe("useQwery ssr", () => {
 			);
 		};
 
-		const ui = (
+		renderSsr(
 			<SsrProviders>
 				<App />
-			</SsrProviders>
+			</SsrProviders>,
 		);
-		const container = document.createElement("div");
-		document.body.appendChild(container);
-		container.innerHTML = ReactDOMServer.renderToString(ui);
-		render(ui, { hydrate: true, container });
 
 		await waitFor(() => {
 			expect(screen.getByText(`a: 9`)).toBeTruthy();
@@ -122,15 +111,11 @@ describe("useQwery ssr", () => {
 			);
 		};
 
-		const ui = (
+		renderSsr(
 			<SsrProviders>
 				<App />
-			</SsrProviders>
+			</SsrProviders>,
 		);
-		const container = document.createElement("div");
-		document.body.appendChild(container);
-		container.innerHTML = ReactDOMServer.renderToString(ui);
-		render(ui, { hydrate: true, container });
 
 		fireEvent.focusIn(window);
 
@@ -139,3 +124,10 @@ describe("useQwery ssr", () => {
 		});
 	});
 });
+
+export const renderSsr = (ui: React.ReactNode) => {
+	const container = document.createElement("div");
+	document.body.appendChild(container);
+	container.innerHTML = ReactDOMServer.renderToString(ui);
+	render(ui, { hydrate: true, container });
+};
