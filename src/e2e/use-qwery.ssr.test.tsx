@@ -14,7 +14,6 @@ import {
 	cleanup,
 	waitFor,
 	fireEvent,
-	act,
 } from "@testing-library/react";
 import { createApi } from "./api";
 

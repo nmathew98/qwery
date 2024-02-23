@@ -4,7 +4,6 @@ import { QweryContext, QweryProvider, makeMonitoredFetch, useQwery } from "..";
 import {
 	render,
 	screen,
-	act,
 	cleanup,
 	waitFor,
 	fireEvent,
