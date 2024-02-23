@@ -76,6 +76,10 @@ export const useQwery = <
 		const initializeCRDT = async () => {
 			const initialValue = (await computeInitialValue()) as D;
 
+			if (!initialValue) {
+				return;
+			}
+
 			const crdt = createCRDT({
 				initialValue,
 				onChange: proxiedOnChange,
@@ -109,7 +113,11 @@ export const useQwery = <
 		const crdt = initializeCRDT();
 
 		const onWindowFocus = async () => {
-			const { dispatch } = await crdt;
+			const dispatch = (await crdt)?.dispatch;
+
+			if (!dispatch) {
+				return;
+			}
 
 			const proxiedDispatch = new Proxy(dispatch, {
 				apply: (dispatch, thisArg, args) => {
