@@ -1,4 +1,6 @@
-export const createRedisCache = () =>
+import type { CacheStore } from "@b.s/incremental";
+
+export const createRedisCache = (): CacheStore =>
 	new Proxy(new Map(), {
 		get: (target: Map<any, any>, p: keyof Map<any, any>) => {
 			const value = Reflect.get(target, p);

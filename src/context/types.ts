@@ -1,4 +1,5 @@
+import type { CacheStore } from "@b.s/incremental";
+
 export interface QweryProviderProps {
-	// TODO: `CacheStore`
-	store?: any;
+	store?: CacheStore;
 }
