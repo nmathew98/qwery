@@ -1,7 +1,12 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ReactDOMServer from "react-dom/server";
 import { describe, it, expect, vitest, afterEach } from "vitest";
-import { QweryContext, QweryProvider, useQwery } from "..";
+import {
+	ExecutionEnvironment,
+	QweryProvider,
+	useExecutionEnvironment,
+	useQwery,
+} from "..";
 import { createRedisCache } from "./redis";
 import {
 	render,
@@ -19,21 +24,23 @@ describe("useQwery ssr", () => {
 
 	afterEach(cleanup);
 
-	it("caches queries", async () => {
-		const QUERY_KEY = "test";
-		const CACHED_RECORD = {
+	it("renders correctly", async () => {
+		const spy = vitest.spyOn(global.console, "error");
+
+		const INITIAL_VALUE = {
 			a: 1,
 			b: 1,
 			c: 1,
 		};
 
 		const App = () => {
-			const qweryContext = React.useContext(QweryContext);
+			const { executionEnvironment } = useExecutionEnvironment();
 
-			qweryContext.setCachedValue(QUERY_KEY)(CACHED_RECORD);
-
-			const test = useQwery<{ a: number; b: number; c: number }>({
-				queryKey: QUERY_KEY,
+			const test = useQwery<typeof INITIAL_VALUE>({
+				initialValue:
+					executionEnvironment === ExecutionEnvironment.Server
+						? { a: 2, b: 3, c: 4 }
+						: INITIAL_VALUE,
 				onChange: vitest.fn(),
 			});
 
@@ -53,13 +60,17 @@ describe("useQwery ssr", () => {
 		);
 
 		await waitFor(() => {
-			expect(screen.getByText(`a: ${CACHED_RECORD.a}`)).toBeTruthy();
-			expect(screen.getByText(`b: ${CACHED_RECORD.b}`)).toBeTruthy();
-			expect(screen.getByText(`c: ${CACHED_RECORD.c}`)).toBeTruthy();
+			expect(screen.getByText("a: 1")).toBeTruthy();
+			expect(screen.getByText("b: 1")).toBeTruthy();
+			expect(screen.getByText("c: 1")).toBeTruthy();
+
+			expect(spy).toBeCalled();
 		});
 	});
 
 	it("supports subscriptions", async () => {
+		const spy = vitest.spyOn(global.console, "error");
+
 		const App = () => {
 			const api = createApi();
 			const test = useQwery<{ a: number; b: number; c: number }>({
@@ -84,9 +95,11 @@ describe("useQwery ssr", () => {
 		);
 
 		await waitFor(() => {
-			expect(screen.getByText(`a: 9`)).toBeTruthy();
-			expect(screen.getByText(`b: 1`)).toBeTruthy();
-			expect(screen.getByText(`c: 1`)).toBeTruthy();
+			expect(screen.getByText("a: 9")).toBeTruthy();
+			expect(screen.getByText("b: 1")).toBeTruthy();
+			expect(screen.getByText("c: 1")).toBeTruthy();
+
+			expect(spy).not.toBeCalled();
 		});
 	});
 
@@ -126,8 +139,17 @@ describe("useQwery ssr", () => {
 });
 
 export const renderSsr = (ui: React.ReactNode) => {
+	const envWindow = window;
+	/// @ts-expect-error
+	window = undefined;
+
+	const serverRendered = ReactDOMServer.renderToString(ui);
+
+	global.window = envWindow;
+
 	const container = document.createElement("div");
 	document.body.appendChild(container);
-	container.innerHTML = ReactDOMServer.renderToString(ui);
+	container.innerHTML = serverRendered;
+
 	render(ui, { hydrate: true, container });
 };
