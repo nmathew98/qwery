@@ -107,6 +107,8 @@ export const useQwery = <
 
 			subscribe?.(proxiedDispatch);
 
+			setRenderCount(renderCount => renderCount + 1);
+
 			return crdt;
 		};
 
