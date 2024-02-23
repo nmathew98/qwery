@@ -35,3 +35,6 @@ jobs:
 
             - name: Unit tests
               run: corepack pnpm test
+
+            - name: Builds
+              run: corepack pnpm build
