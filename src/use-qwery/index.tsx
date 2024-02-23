@@ -1,5 +1,5 @@
 import React from "react";
-import { type CRDT, createCRDT } from "@b.s/incremental";
+import { type CRDT, createCRDT, type Dispatch } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
 import type { UseQweryOptions } from "./types";
@@ -8,7 +8,9 @@ export const useQwery = <
 	D extends Record<string | number | symbol, any> =
 		| Record<string | number | symbol, any>
 		| Array<any>,
-	F extends (dispatch?: any) => Promise<D> = (dispatch?: any) => Promise<D>, // TODO
+	F extends (dispatch?: Dispatch<D>) => Promise<D> = (
+		dispatch?: Dispatch<D>,
+	) => Promise<D>,
 	C extends (next: D, previous: D) => unknown = (
 		next: D,
 		previous: D,
