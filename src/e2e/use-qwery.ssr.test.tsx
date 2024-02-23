@@ -34,7 +34,7 @@ describe("useQwery ssr", () => {
 
 			const test = useQwery<{ a: number; b: number; c: number }>({
 				queryKey: QUERY_KEY,
-				onChange: () => {},
+				onChange: vitest.fn(),
 			});
 
 			return (
@@ -64,7 +64,7 @@ describe("useQwery ssr", () => {
 			const api = createApi();
 			const test = useQwery<{ a: number; b: number; c: number }>({
 				initialValue: api.get,
-				onChange: () => {},
+				onChange: vitest.fn(),
 				subscribe: api.subscribe,
 			});
 
@@ -98,7 +98,7 @@ describe("useQwery ssr", () => {
 		const App = () => {
 			const test = useQwery<{ a: number; b: number; c: number }>({
 				initialValue: getInitialValue,
-				onChange: () => {},
+				onChange: vitest.fn(),
 				refetchOnWindowFocus: true,
 			});
 

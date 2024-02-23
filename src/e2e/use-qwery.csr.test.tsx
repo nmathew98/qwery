@@ -33,7 +33,7 @@ describe("useQwery csr", () => {
 
 			const test = useQwery<{ a: number; b: number; c: number }>({
 				queryKey: QUERY_KEY,
-				onChange: () => {},
+				onChange: vitest.fn(),
 			});
 
 			return (
@@ -65,7 +65,7 @@ describe("useQwery csr", () => {
 			const api = createApi();
 			const test = useQwery<{ a: number; b: number; c: number }>({
 				initialValue: api.get,
-				onChange: () => {},
+				onChange: vitest.fn(),
 				subscribe: api.subscribe,
 			});
 
@@ -101,7 +101,7 @@ describe("useQwery csr", () => {
 					fetchFn: api.get,
 					enabled: false,
 				}),
-				onChange: () => {},
+				onChange: vitest.fn(),
 				subscribe: api.subscribe,
 			});
 
@@ -137,7 +137,7 @@ describe("useQwery csr", () => {
 		const App = () => {
 			const test = useQwery<{ a: number; b: number; c: number }>({
 				initialValue: getInitialValue,
-				onChange: () => {},
+				onChange: vitest.fn(),
 				refetchOnWindowFocus: true,
 			});
 
