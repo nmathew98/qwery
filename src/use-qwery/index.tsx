@@ -1,8 +1,8 @@
 import React from "react";
-import { createCRDT } from "@b.s/incremental";
-import { QweryContext } from "..";
+import { type CRDT, createCRDT } from "@b.s/incremental";
+import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
-import { UseQweryOptions } from "./types";
+import type { UseQweryOptions } from "./types";
 
 export const useQwery = <
 	D extends Record<string | number | symbol, any> =
@@ -25,10 +25,7 @@ export const useQwery = <
 }: UseQweryOptions<D, F, C>) => {
 	const [renderCount, setRenderCount] = React.useState(0);
 	const context = React.useContext(QweryContext);
-	// TODO: Update to `CRDT`
-	const crdtRef = React.useRef<null | ReturnType<typeof createCRDT<D, C>>>(
-		null,
-	);
+	const crdtRef = React.useRef<null | CRDT<D>>(null);
 
 	const proxiedOnChange = new Proxy(onChange, {
 		apply: (onChange, thisArg, args) => {
@@ -63,7 +60,7 @@ export const useQwery = <
 	React.useEffect(() => {
 		const computeInitialValue = async () => {
 			const cachedValue = queryKey
-				? context?.getCachedValue?.(queryKey)
+				? context?.getCachedValue(queryKey)
 				: null;
 
 			if (initialValue instanceof Function) {
@@ -159,8 +156,14 @@ export const useQwery = <
 		),
 	);
 
+	const computeInitialValue = () => {
+		if (typeof initialValue !== "function") {
+			return initialValue;
+		}
+	};
+
 	return {
-		data: crdtRef.current?.data,
+		data: crdtRef.current?.data ?? computeInitialValue(),
 		dispatch: crdtRef.current?.dispatch ?? noOpFunction,
 		versions: crdtRef.current?.versions ?? [],
 	};

@@ -1,9 +1,13 @@
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 import { describe, it, expect, vitest, afterEach } from "vitest";
-import { QweryContext, QweryProvider } from "..";
+import {
+	ExecutionEnvironment,
+	QweryProvider,
+	useExecutionEnvironment,
+	useQwery,
+} from "..";
 import { createRedisCache } from "./redis";
-import { useQwery } from "../use-qwery";
 import {
 	render,
 	screen,
@@ -15,29 +19,29 @@ import { createApi } from "./api";
 
 describe("useQwery ssr", () => {
 	const SsrProviders = ({ children }) => (
-		<QweryProvider store={createRedisCache()}>{children}</QweryProvider>
+		<QweryProvider>{children}</QweryProvider>
 	);
 
-	afterEach(() => {
-		cleanup();
-	});
+	afterEach(cleanup);
 
-	it("caches queries", async () => {
-		const QUERY_KEY = "test";
-		const CACHED_RECORD = {
+	it("renders correctly if there are hydration issues", async () => {
+		const spy = vitest.spyOn(global.console, "error");
+
+		const INITIAL_VALUE = {
 			a: 1,
 			b: 1,
 			c: 1,
 		};
 
 		const App = () => {
-			const qweryContext = React.useContext(QweryContext);
+			const { executionEnvironment } = useExecutionEnvironment();
 
-			qweryContext.setCachedValue(QUERY_KEY)(CACHED_RECORD);
-
-			const test = useQwery<{ a: number; b: number; c: number }>({
-				queryKey: QUERY_KEY,
-				onChange: () => {},
+			const test = useQwery({
+				initialValue:
+					executionEnvironment === ExecutionEnvironment.Server
+						? { a: 2, b: 3, c: 4 }
+						: INITIAL_VALUE,
+				onChange: vitest.fn(),
 			});
 
 			return (
@@ -49,29 +53,69 @@ describe("useQwery ssr", () => {
 			);
 		};
 
-		const ui = (
+		renderSsr(
 			<SsrProviders>
 				<App />
-			</SsrProviders>
+			</SsrProviders>,
 		);
-		const container = document.createElement("div");
-		document.body.appendChild(container);
-		container.innerHTML = ReactDOMServer.renderToString(ui);
-		render(ui, { hydrate: true, container });
+
+		await waitFor(() => {
+			expect(screen.getByText("a: 1")).toBeTruthy();
+			expect(screen.getByText("b: 1")).toBeTruthy();
+			expect(screen.getByText("c: 1")).toBeTruthy();
+		});
+
+		expect(spy).toBeCalled();
+	});
+
+	it("supports async caches", async () => {
+		const spy = vitest.spyOn(global.console, "error");
+
+		const QUERY_KEY = "test";
+		const CACHED_RECORD = {
+			a: 1,
+			b: 1,
+			c: 1,
+		};
+		const CACHE = createRedisCache();
+		CACHE.set(QUERY_KEY, CACHED_RECORD);
+
+		const App = () => {
+			const test = useQwery<typeof CACHED_RECORD>({
+				queryKey: QUERY_KEY,
+				onChange: vitest.fn(),
+			});
+
+			return (
+				<>
+					<div>a: {test.data?.a}</div>
+					<div>b: {test.data?.b}</div>
+					<div>c: {test.data?.c}</div>
+				</>
+			);
+		};
+
+		renderSsr(
+			<QweryProvider store={CACHE}>
+				<App />
+			</QweryProvider>,
+		);
 
 		await waitFor(() => {
 			expect(screen.getByText(`a: ${CACHED_RECORD.a}`)).toBeTruthy();
 			expect(screen.getByText(`b: ${CACHED_RECORD.b}`)).toBeTruthy();
 			expect(screen.getByText(`c: ${CACHED_RECORD.c}`)).toBeTruthy();
 		});
+
+		expect(spy).not.toBeCalled();
 	});
 
 	it("supports subscriptions", async () => {
 		const App = () => {
 			const api = createApi();
-			const test = useQwery<{ a: number; b: number; c: number }>({
+			const test = useQwery<Awaited<ReturnType<typeof api.get>>>({
 				initialValue: api.get,
-				onChange: () => {},
+				onChange: vitest.fn(),
 				subscribe: api.subscribe,
 			});
 
@@ -84,32 +128,27 @@ describe("useQwery ssr", () => {
 			);
 		};
 
-		const ui = (
+		renderSsr(
 			<SsrProviders>
 				<App />
-			</SsrProviders>
+			</SsrProviders>,
 		);
-		const container = document.createElement("div");
-		document.body.appendChild(container);
-		container.innerHTML = ReactDOMServer.renderToString(ui);
-		render(ui, { hydrate: true, container });
 
 		await waitFor(() => {
-			expect(screen.getByText(`a: 9`)).toBeTruthy();
-			expect(screen.getByText(`b: 1`)).toBeTruthy();
-			expect(screen.getByText(`c: 1`)).toBeTruthy();
+			expect(screen.getByText("a: 9")).toBeTruthy();
+			expect(screen.getByText("b: 1")).toBeTruthy();
+			expect(screen.getByText("c: 1")).toBeTruthy();
 		});
 	});
 
 	it("refetches on window focus", async () => {
 		const API = createApi();
-
 		const getInitialValue = vitest.fn().mockImplementation(API.get);
 
 		const App = () => {
-			const test = useQwery<{ a: number; b: number; c: number }>({
+			const test = useQwery<Awaited<ReturnType<typeof getInitialValue>>>({
 				initialValue: getInitialValue,
-				onChange: () => {},
+				onChange: vitest.fn(),
 				refetchOnWindowFocus: true,
 			});
 
@@ -122,15 +161,11 @@ describe("useQwery ssr", () => {
 			);
 		};
 
-		const ui = (
+		renderSsr(
 			<SsrProviders>
 				<App />
-			</SsrProviders>
+			</SsrProviders>,
 		);
-		const container = document.createElement("div");
-		document.body.appendChild(container);
-		container.innerHTML = ReactDOMServer.renderToString(ui);
-		render(ui, { hydrate: true, container });
 
 		fireEvent.focusIn(window);
 
@@ -139,3 +174,19 @@ describe("useQwery ssr", () => {
 		});
 	});
 });
+
+export const renderSsr = (ui: React.ReactNode) => {
+	const envWindow = window;
+	/// @ts-expect-error
+	window = undefined;
+
+	const serverRendered = ReactDOMServer.renderToString(ui);
+
+	global.window = envWindow;
+
+	const container = document.createElement("div");
+	document.body.appendChild(container);
+	container.innerHTML = serverRendered;
+
+	return render(ui, { hydrate: true, container });
+};

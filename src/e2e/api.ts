@@ -7,12 +7,6 @@ export const createApi = () => {
 
 	const get = async () => record;
 
-	const put = async (updates: Record<string, any>) => {
-		record.a = updates.a ?? record.a;
-		record.b = updates.b ?? record.b;
-		record.c = updates.c ?? record.c;
-	};
-
 	const subscribe = async dispatch => {
 		async function* createSubscription() {
 			for (let i = 0; i < 10; i++) {
@@ -36,7 +30,6 @@ export const createApi = () => {
 
 	return {
 		get,
-		put,
 		subscribe,
 	};
 };

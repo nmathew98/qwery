@@ -6,11 +6,11 @@ import {
 } from "../use-execution-environment";
 import { createNoOpCache } from "./no-op-cache";
 import type { QweryProviderProps } from "./types";
+import type { CacheProvider } from "@b.s/incremental";
 
-// TODO: update to `CacheProvider`
-export const QweryContext = React.createContext<
-	ReturnType<typeof createCacheProvider>
->(Object.create(null));
+export const QweryContext = React.createContext<CacheProvider>(
+	Object.create(null),
+);
 
 export const QweryProvider: React.FC<
 	React.PropsWithChildren<QweryProviderProps>
@@ -22,11 +22,7 @@ export const QweryProvider: React.FC<
 			return createCacheProvider(createNoOpCache());
 		}
 
-		if (executionEnvironment === ExecutionEnvironment.Server && store) {
-			return createCacheProvider(store);
-		}
-
-		return createCacheProvider();
+		return createCacheProvider(store);
 	}, []);
 
 	return (

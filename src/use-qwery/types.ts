@@ -1,3 +1,9 @@
+import type {
+	CreateCRDTParameters,
+	Dispatch,
+	Serializable,
+} from "@b.s/incremental";
+
 export interface BaseUseQweryOptions<
 	D extends Record<string | number | symbol, any> =
 		| Record<string | number | symbol, any>
@@ -7,13 +13,13 @@ export interface BaseUseQweryOptions<
 		next: D,
 		previous: D,
 	) => unknown,
-> {
-	queryKey?: any; // TODO: `Serializable`
+> extends Pick<
+		CreateCRDTParameters<D, C>,
+		"onChange" | "onSuccess" | "onError"
+	> {
+	queryKey?: Serializable;
 	initialValue?: D | F;
-	onChange: C; // TODO: Extends
-	onSuccess?: (next: D, previous: D) => void; // TODO: Extends
-	onError?: (next: D, previous: D) => void; // TODO: Extends
-	subscribe?: (dispatch: any) => void; // TODO
+	subscribe?: (dispatch: Dispatch<D>) => void; // TODO
 	debug?: boolean;
 	refetchOnWindowFocus?: boolean;
 }
@@ -28,7 +34,7 @@ export interface UseQweryCachedValueOptions<
 		previous: D,
 	) => unknown,
 > extends BaseUseQweryOptions<D, F, C> {
-	queryKey: any; // TODO: `Serializable`
+	queryKey: Serializable;
 	initialValue?: D | F;
 }
 
@@ -42,7 +48,7 @@ export interface UseQweryFetchedValueOptions<
 		previous: D,
 	) => unknown,
 > extends BaseUseQweryOptions<D, F, C> {
-	queryKey?: any; // TODO: `Serializable`
+	queryKey?: Serializable;
 	initialValue: D | F;
 }
 
