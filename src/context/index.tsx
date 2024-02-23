@@ -22,11 +22,7 @@ export const QweryProvider: React.FC<
 			return createCacheProvider(createNoOpCache());
 		}
 
-		if (executionEnvironment === ExecutionEnvironment.Server && store) {
-			return createCacheProvider(store);
-		}
-
-		return createCacheProvider();
+		return createCacheProvider(store);
 	}, []);
 
 	return (

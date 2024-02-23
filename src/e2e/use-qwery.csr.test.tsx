@@ -10,6 +10,7 @@ import {
 	fireEvent,
 } from "@testing-library/react";
 import { createApi } from "./api";
+import { createRedisCache } from "./redis";
 
 describe("useQwery csr", () => {
 	const BrowserProviders = ({ children }) => (
@@ -60,6 +61,46 @@ describe("useQwery csr", () => {
 		});
 	});
 
+	it("supports async caches", async () => {
+		const QUERY_KEY = "test";
+		const CACHED_RECORD = {
+			a: 1,
+			b: 1,
+			c: 1,
+		};
+		const CACHE = createRedisCache();
+		CACHE.set(QUERY_KEY, CACHED_RECORD);
+
+		const App = () => {
+			const test = useQwery<{ a: number; b: number; c: number }>({
+				queryKey: QUERY_KEY,
+				onChange: vitest.fn(),
+			});
+
+			return (
+				<>
+					<div>a: {test.data?.a}</div>
+					<div>b: {test.data?.b}</div>
+					<div>c: {test.data?.c}</div>
+				</>
+			);
+		};
+
+		await act(() =>
+			render(
+				<QweryProvider store={CACHE}>
+					<App />
+				</QweryProvider>,
+			),
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText(`a: ${CACHED_RECORD.a}`)).toBeTruthy();
+			expect(screen.getByText(`b: ${CACHED_RECORD.b}`)).toBeTruthy();
+			expect(screen.getByText(`c: ${CACHED_RECORD.c}`)).toBeTruthy();
+		});
+	});
+
 	it("supports subscriptions", async () => {
 		const App = () => {
 			const api = createApi();
@@ -87,9 +128,9 @@ describe("useQwery csr", () => {
 		);
 
 		await waitFor(() => {
-			expect(screen.getByText(`a: 9`)).toBeTruthy();
-			expect(screen.getByText(`b: 1`)).toBeTruthy();
-			expect(screen.getByText(`c: 1`)).toBeTruthy();
+			expect(screen.getByText("a: 9")).toBeTruthy();
+			expect(screen.getByText("b: 1")).toBeTruthy();
+			expect(screen.getByText("c: 1")).toBeTruthy();
 		});
 	});
 
@@ -123,9 +164,9 @@ describe("useQwery csr", () => {
 		);
 
 		await waitFor(() => {
-			expect(() => screen.getByText(`a: 1`)).toThrowError();
-			expect(() => screen.getByText(`b: 1`)).toThrowError();
-			expect(() => screen.getByText(`c: 1`)).toThrowError();
+			expect(() => screen.getByText("a: 1")).toThrowError();
+			expect(() => screen.getByText("b: 1")).toThrowError();
+			expect(() => screen.getByText("c: 1")).toThrowError();
 		});
 	});
 
@@ -165,7 +206,7 @@ describe("useQwery csr", () => {
 		});
 	});
 
-	it("invokes `onSuccess` if async `onChange` resolves", async () => {
+	it("invokes 'onSuccess' if async 'onChange' resolves", async () => {
 		const onChange = vitest
 			.fn()
 			.mockImplementation(() => Promise.resolve());
@@ -207,13 +248,13 @@ describe("useQwery csr", () => {
 		);
 
 		await waitFor(() => {
-			expect(screen.getByText(`a: 2`)).toBeTruthy();
+			expect(screen.getByText("a: 2")).toBeTruthy();
 			expect(onSuccess).toBeCalledTimes(1);
 			expect(onError).not.toBeCalled();
 		});
 	});
 
-	it("invokes `onError` if async `onChange` rejects", async () => {
+	it("invokes 'onError' if async 'onChange' rejects", async () => {
 		const onChange = vitest.fn().mockImplementation(() => Promise.reject());
 		const onSuccess = vitest.fn();
 		const onError = vitest.fn();
@@ -253,7 +294,7 @@ describe("useQwery csr", () => {
 		);
 
 		await waitFor(() => {
-			expect(screen.getByText(`a: 1`)).toBeTruthy();
+			expect(screen.getByText("a: 1")).toBeTruthy();
 			expect(onError).toBeCalledTimes(1);
 			expect(onSuccess).not.toBeCalled();
 		});
