@@ -1,15 +1,14 @@
 {
 	"name": "@b.s/react-qwery",
-	"private": true,
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"type": "module",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/nmathew98/qwery"
 	},
 	"exports": {
-		"import": "./dist/qwery.js",
-		"require": "./dist/qwery.umd.cjs",
+		"import": "./dist/react-qwery.js",
+		"require": "./dist/react-qwery.umd.cjs",
 		"types": "./dist/index.d.ts"
 	},
 	"description": "Simple composable async state management utilities for React",
