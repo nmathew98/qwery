@@ -14,6 +14,8 @@ Asynchronous state management in React made simple.
 -   Remember page scroll ✅
 -   Distributed transactions (with [txn](https://www.npmjs.com/package/@b.s/txn)) ✅
 -   Structural sharing ✅
+-   Subscriptions ✅
+-   Polling ✅
 -   SSR support ✅
 
 ## Usage
@@ -57,6 +59,48 @@ To invalidate cached data:
 const qweryContext = React.useContext(QweryContext);
 
 qweryContext.makeInvalidateCachedValue(queryKey)(prefetchedData);
+```
+
+To use subscriptions:
+
+```typescript
+// Assuming its an array of records
+const subscribe = async dispatch => {
+	const generator = createAsyncGenerator();
+
+	for await (const nextValue of subscription) {
+		dispatch(previousValue => {
+			previousValue.push(nextValue);
+		});
+	}
+};
+
+const { data, dispatch } = useQwery({
+	initialValue: () => fetch(API),
+	onChange: onChangeData,
+	subscribe: subscribe,
+});
+```
+
+In a similar vein, for polling:
+
+```typescript
+// Assuming its an array of records
+const subscribe = dispatch => {
+	setInterval(async () => {
+		const result = await fetch(API);
+
+		// Determine the changes and dispatch only the changes
+		// for references to remain stable if it is an array of records
+		dispatch(result);
+	}, 5000);
+};
+
+const { data, dispatch } = useQwery({
+	initialValue: () => fetch(API),
+	onChange: onChangeData,
+	subscribe: subscribe,
+});
 ```
 
 ### Server-side rendering
