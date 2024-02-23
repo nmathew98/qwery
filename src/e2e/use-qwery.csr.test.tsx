@@ -128,9 +128,9 @@ describe("useQwery csr", () => {
 		);
 
 		await waitFor(() => {
-			expect(screen.getByText(`a: 9`)).toBeTruthy();
-			expect(screen.getByText(`b: 1`)).toBeTruthy();
-			expect(screen.getByText(`c: 1`)).toBeTruthy();
+			expect(screen.getByText("a: 9")).toBeTruthy();
+			expect(screen.getByText("b: 1")).toBeTruthy();
+			expect(screen.getByText("c: 1")).toBeTruthy();
 		});
 	});
 
@@ -164,9 +164,9 @@ describe("useQwery csr", () => {
 		);
 
 		await waitFor(() => {
-			expect(() => screen.getByText(`a: 1`)).toThrowError();
-			expect(() => screen.getByText(`b: 1`)).toThrowError();
-			expect(() => screen.getByText(`c: 1`)).toThrowError();
+			expect(() => screen.getByText("a: 1")).toThrowError();
+			expect(() => screen.getByText("b: 1")).toThrowError();
+			expect(() => screen.getByText("c: 1")).toThrowError();
 		});
 	});
 
@@ -206,7 +206,7 @@ describe("useQwery csr", () => {
 		});
 	});
 
-	it("invokes `onSuccess` if async `onChange` resolves", async () => {
+	it("invokes 'onSuccess' if async 'onChange' resolves", async () => {
 		const onChange = vitest
 			.fn()
 			.mockImplementation(() => Promise.resolve());
@@ -248,13 +248,13 @@ describe("useQwery csr", () => {
 		);
 
 		await waitFor(() => {
-			expect(screen.getByText(`a: 2`)).toBeTruthy();
+			expect(screen.getByText("a: 2")).toBeTruthy();
 			expect(onSuccess).toBeCalledTimes(1);
 			expect(onError).not.toBeCalled();
 		});
 	});
 
-	it("invokes `onError` if async `onChange` rejects", async () => {
+	it("invokes 'onError' if async 'onChange' rejects", async () => {
 		const onChange = vitest.fn().mockImplementation(() => Promise.reject());
 		const onSuccess = vitest.fn();
 		const onError = vitest.fn();
@@ -294,7 +294,7 @@ describe("useQwery csr", () => {
 		);
 
 		await waitFor(() => {
-			expect(screen.getByText(`a: 1`)).toBeTruthy();
+			expect(screen.getByText("a: 1")).toBeTruthy();
 			expect(onError).toBeCalledTimes(1);
 			expect(onSuccess).not.toBeCalled();
 		});
