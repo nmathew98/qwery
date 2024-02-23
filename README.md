@@ -11,6 +11,8 @@ Asynchronous state management in React made simple.
 -   Simple and easy to use ✅
 -   Retry mechanism ✅
 -   Caching (with support for async caches) ✅
+-   Remember page scroll ✅
+-   Distributed transactions (with [txn](https://www.npmjs.com/package/@b.s/txn)) ✅
 -   Structural sharing ✅
 -   SSR support ✅
 
