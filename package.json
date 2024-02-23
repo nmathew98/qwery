@@ -1,7 +1,7 @@
 {
-	"name": "@b.s/qwery",
+	"name": "@b.s/react-qwery",
 	"private": true,
-	"version": "0.0.3",
+	"version": "1.0.0",
 	"type": "module",
 	"repository": {
 		"type": "git",
