@@ -27,17 +27,11 @@ export const createApi = () => {
 
 		const subscription = createSubscription();
 
-		const dispatcher = setInterval(async () => {
-			const nextValue = await subscription.next();
-
-			if (nextValue.done) {
-				clearInterval(dispatcher);
-			}
-
+		for await (const nextValue of subscription) {
 			dispatch(previousValue => {
-				previousValue.a = (nextValue.value as typeof record).a;
+				previousValue.a = nextValue.a;
 			});
-		}, 500);
+		}
 	};
 
 	return {
