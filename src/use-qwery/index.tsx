@@ -2,21 +2,33 @@ import React from "react";
 import { createCRDT } from "@b.s/incremental";
 import { QweryContext } from "..";
 import { useRememberScroll } from "../use-remember-scroll";
+import { UseQweryOptions } from "./types";
 
-export const useQwery = ({
+export const useQwery = <
+	D extends Record<string | number | symbol, any> =
+		| Record<string | number | symbol, any>
+		| Array<any>,
+	F extends (dispatch?: any) => Promise<D> = (dispatch?: any) => Promise<D>, // TODO
+	C extends (next: D, previous: D) => unknown = (
+		next: D,
+		previous: D,
+	) => unknown,
+>({
 	queryKey,
-	initalValue,
+	initialValue,
 	onChange,
-	onSuccess,
-	onError,
+	onSuccess = noOpFunction,
+	onError = noOpFunction,
 	subscribe,
 	debug = false,
 	refetchOnWindowFocus = false,
-}: any) => {
+}: UseQweryOptions<D, F, C>) => {
 	const [renderCount, setRenderCount] = React.useState(0);
 	const context = React.useContext(QweryContext);
 	// TODO: Update to `CRDT`
-	const crdtRef = React.useRef<null | ReturnType<typeof createCRDT>>(null);
+	const crdtRef = React.useRef<null | ReturnType<typeof createCRDT<D, C>>>(
+		null,
+	);
 
 	const proxiedOnChange = new Proxy(onChange, {
 		apply: (onChange, thisArg, args) => {
@@ -54,15 +66,19 @@ export const useQwery = ({
 				? context?.getCachedValue?.(queryKey)
 				: null;
 
-			if (initalValue instanceof Function) {
-				return await (cachedValue ?? initalValue());
+			if (initialValue instanceof Function) {
+				return (await cachedValue) ?? (await initialValue());
 			}
 
-			return await (cachedValue ?? initalValue);
+			return (await cachedValue) ?? initialValue;
 		};
 
 		const initializeCRDT = async () => {
-			const initialValue = await computeInitialValue();
+			const initialValue = (await computeInitialValue()) as D;
+
+			if (!initialValue) {
+				return;
+			}
 
 			const crdt = createCRDT({
 				initialValue,
@@ -89,7 +105,9 @@ export const useQwery = ({
 				},
 			});
 
-			subscribe(proxiedDispatch);
+			subscribe?.(proxiedDispatch);
+
+			setRenderCount(renderCount => renderCount + 1);
 
 			return crdt;
 		};
@@ -97,7 +115,11 @@ export const useQwery = ({
 		const crdt = initializeCRDT();
 
 		const onWindowFocus = async () => {
-			const dispatch = (await crdt).dispatch;
+			const dispatch = (await crdt)?.dispatch;
+
+			if (!dispatch) {
+				return;
+			}
 
 			const proxiedDispatch = new Proxy(dispatch, {
 				apply: (dispatch, thisArg, args) => {
@@ -114,7 +136,7 @@ export const useQwery = ({
 				},
 			});
 
-			await initalValue(proxiedDispatch);
+			await (initialValue as F)(proxiedDispatch);
 		};
 
 		if (refetchOnWindowFocus) {
@@ -130,7 +152,7 @@ export const useQwery = ({
 		JSON.stringify(
 			{
 				renderCount,
-				versions: versions ?? [],
+				versions: JSON.stringify(versions ?? [], null, 2),
 			},
 			null,
 			2,

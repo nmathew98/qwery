@@ -1,7 +1,7 @@
 {
 	"name": "@b.s/qwery",
 	"private": true,
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"type": "module",
 	"repository": {
 		"type": "git",
@@ -41,7 +41,9 @@
 		"build": "tsc && vite build",
 		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
 		"format": "prettier .  --write",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"test": "vitest run --passWithNoTests",
+		"test.watch": "vitest --passWithNoTests --watch"
 	},
 	"dependencies": {
 		"@b.s/incremental": "^2.1.1",
@@ -51,6 +53,7 @@
 		"react": "^18.2.0"
 	},
 	"devDependencies": {
+		"@testing-library/react": "^14.2.1",
 		"@types/node": "^20.11.19",
 		"@types/react": "^18.2.56",
 		"@types/react-dom": "^18.2.19",
@@ -62,10 +65,12 @@
 		"eslint-plugin-prettier": "^5.1.3",
 		"eslint-plugin-react-hooks": "^4.6.0",
 		"eslint-plugin-react-refresh": "^0.4.5",
+		"jsdom": "^24.0.0",
 		"prettier": "^3.2.5",
+		"react-dom": "^18.2.0",
 		"typescript": "^5.2.2",
 		"vite": "^5.1.4",
 		"vite-plugin-dts": "^3.7.3",
-		"react-dom": "^18.2.0"
+		"vitest": "^1.3.1"
 	}
 }
