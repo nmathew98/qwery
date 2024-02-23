@@ -37,7 +37,7 @@ describe("useQwery ssr", () => {
 		const App = () => {
 			const { executionEnvironment } = useExecutionEnvironment();
 
-			const test = useQwery<typeof INITIAL_VALUE>({
+			const test = useQwery({
 				initialValue:
 					executionEnvironment === ExecutionEnvironment.Server
 						? { a: 2, b: 3, c: 4 }
@@ -84,7 +84,7 @@ describe("useQwery ssr", () => {
 		CACHE.set(QUERY_KEY, CACHED_RECORD);
 
 		const App = () => {
-			const test = useQwery<{ a: number; b: number; c: number }>({
+			const test = useQwery<typeof CACHED_RECORD>({
 				queryKey: QUERY_KEY,
 				onChange: vitest.fn(),
 			});
@@ -118,7 +118,7 @@ describe("useQwery ssr", () => {
 	it("supports subscriptions", async () => {
 		const App = () => {
 			const api = createApi();
-			const test = useQwery<{ a: number; b: number; c: number }>({
+			const test = useQwery<Awaited<ReturnType<typeof api.get>>>({
 				initialValue: api.get,
 				onChange: vitest.fn(),
 				subscribe: api.subscribe,
@@ -150,11 +150,10 @@ describe("useQwery ssr", () => {
 
 	it("refetches on window focus", async () => {
 		const API = createApi();
-
 		const getInitialValue = vitest.fn().mockImplementation(API.get);
 
 		const App = () => {
-			const test = useQwery<{ a: number; b: number; c: number }>({
+			const test = useQwery<Awaited<ReturnType<typeof getInitialValue>>>({
 				initialValue: getInitialValue,
 				onChange: vitest.fn(),
 				refetchOnWindowFocus: true,
