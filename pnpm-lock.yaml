@@ -6,11 +6,11 @@ settings:
 
 dependencies:
   '@b.s/incremental':
-    specifier: ^2.1.3
-    version: 2.1.3
+    specifier: ^2.1.4
+    version: 2.1.4
   '@b.s/txn':
-    specifier: ^1.0.3
-    version: 1.0.3
+    specifier: ^1.0.4
+    version: 1.0.4
   react:
     specifier: ^18.2.0
     version: 18.2.0
@@ -81,14 +81,14 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /@b.s/incremental@2.1.3:
-    resolution: {integrity: sha512-R83E8HVG1mwfvrr/OWPmWbSvg0eS+6D2L3QTI2NIr7+7PXfDiEVpeNwfrdSptxhBRyKU18B59qeaGCxgu5TB8w==}
+  /@b.s/incremental@2.1.4:
+    resolution: {integrity: sha512-d6VXfQL5nDLDGA7yVnASOYc5vfI2vCdNcSfqT1tPSqrAyPLGxtSYpfxzxLUSnpD51Biqg037/j3021JnA19UWQ==}
     dependencies:
       immer: 10.0.3
     dev: false
 
-  /@b.s/txn@1.0.3:
-    resolution: {integrity: sha512-cL4UT7I2W8xoyf3wB5+/bAa80pCabiqnJIAvBPcxTEEmcRtKr/KeRPUWV+VfjSgPAw0PH1Zz+eDIncrdiob1BQ==}
+  /@b.s/txn@1.0.4:
+    resolution: {integrity: sha512-t1Vl8tgeVPe7oO6U2VuF9bC0Yqa5jzAiggj+IOdIQyNNLEP3N2IxtO/QoASX1UQ7f/DE+BF7Y0MviRyDRGW/Cg==}
     dev: false
 
   /@babel/code-frame@7.23.5:
