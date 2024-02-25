@@ -188,7 +188,7 @@ describe("useQwery csr", () => {
 			</BrowserProviders>,
 		);
 
-		fireEvent.focusIn(window);
+		fireEvent.focus(window);
 
 		await waitFor(() => {
 			expect(getInitialValue).toBeCalledTimes(2);

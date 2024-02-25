@@ -1,6 +1,6 @@
 {
 	"name": "@b.s/react-qwery",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"type": "module",
 	"repository": {
 		"type": "git",
@@ -33,7 +33,9 @@
 		"LICENSE",
 		"package.json",
 		"pnpm-lock.yaml",
-		"README.md"
+		"README.md",
+		"tsconfig.json",
+		"tsconfig.node.json"
 	],
 	"scripts": {
 		"dev": "vite",
