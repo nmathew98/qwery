@@ -1,5 +1,17 @@
-export { createTransaction } from "@b.s/txn";
-export { makeRetry, makeMonitoredFetch, diff } from "@b.s/incremental";
+export {
+	createTransaction,
+	type CreateTransaction,
+	type CreateTransactionOptions,
+	type Transaction,
+	type QueryOptions,
+} from "@b.s/txn";
+export {
+	makeRetry,
+	type RetryParameters,
+	makeMonitoredFetch,
+	type MakeMonitoredParameters,
+	diff,
+} from "@b.s/incremental";
 
 export * from "./context";
 export * from "./context/types";
