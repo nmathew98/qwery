@@ -114,7 +114,13 @@ export const useQwery = <
 		const initializedCrdt = initializeCRDT();
 
 		const unsubscribe = async () => {
-			(await initializedCrdt)?.unsubscribe?.();
+			const unsubscribe = (await initializedCrdt)?.unsubscribe;
+
+			if (unsubscribe instanceof Promise) {
+				return void (await unsubscribe)?.();
+			}
+
+			return unsubscribe?.();
 		};
 
 		const onWindowFocus = async () => {
