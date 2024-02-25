@@ -87,13 +87,15 @@ In a similar vein, for polling:
 ```typescript
 // Assuming its an array of records
 const subscribe = dispatch => {
-	setInterval(async () => {
+	const poll = setInterval(async () => {
 		const result = await fetch(API);
 
 		// Determine the changes and dispatch only the changes
 		// for references to remain stable if it is an array of records
 		dispatch(result);
 	}, 5000);
+
+	return () => clearInterval(poll);
 };
 
 const { data, dispatch } = useQwery({

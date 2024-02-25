@@ -19,7 +19,9 @@ export interface BaseUseQweryOptions<
 	> {
 	queryKey?: Serializable;
 	initialValue?: D | F;
-	subscribe?: (dispatch: Dispatch<D>) => void;
+	subscribe?: (
+		dispatch: Dispatch<D>,
+	) => Promise<(() => void) | void> | (() => void) | void;
 	debug?: boolean;
 	refetchOnWindowFocus?: boolean;
 }

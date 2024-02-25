@@ -104,17 +104,27 @@ export const useQwery = <
 				},
 			});
 
-			subscribe?.(proxiedDispatch);
+			const unsubscribe = subscribe?.(proxiedDispatch);
 
 			setRenderCount(renderCount => renderCount + 1);
 
-			return crdt;
+			return { crdt, unsubscribe };
 		};
 
-		const crdt = initializeCRDT();
+		const initializedCrdt = initializeCRDT();
+
+		const unsubscribe = async () => {
+			const unsubscribe = (await initializedCrdt)?.unsubscribe;
+
+			if (unsubscribe instanceof Promise) {
+				return void (await unsubscribe)?.();
+			}
+
+			return unsubscribe?.();
+		};
 
 		const onWindowFocus = async () => {
-			const dispatch = (await crdt)?.dispatch;
+			const dispatch = (await initializedCrdt)?.crdt?.dispatch;
 
 			if (!dispatch) {
 				return;
@@ -144,6 +154,7 @@ export const useQwery = <
 
 		return () => {
 			window.removeEventListener("focusin", onWindowFocus);
+			unsubscribe();
 		};
 	}, []);
 
