@@ -1,6 +1,6 @@
 {
 	"name": "@b.s/react-qwery",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"type": "module",
 	"repository": {
 		"type": "git",
@@ -45,8 +45,8 @@
 		"test.watch": "vitest --passWithNoTests --watch"
 	},
 	"dependencies": {
-		"@b.s/incremental": "^2.1.3",
-		"@b.s/txn": "^1.0.3"
+		"@b.s/incremental": "^2.1.4",
+		"@b.s/txn": "^1.0.4"
 	},
 	"peerDependencies": {
 		"react": "^18.2.0"

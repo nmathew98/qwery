@@ -119,3 +119,5 @@ More information in:
 ## Contributions
 
 -   Contributions are welcome, just make a pull request
+
+**_"Man's duality, life and its formalities"_**
