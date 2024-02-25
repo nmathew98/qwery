@@ -33,7 +33,9 @@
 		"LICENSE",
 		"package.json",
 		"pnpm-lock.yaml",
-		"README.md"
+		"README.md",
+		"tsconfig.json",
+		"tsconfig.node.json"
 	],
 	"scripts": {
 		"dev": "vite",

@@ -100,6 +100,8 @@ export const useQwery = <
 						subscribeOptions,
 					]);
 
+					setRenderCount(renderCount => renderCount + 1);
+
 					return result;
 				},
 			});
@@ -141,6 +143,8 @@ export const useQwery = <
 						refetchOptions,
 					]);
 
+					setRenderCount(renderCount => renderCount + 1);
+
 					return result;
 				},
 			});
@@ -149,11 +153,11 @@ export const useQwery = <
 		};
 
 		if (refetchOnWindowFocus) {
-			window.addEventListener("focusin", onWindowFocus);
+			window.addEventListener("focus", onWindowFocus);
 		}
 
 		return () => {
-			window.removeEventListener("focusin", onWindowFocus);
+			window.removeEventListener("focus", onWindowFocus);
 			unsubscribe();
 		};
 	}, []);
@@ -178,7 +182,7 @@ export const useQwery = <
 	return {
 		data: crdtRef.current?.data ?? computeInitialValue(),
 		dispatch: crdtRef.current?.dispatch ?? noOpFunction,
-		versions: crdtRef.current?.versions ?? [],
+		versions: crdtRef.current?.versions,
 	};
 };
 
