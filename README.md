@@ -19,6 +19,7 @@ Asynchronous state management in React made simple.
 -   Polling ✅
 -   Sync updates between tabs with [Broadcast Channel](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API) ✅
 -   Determine network status ✅
+-   Query cancellation ✅
 -   SSR support ✅
 
 ## Usage

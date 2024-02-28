@@ -8,7 +8,9 @@ export interface BaseUseQweryOptions<
 	D extends Record<string | number | symbol, any> =
 		| Record<string | number | symbol, any>
 		| Array<any>,
-	F extends (dispatch?: any) => Promise<D> = (dispatch?: any) => Promise<D>,
+	F extends (
+		args?: RefetchableQueryFnParameters<D>,
+	) => Promise<D> = () => Promise<D>,
 	C extends (next: D, previous: D) => unknown = (
 		next: D,
 		previous: D,
@@ -25,6 +27,15 @@ export interface BaseUseQweryOptions<
 	debug?: boolean;
 	refetchOnWindowFocus?: boolean;
 	broadcast?: BroadcastChannel | boolean;
+}
+
+export interface RefetchableQueryFnParameters<
+	D extends Record<string | number | symbol, any> =
+		| Record<string | number | symbol, any>
+		| Array<any>,
+> {
+	dispatch: Dispatch<D>;
+	signal: AbortSignal;
 }
 
 export interface UseQweryCachedValueOptions<
