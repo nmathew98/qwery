@@ -1,5 +1,5 @@
 import React from "react";
-import { type CRDT, createCRDT, type Dispatch } from "@b.s/incremental";
+import { type CRDT, createCRDT, type Dispatch, diff } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
 import type { UseQweryOptions } from "./types";
@@ -49,7 +49,7 @@ export const useQwery = <
 
 				const channel = createBroadcastChannel();
 
-				channel?.postMessage(args[0]);
+				channel?.postMessage(diff(args[0], args[1]));
 			}
 
 			if (!result) {
