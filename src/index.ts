@@ -11,6 +11,7 @@ export {
 	makeMonitoredFetch,
 	type MakeMonitoredParameters,
 	diff,
+	type CacheStore,
 } from "@b.s/incremental";
 
 export * from "./context";
