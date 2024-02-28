@@ -4,6 +4,8 @@
 
 Asynchronous state management in React made simple.
 
+Most of the use cases of [React Query](https://tanstack.com/query/v3/) are covered with a similar API, React Query comes in at 2.26 MB while React Qwery comes in at 220 kB.
+
 ## Features
 
 -   CJS + ESM ✅
@@ -19,6 +21,7 @@ Asynchronous state management in React made simple.
 -   Polling ✅
 -   Sync updates between tabs with [Broadcast Channel](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API) ✅
 -   Determine network status ✅
+-   Query cancellation ✅
 -   SSR support ✅
 
 ## Usage
