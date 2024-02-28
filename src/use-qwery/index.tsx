@@ -1,16 +1,16 @@
 import React from "react";
-import { type CRDT, createCRDT, type Dispatch, diff } from "@b.s/incremental";
+import { type CRDT, createCRDT, diff } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
-import type { UseQweryOptions } from "./types";
+import type { RefetchableQueryFnParameters, UseQweryOptions } from "./types";
 
 export const useQwery = <
 	D extends Record<string | number | symbol, any> =
 		| Record<string | number | symbol, any>
 		| Array<any>,
-	F extends (dispatch?: Dispatch<D>) => Promise<D> = (
-		dispatch?: Dispatch<D>,
-	) => Promise<D>,
+	F extends (
+		args?: RefetchableQueryFnParameters<D>,
+	) => Promise<D> = () => Promise<D>,
 	C extends (next: D, previous: D) => unknown = (
 		next: D,
 		previous: D,
@@ -29,6 +29,7 @@ export const useQwery = <
 	const [renderCount, setRenderCount] = React.useState(0);
 	const context = React.useContext(QweryContext);
 	const crdtRef = React.useRef<null | CRDT<D>>(null);
+	const abortControllerRef = React.useRef(new AbortController());
 
 	const proxiedOnChange = new Proxy(onChange, {
 		apply: (onChange, thisArg, args) => {
@@ -40,7 +41,7 @@ export const useQwery = <
 						return broadcast;
 					}
 
-					if (!queryKey?.toString) {
+					if (!queryKey) {
 						return null;
 					}
 
@@ -53,7 +54,7 @@ export const useQwery = <
 			}
 
 			if (!result) {
-				if (queryKey?.toString) {
+				if (queryKey) {
 					context?.makeOnChange?.(queryKey).apply(null, [args[0]]);
 				}
 
@@ -68,7 +69,7 @@ export const useQwery = <
 		apply: (onSuccess, thisArg, args) => {
 			Reflect.apply(onSuccess, thisArg, args);
 
-			if (queryKey?.toString) {
+			if (queryKey) {
 				context?.makeOnChange?.(queryKey).apply(null, [args[0]]);
 			}
 
@@ -168,7 +169,10 @@ export const useQwery = <
 				},
 			});
 
-			await (initialValue as F)(proxiedDispatch);
+			await (initialValue as F)({
+				dispatch: proxiedDispatch,
+				signal: abortControllerRef.current.signal,
+			});
 		};
 
 		if (refetchOnWindowFocus) {
@@ -178,6 +182,7 @@ export const useQwery = <
 		return () => {
 			window.removeEventListener("focus", onWindowFocus);
 			unsubscribe();
+			abortControllerRef.current.abort();
 		};
 	}, []);
 
