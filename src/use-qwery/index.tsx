@@ -24,6 +24,7 @@ export const useQwery = <
 	subscribe,
 	debug = false,
 	refetchOnWindowFocus = false,
+	broadcast = false,
 }: UseQweryOptions<D, F, C>) => {
 	const [renderCount, setRenderCount] = React.useState(0);
 	const context = React.useContext(QweryContext);
@@ -33,8 +34,26 @@ export const useQwery = <
 		apply: (onChange, thisArg, args) => {
 			const result = Reflect.apply(onChange, thisArg, args);
 
+			if (broadcast) {
+				const createBroadcastChannel = () => {
+					if (broadcast instanceof BroadcastChannel) {
+						return broadcast;
+					}
+
+					if (!queryKey?.toString) {
+						return null;
+					}
+
+					return new BroadcastChannel(queryKey.toString());
+				};
+
+				const channel = createBroadcastChannel();
+
+				channel?.postMessage(args[0]);
+			}
+
 			if (!result) {
-				if (queryKey) {
+				if (queryKey?.toString) {
 					context?.makeOnChange?.(queryKey).apply(null, [args[0]]);
 				}
 
@@ -49,7 +68,7 @@ export const useQwery = <
 		apply: (onSuccess, thisArg, args) => {
 			Reflect.apply(onSuccess, thisArg, args);
 
-			if (queryKey) {
+			if (queryKey?.toString) {
 				context?.makeOnChange?.(queryKey).apply(null, [args[0]]);
 			}
 
