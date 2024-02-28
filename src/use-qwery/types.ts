@@ -24,6 +24,7 @@ export interface BaseUseQweryOptions<
 	) => Promise<(() => void) | void> | (() => void) | void;
 	debug?: boolean;
 	refetchOnWindowFocus?: boolean;
+	broadcast?: BroadcastChannel | boolean;
 }
 
 export interface UseQweryCachedValueOptions<

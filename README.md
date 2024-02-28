@@ -11,11 +11,14 @@ Asynchronous state management in React made simple.
 -   Simple and easy to use ✅
 -   Retry mechanism ✅
 -   Caching (with support for async caches) ✅
+-   Automatic garbage collection ✅
 -   Remember page scroll ✅
 -   Distributed transactions (with [txn](https://www.npmjs.com/package/@b.s/txn)) ✅
 -   Structural sharing ✅
 -   Subscriptions ✅
 -   Polling ✅
+-   Sync updates between tabs with [Broadcast Channel](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API) ✅
+-   Determine network status ✅
 -   SSR support ✅
 
 ## Usage
