@@ -71,6 +71,10 @@ export const useQwery = <
 				setRenderCount(renderCount => renderCount + 1);
 			}
 
+			if (!suspense) {
+				return;
+			}
+
 			return result;
 		},
 	});
