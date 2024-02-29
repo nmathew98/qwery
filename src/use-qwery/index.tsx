@@ -71,6 +71,12 @@ export const useQwery = <
 				setRenderCount(renderCount => renderCount + 1);
 			}
 
+			if (suspense) {
+				return (result as Promise<unknown>).catch(error => {
+					throw error;
+				});
+			}
+
 			return result;
 		},
 	});
