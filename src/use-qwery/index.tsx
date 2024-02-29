@@ -136,7 +136,9 @@ export const useQwery = <
 
 			const unsubscribe = subscribe?.(proxiedDispatch);
 
-			setRenderCount(renderCount => renderCount + 1);
+			if (!suspense) {
+				setRenderCount(renderCount => renderCount + 1);
+			}
 
 			return { crdt, unsubscribe };
 		};
