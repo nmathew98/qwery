@@ -2,7 +2,11 @@ import React from "react";
 import { type CRDT, createCRDT, diff } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
-import type { RefetchableQueryFnParameters, UseQweryOptions } from "./types";
+import type {
+	RefetchableQueryFnParameters,
+	UseQweryOptions,
+	UseQweryReturn,
+} from "./types";
 
 export const useQwery = <
 	D extends Record<string | number | symbol, any> =
@@ -15,6 +19,7 @@ export const useQwery = <
 		next: D,
 		previous: D,
 	) => unknown,
+	S extends boolean | undefined = false,
 >({
 	queryKey,
 	initialValue,
@@ -25,10 +30,15 @@ export const useQwery = <
 	debug = false,
 	refetchOnWindowFocus = false,
 	broadcast = false,
-}: UseQweryOptions<D, F, C>) => {
+	suspense = false,
+}: UseQweryOptions<D, F, C, S>): S extends true
+	? Promise<UseQweryReturn<D>>
+	: UseQweryReturn<D> => {
 	const [renderCount, setRenderCount] = React.useState(0);
 	const context = React.useContext(QweryContext);
-	const crdtRef = React.useRef<null | CRDT<D>>(null);
+	const crdtRef = React.useRef<
+		null | undefined | CRDT<D> | Promise<CRDT<D> | undefined>
+	>(null);
 	const abortControllerRef = React.useRef(new AbortController());
 
 	const proxiedOnChange = new Proxy(onChange, {
@@ -107,8 +117,6 @@ export const useQwery = <
 				trackVersions: debug,
 			});
 
-			crdtRef.current = crdt;
-
 			const proxiedDispatch = new Proxy(crdt.dispatch, {
 				apply: (dispatch, thisArg, args) => {
 					const subscribeOptions = {
@@ -128,12 +136,23 @@ export const useQwery = <
 
 			const unsubscribe = subscribe?.(proxiedDispatch);
 
-			setRenderCount(renderCount => renderCount + 1);
+			if (!suspense) {
+				setRenderCount(renderCount => renderCount + 1);
+			}
 
 			return { crdt, unsubscribe };
 		};
 
+		const setCrdtRef = async (
+			initializedCrdt: ReturnType<typeof initializeCRDT>,
+		) => {
+			crdtRef.current = suspense
+				? initializedCrdt.then(result => result?.crdt)
+				: (await initializedCrdt)?.crdt;
+		};
+
 		const initializedCrdt = initializeCRDT();
+		setCrdtRef(initializedCrdt);
 
 		const unsubscribe = async () => {
 			const unsubscribe = (await initializedCrdt)?.unsubscribe;
@@ -186,16 +205,7 @@ export const useQwery = <
 		};
 	}, []);
 
-	React.useDebugValue(crdtRef.current?.versions, versions =>
-		JSON.stringify(
-			{
-				renderCount,
-				versions: JSON.stringify(versions ?? [], null, 2),
-			},
-			null,
-			2,
-		),
-	);
+	React.useDebugValue(renderCount);
 
 	const computeInitialValue = () => {
 		if (typeof initialValue !== "function") {
@@ -203,11 +213,21 @@ export const useQwery = <
 		}
 	};
 
+	if (suspense && crdtRef.current instanceof Promise) {
+		return crdtRef.current.then(crdt => ({
+			data: crdt?.data ?? computeInitialValue(),
+			dispatch: crdt?.dispatch ?? noOpFunction,
+			versions: crdt?.versions,
+		})) as any;
+	}
+
+	const crdt = crdtRef.current as CRDT<D> | undefined;
+
 	return {
-		data: crdtRef.current?.data ?? computeInitialValue(),
-		dispatch: crdtRef.current?.dispatch ?? noOpFunction,
-		versions: crdtRef.current?.versions,
-	};
+		data: crdt?.data ?? computeInitialValue(),
+		dispatch: crdt?.dispatch ?? noOpFunction,
+		versions: crdt?.versions,
+	} as any;
 };
 
 const noOpFunction = () => {};
