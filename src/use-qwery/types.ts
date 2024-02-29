@@ -15,6 +15,7 @@ export interface BaseUseQweryOptions<
 		next: D,
 		previous: D,
 	) => unknown,
+	S extends boolean | undefined = false,
 > extends Pick<
 		CreateCRDTParameters<D, C>,
 		"onChange" | "onSuccess" | "onError"
@@ -27,6 +28,17 @@ export interface BaseUseQweryOptions<
 	debug?: boolean;
 	refetchOnWindowFocus?: boolean;
 	broadcast?: BroadcastChannel | boolean;
+	suspense?: S;
+}
+
+export interface UseQweryReturn<
+	D extends Record<string | number | symbol, any> =
+		| Record<string | number | symbol, any>
+		| Array<any>,
+> {
+	data?: D;
+	dispatch: Dispatch<D>;
+	versions?: D[];
 }
 
 export interface RefetchableQueryFnParameters<
@@ -47,7 +59,8 @@ export interface UseQweryCachedValueOptions<
 		next: D,
 		previous: D,
 	) => unknown,
-> extends BaseUseQweryOptions<D, F, C> {
+	S extends boolean | undefined = false,
+> extends BaseUseQweryOptions<D, F, C, S> {
 	queryKey: Serializable;
 	initialValue?: D | F;
 }
@@ -61,7 +74,8 @@ export interface UseQweryFetchedValueOptions<
 		next: D,
 		previous: D,
 	) => unknown,
-> extends BaseUseQweryOptions<D, F, C> {
+	S extends boolean | undefined = false,
+> extends BaseUseQweryOptions<D, F, C, S> {
 	queryKey?: Serializable;
 	initialValue: D | F;
 }
@@ -75,4 +89,7 @@ export type UseQweryOptions<
 		next: D,
 		previous: D,
 	) => unknown,
-> = UseQweryCachedValueOptions<D, F, C> | UseQweryFetchedValueOptions<D, F, C>;
+	S extends boolean | undefined = false,
+> =
+	| UseQweryCachedValueOptions<D, F, C, S>
+	| UseQweryFetchedValueOptions<D, F, C, S>;

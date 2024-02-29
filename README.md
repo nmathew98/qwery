@@ -22,6 +22,7 @@ Most of the use cases of [React Query](https://tanstack.com/query/v3/) are cover
 -   Sync updates between tabs with [Broadcast Channel](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API) ✅
 -   Determine network status ✅
 -   Query cancellation ✅
+-   Suspense ✅
 -   SSR support ✅
 
 ## Usage
@@ -46,6 +47,14 @@ const { data, dispatch } = useQwery({
 const { data, dispatch } = useQwery({
 	queryKey: "test-data", // Anything with a `toString` method is supported
 	onChange: onChangeData,
+});
+
+// or (Suspense)
+
+const { data, dispatch } = await useQwery({
+	initialValue: () => fetch(API),
+	onChange: onChangeData,
+	suspense: true,
 });
 ```
 
