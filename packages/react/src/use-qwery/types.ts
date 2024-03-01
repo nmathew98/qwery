@@ -8,9 +8,9 @@ export interface BaseUseQweryOptions<
 	D extends Record<string | number | symbol, any> =
 		| Record<string | number | symbol, any>
 		| Array<any>,
-	F extends (
+	F extends (args?: RefetchableQueryFnParameters<D>) => Promise<D> = (
 		args?: RefetchableQueryFnParameters<D>,
-	) => Promise<D> = () => Promise<D>,
+	) => Promise<D>,
 	C extends (next: D, previous: D) => unknown = (
 		next: D,
 		previous: D,

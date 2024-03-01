@@ -5,6 +5,7 @@
 	"scripts": {
 		"build": "lerna run build",
 		"build.release": "lerna run clean && lerna run build",
+		"build.pack": "lerna run build && lerna run pack",
 		"test": "lerna run test",
 		"lint": "lerna run lint",
 		"format": "lerna run format",
