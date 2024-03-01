@@ -1,5 +1,5 @@
 import React from "react";
-import { type CRDT, createCRDT, diff } from "@b.s/incremental";
+import { type CRDT, createCRDT } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
 import type {
@@ -56,7 +56,7 @@ export const useQwery = <
 			if (broadcast) {
 				const channel = createBroadcastChannel();
 
-				channel?.postMessage(diff(args[0], args[1]));
+				channel?.postMessage(args[0]);
 				channel?.close();
 			}
 
@@ -216,20 +216,18 @@ export const useQwery = <
 	React.useEffect(() => {
 		const channel = createBroadcastChannel();
 
-		const onBroadcast = async (
-			event: BroadcastChannelEventMap["message"],
-		) => {
-			const updates = event.data;
+		const onBroadcast = async (event: MessageEvent<D>) => {
+			const next = event.data;
 
 			const crdt = await crdtRef.current;
 
-			crdt?.dispatch(
-				previousValue => ({
-					...previousValue,
-					...updates,
-				}),
-				{ isPersisted: true },
-			);
+			// `onChange` will trigger this listener even if on the same tab
+			// in that case early return
+			if (next === crdt?.data) {
+				return;
+			}
+
+			crdt?.dispatch(next, { isPersisted: true });
 
 			setRenderCount(renderCount => renderCount + 1);
 		};
