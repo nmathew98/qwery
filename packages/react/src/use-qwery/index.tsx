@@ -221,6 +221,8 @@ export const useQwery = <
 
 			const crdt = await crdtRef.current;
 
+			// `onChange` will trigger this listener even if on the same tab
+			// in that case early return
 			if (next === crdt?.data) {
 				return;
 			}
