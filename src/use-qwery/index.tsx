@@ -65,14 +65,16 @@ export const useQwery = <
 
 			if (!result) {
 				if (queryKey) {
-					context?.makeOnChange?.(queryKey).apply(null, [args[0]]);
+					context?.makeOnChange?.(queryKey)(args[0]);
 				}
 
-				setRenderCount(renderCount => renderCount + 1);
+				return void setRenderCount(renderCount => renderCount + 1);
 			}
 
-			if (suspense) {
+			if (suspense && result instanceof Promise) {
 				return (result as Promise<unknown>).catch(error => {
+					onError(args[0], args[1]);
+
 					throw error;
 				});
 			}
@@ -86,7 +88,7 @@ export const useQwery = <
 			Reflect.apply(onSuccess, thisArg, args);
 
 			if (queryKey) {
-				context?.makeOnChange?.(queryKey).apply(null, [args[0]]);
+				context?.makeOnChange?.(queryKey)(args[0]);
 			}
 
 			setRenderCount(renderCount => renderCount + 1);
