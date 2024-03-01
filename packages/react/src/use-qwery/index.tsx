@@ -56,7 +56,10 @@ export const useQwery = <
 			if (broadcast) {
 				const channel = createBroadcastChannel();
 
-				channel?.postMessage(diff(args[0], args[1]));
+				channel?.postMessage({
+					next: args[0],
+					previous: args[1],
+				});
 				channel?.close();
 			}
 
@@ -217,19 +220,17 @@ export const useQwery = <
 		const channel = createBroadcastChannel();
 
 		const onBroadcast = async (
-			event: BroadcastChannelEventMap["message"],
+			event: MessageEvent<{ next: D; previous: D }>,
 		) => {
 			const updates = event.data;
 
 			const crdt = await crdtRef.current;
 
-			crdt?.dispatch(
-				previousValue => ({
-					...previousValue,
-					...updates,
-				}),
-				{ isPersisted: true },
-			);
+			if (updates.next === crdt?.data) {
+				return;
+			}
+
+			crdt?.dispatch(updates.next, { isPersisted: true });
 
 			setRenderCount(renderCount => renderCount + 1);
 		};
