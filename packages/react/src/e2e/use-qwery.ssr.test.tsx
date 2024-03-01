@@ -177,8 +177,7 @@ describe("useQwery ssr", () => {
 
 export const renderSsr = (ui: React.ReactNode) => {
 	const envWindow = window;
-	/*eslint no-global-assign: "off" */
-	/// @ts-expect-error: `window` is `undefined` on the server
+	/// @ts-expect-error
 	window = undefined;
 
 	const serverRendered = ReactDOMServer.renderToString(ui);

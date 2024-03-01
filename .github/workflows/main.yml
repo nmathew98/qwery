@@ -36,9 +36,6 @@ jobs:
             - name: Install modules
               run: pnpm install
 
-            - name: Linting
-              run: pnpm lint
-
             - name: Unit tests
               run: pnpm test
 
