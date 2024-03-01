@@ -36,11 +36,5 @@ jobs:
             - name: Install modules
               run: pnpm install
 
-            - name: Linting
-              run: pnpm lint
-
-            - name: Unit tests
-              run: pnpm test
-
-            - name: Builds
-              run: pnpm build
+            - name: Lint, test & build
+              run: pnpx lerna run lint,test,build
