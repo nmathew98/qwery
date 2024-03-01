@@ -1,5 +1,5 @@
 import React from "react";
-import { type CRDT, createCRDT, diff } from "@b.s/incremental";
+import { type CRDT, createCRDT } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
 import type {
