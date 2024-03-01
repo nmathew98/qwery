@@ -57,6 +57,7 @@ export const useQwery = <
 				const channel = createBroadcastChannel();
 
 				channel?.postMessage(diff(args[0], args[1]));
+				channel?.close();
 			}
 
 			if (!result) {
@@ -237,6 +238,7 @@ export const useQwery = <
 
 		return () => {
 			channel?.removeEventListener("message", onBroadcast);
+			channel?.close();
 		};
 	}, []); /* eslint react-hooks/exhaustive-deps: "off" */
 
