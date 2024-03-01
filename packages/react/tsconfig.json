@@ -19,9 +19,9 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
-		"noImplicitAny": false,
+		"noImplicitAny": false
 	},
-	"include": ["src"],
-	"exclude": ["src/e2e"],
+	"include": ["react/src"],
+	"exclude": ["react/src/e2e"],
 	"references": [{ "path": "./tsconfig.node.json" }]
 }
