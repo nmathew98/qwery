@@ -229,6 +229,8 @@ export const useQwery = <
 				}),
 				{ isPersisted: true },
 			);
+
+			setRenderCount(renderCount => renderCount + 1);
 		};
 
 		channel?.addEventListener("message", onBroadcast);
