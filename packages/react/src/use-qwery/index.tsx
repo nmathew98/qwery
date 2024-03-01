@@ -41,23 +41,19 @@ export const useQwery = <
 	>(null);
 	const abortControllerRef = React.useRef(new AbortController());
 
+	const createBroadcastChannel = () => {
+		if (!queryKey) {
+			return null;
+		}
+
+		return new BroadcastChannel(queryKey.toString());
+	};
+
 	const proxiedOnChange = new Proxy(onChange, {
 		apply: (onChange, thisArg, args) => {
 			const result = Reflect.apply(onChange, thisArg, args);
 
 			if (broadcast) {
-				const createBroadcastChannel = () => {
-					if (broadcast instanceof BroadcastChannel) {
-						return broadcast;
-					}
-
-					if (!queryKey) {
-						return null;
-					}
-
-					return new BroadcastChannel(queryKey.toString());
-				};
-
 				const channel = createBroadcastChannel();
 
 				channel?.postMessage(diff(args[0], args[1]));
@@ -213,6 +209,32 @@ export const useQwery = <
 			window.removeEventListener("focus", onWindowFocus);
 			unsubscribe();
 			sendAbortSignal();
+		};
+	}, []); /* eslint react-hooks/exhaustive-deps: "off" */
+
+	React.useEffect(() => {
+		const channel = createBroadcastChannel();
+
+		const onBroadcast = async (
+			event: BroadcastChannelEventMap["message"],
+		) => {
+			const updates = event.data;
+
+			const crdt = await crdtRef.current;
+
+			crdt?.dispatch(
+				previousValue => ({
+					...previousValue,
+					...updates,
+				}),
+				{ isPersisted: true },
+			);
+		};
+
+		channel?.addEventListener("message", onBroadcast);
+
+		return () => {
+			channel?.removeEventListener("message", onBroadcast);
 		};
 	}, []); /* eslint react-hooks/exhaustive-deps: "off" */
 
