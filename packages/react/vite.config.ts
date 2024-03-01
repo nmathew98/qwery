@@ -5,7 +5,14 @@ import { resolve } from "node:path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	plugins: [react(), dts({ rollupTypes: true })],
+	plugins: [
+		react(),
+		dts({
+			rollupTypes: true,
+			include: resolve("src"),
+			logLevel: "info",
+		}),
+	],
 	build: {
 		lib: {
 			entry: resolve("src", "index.ts"),

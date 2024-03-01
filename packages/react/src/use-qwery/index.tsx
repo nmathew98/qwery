@@ -12,9 +12,9 @@ export const useQwery = <
 	D extends Record<string | number | symbol, any> =
 		| Record<string | number | symbol, any>
 		| Array<any>,
-	F extends (
+	F extends (args?: RefetchableQueryFnParameters<D>) => Promise<D> = (
 		args?: RefetchableQueryFnParameters<D>,
-	) => Promise<D> = () => Promise<D>,
+	) => Promise<D>,
 	C extends (next: D, previous: D) => unknown = (
 		next: D,
 		previous: D,
@@ -40,6 +40,7 @@ export const useQwery = <
 		null | undefined | CRDT<D> | Promise<CRDT<D> | undefined>
 	>(null);
 	const abortControllerRef = React.useRef(new AbortController());
+	const id = React.useId();
 
 	const createBroadcastChannel = () => {
 		if (!queryKey) {
@@ -56,7 +57,10 @@ export const useQwery = <
 			if (broadcast) {
 				const channel = createBroadcastChannel();
 
-				channel?.postMessage(args[0]);
+				channel?.postMessage({
+					id,
+					next: args[0],
+				});
 				channel?.close();
 			}
 
@@ -97,7 +101,7 @@ export const useQwery = <
 	React.useEffect(() => {
 		const computeInitialValue = async () => {
 			const cachedValue = queryKey
-				? context?.getCachedValue(queryKey)
+				? context?.getCachedValue?.(queryKey)
 				: null;
 
 			if (initialValue instanceof Function) {
@@ -216,18 +220,16 @@ export const useQwery = <
 	React.useEffect(() => {
 		const channel = createBroadcastChannel();
 
-		const onBroadcast = async (event: MessageEvent<D>) => {
-			const next = event.data;
-
+		const onBroadcast = async (
+			event: MessageEvent<{ id: string; next: D }>,
+		) => {
 			const crdt = await crdtRef.current;
 
-			// `onChange` will trigger this listener even if on the same tab
-			// in that case early return
-			if (next === crdt?.data) {
+			if (event.data.id === id) {
 				return;
 			}
 
-			crdt?.dispatch(next, { isPersisted: true });
+			crdt?.dispatch(event.data.next, { isPersisted: true });
 
 			setRenderCount(renderCount => renderCount + 1);
 		};
