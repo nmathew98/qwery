@@ -19,7 +19,7 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
-		"noImplicitAny": false,
+		"noImplicitAny": false
 	},
 	"include": ["react/src"],
 	"exclude": ["react/src/e2e"],

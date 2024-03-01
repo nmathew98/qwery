@@ -23,7 +23,7 @@ export const QweryProvider: React.FC<
 		}
 
 		return createCacheProvider(store);
-	}, []);
+	}, [store, executionEnvironment]);
 
 	return (
 		<QweryContext.Provider value={cache}>{children}</QweryContext.Provider>

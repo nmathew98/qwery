@@ -206,12 +206,15 @@ export const useQwery = <
 			window.addEventListener("focus", onWindowFocus);
 		}
 
+		const sendAbortSignal = abortControllerRef.current.abort.bind(
+			abortControllerRef.current,
+		);
 		return () => {
 			window.removeEventListener("focus", onWindowFocus);
 			unsubscribe();
-			abortControllerRef.current.abort();
+			sendAbortSignal();
 		};
-	}, []);
+	}, []); /* eslint react-hooks/exhaustive-deps: "off" */
 
 	React.useDebugValue(renderCount);
 
