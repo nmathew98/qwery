@@ -1,5 +1,5 @@
 import React from "react";
-import { type CRDT, createCRDT, diff } from "@b.s/incremental";
+import { type CRDT, createCRDT } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
 import type {
@@ -12,9 +12,9 @@ export const useQwery = <
 	D extends Record<string | number | symbol, any> =
 		| Record<string | number | symbol, any>
 		| Array<any>,
-	F extends (
+	F extends (args?: RefetchableQueryFnParameters<D>) => Promise<D> = (
 		args?: RefetchableQueryFnParameters<D>,
-	) => Promise<D> = () => Promise<D>,
+	) => Promise<D>,
 	C extends (next: D, previous: D) => unknown = (
 		next: D,
 		previous: D,
@@ -40,6 +40,7 @@ export const useQwery = <
 		null | undefined | CRDT<D> | Promise<CRDT<D> | undefined>
 	>(null);
 	const abortControllerRef = React.useRef(new AbortController());
+	const id = React.useId();
 
 	const createBroadcastChannel = () => {
 		if (!queryKey) {
@@ -56,7 +57,11 @@ export const useQwery = <
 			if (broadcast) {
 				const channel = createBroadcastChannel();
 
-				channel?.postMessage(diff(args[0], args[1]));
+				channel?.postMessage({
+					id,
+					next: args[0],
+				});
+				channel?.close();
 			}
 
 			if (!result) {
@@ -96,7 +101,7 @@ export const useQwery = <
 	React.useEffect(() => {
 		const computeInitialValue = async () => {
 			const cachedValue = queryKey
-				? context?.getCachedValue(queryKey)
+				? context?.getCachedValue?.(queryKey)
 				: null;
 
 			if (initialValue instanceof Function) {
@@ -216,25 +221,24 @@ export const useQwery = <
 		const channel = createBroadcastChannel();
 
 		const onBroadcast = async (
-			event: BroadcastChannelEventMap["message"],
+			event: MessageEvent<{ id: string; next: D }>,
 		) => {
-			const updates = event.data;
-
 			const crdt = await crdtRef.current;
 
-			crdt?.dispatch(
-				previousValue => ({
-					...previousValue,
-					...updates,
-				}),
-				{ isPersisted: true },
-			);
+			if (event.data.id === id) {
+				return;
+			}
+
+			crdt?.dispatch(event.data.next, { isPersisted: true });
+
+			setRenderCount(renderCount => renderCount + 1);
 		};
 
 		channel?.addEventListener("message", onBroadcast);
 
 		return () => {
 			channel?.removeEventListener("message", onBroadcast);
+			channel?.close();
 		};
 	}, []); /* eslint react-hooks/exhaustive-deps: "off" */
 
