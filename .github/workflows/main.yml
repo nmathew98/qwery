@@ -30,11 +30,11 @@ jobs:
               with:
                   node-version: "latest"
 
+            - name: Enable pnpm
+              run: corepack enable pnpm
+
             - name: Install modules
-              run: corepack pnpm install
+              run: pnpm install
 
-            - name: Unit tests
-              run: corepack pnpm test
-
-            - name: Builds
-              run: corepack pnpm build
+            - name: Lint, test & build
+              run: pnpx lerna run lint,test,build

@@ -217,7 +217,7 @@ describe("useQwery csr", () => {
 						previousValue.a = 2;
 					});
 				}
-			}, [test.data]);
+			}, [test]);
 
 			return (
 				<>
@@ -261,7 +261,7 @@ describe("useQwery csr", () => {
 						previousValue.a = 2;
 					});
 				}
-			}, [test.data]);
+			}, [test]);
 
 			return (
 				<>

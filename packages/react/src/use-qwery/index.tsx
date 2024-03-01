@@ -41,23 +41,19 @@ export const useQwery = <
 	>(null);
 	const abortControllerRef = React.useRef(new AbortController());
 
+	const createBroadcastChannel = () => {
+		if (!queryKey) {
+			return null;
+		}
+
+		return new BroadcastChannel(queryKey.toString());
+	};
+
 	const proxiedOnChange = new Proxy(onChange, {
 		apply: (onChange, thisArg, args) => {
 			const result = Reflect.apply(onChange, thisArg, args);
 
 			if (broadcast) {
-				const createBroadcastChannel = () => {
-					if (broadcast instanceof BroadcastChannel) {
-						return broadcast;
-					}
-
-					if (!queryKey) {
-						return null;
-					}
-
-					return new BroadcastChannel(queryKey.toString());
-				};
-
 				const channel = createBroadcastChannel();
 
 				channel?.postMessage(diff(args[0], args[1]));
@@ -65,14 +61,16 @@ export const useQwery = <
 
 			if (!result) {
 				if (queryKey) {
-					context?.makeOnChange?.(queryKey).apply(null, [args[0]]);
+					context?.makeOnChange?.(queryKey)(args[0]);
 				}
 
-				setRenderCount(renderCount => renderCount + 1);
+				return void setRenderCount(renderCount => renderCount + 1);
 			}
 
-			if (suspense) {
+			if (suspense && result instanceof Promise) {
 				return (result as Promise<unknown>).catch(error => {
+					onError(args[0], args[1]);
+
 					throw error;
 				});
 			}
@@ -86,7 +84,7 @@ export const useQwery = <
 			Reflect.apply(onSuccess, thisArg, args);
 
 			if (queryKey) {
-				context?.makeOnChange?.(queryKey).apply(null, [args[0]]);
+				context?.makeOnChange?.(queryKey)(args[0]);
 			}
 
 			setRenderCount(renderCount => renderCount + 1);
@@ -204,12 +202,41 @@ export const useQwery = <
 			window.addEventListener("focus", onWindowFocus);
 		}
 
+		const sendAbortSignal = abortControllerRef.current.abort.bind(
+			abortControllerRef.current,
+		);
 		return () => {
 			window.removeEventListener("focus", onWindowFocus);
 			unsubscribe();
-			abortControllerRef.current.abort();
+			sendAbortSignal();
 		};
-	}, []);
+	}, []); /* eslint react-hooks/exhaustive-deps: "off" */
+
+	React.useEffect(() => {
+		const channel = createBroadcastChannel();
+
+		const onBroadcast = async (
+			event: BroadcastChannelEventMap["message"],
+		) => {
+			const updates = event.data;
+
+			const crdt = await crdtRef.current;
+
+			crdt?.dispatch(
+				previousValue => ({
+					...previousValue,
+					...updates,
+				}),
+				{ isPersisted: true },
+			);
+		};
+
+		channel?.addEventListener("message", onBroadcast);
+
+		return () => {
+			channel?.removeEventListener("message", onBroadcast);
+		};
+	}, []); /* eslint react-hooks/exhaustive-deps: "off" */
 
 	React.useDebugValue(renderCount);
 
