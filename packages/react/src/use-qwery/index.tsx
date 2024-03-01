@@ -2,24 +2,11 @@ import React from "react";
 import { type CRDT, createCRDT } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
-import type {
-	RefetchableQueryFnParameters,
-	UseQweryOptions,
-	UseQweryReturn,
-} from "./types";
 
 export const useQwery = <
 	D extends Record<string | number | symbol, any> =
 		| Record<string | number | symbol, any>
 		| Array<any>,
-	F extends (args?: RefetchableQueryFnParameters<D>) => Promise<D> = (
-		args?: RefetchableQueryFnParameters<D>,
-	) => Promise<D>,
-	C extends (next: D, previous: D) => unknown = (
-		next: D,
-		previous: D,
-	) => unknown,
-	S extends boolean | undefined = false,
 >({
 	queryKey,
 	initialValue,
@@ -31,9 +18,7 @@ export const useQwery = <
 	refetchOnWindowFocus = false,
 	broadcast = false,
 	suspense = false,
-}: UseQweryOptions<D, F, C, S>): S extends true
-	? Promise<UseQweryReturn<D>>
-	: UseQweryReturn<D> => {
+}: any) => {
 	const [renderCount, setRenderCount] = React.useState(0);
 	const context = React.useContext(QweryContext);
 	const crdtRef = React.useRef<
@@ -197,7 +182,7 @@ export const useQwery = <
 				},
 			});
 
-			await (initialValue as F)({
+			await initialValue({
 				dispatch: proxiedDispatch,
 				signal: abortControllerRef.current.signal,
 			});
