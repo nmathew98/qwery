@@ -41,63 +41,63 @@ export const useQwery = <
 	>(null);
 	const abortControllerRef = React.useRef(new AbortController());
 
-	const proxiedOnChange = new Proxy(onChange, {
-		apply: (onChange, thisArg, args) => {
-			const result = Reflect.apply(onChange, thisArg, args);
+	useRememberScroll();
 
-			if (broadcast) {
-				const createBroadcastChannel = () => {
-					if (broadcast instanceof BroadcastChannel) {
-						return broadcast;
+	React.useEffect(() => {
+		const proxiedOnChange = new Proxy(onChange, {
+			apply: (onChange, thisArg, args) => {
+				const result = Reflect.apply(onChange, thisArg, args);
+
+				if (broadcast) {
+					const createBroadcastChannel = () => {
+						if (broadcast instanceof BroadcastChannel) {
+							return broadcast;
+						}
+
+						if (!queryKey) {
+							return null;
+						}
+
+						return new BroadcastChannel(queryKey.toString());
+					};
+
+					const channel = createBroadcastChannel();
+
+					channel?.postMessage(diff(args[0], args[1]));
+				}
+
+				if (!result) {
+					if (queryKey) {
+						context?.makeOnChange?.(queryKey)(args[0]);
 					}
 
-					if (!queryKey) {
-						return null;
-					}
+					return void setRenderCount(renderCount => renderCount + 1);
+				}
 
-					return new BroadcastChannel(queryKey.toString());
-				};
+				if (suspense && result instanceof Promise) {
+					return (result as Promise<unknown>).catch(error => {
+						onError(args[0], args[1]);
 
-				const channel = createBroadcastChannel();
+						throw error;
+					});
+				}
 
-				channel?.postMessage(diff(args[0], args[1]));
-			}
+				return result;
+			},
+		});
 
-			if (!result) {
+		const proxiedOnSuccess = new Proxy(onSuccess, {
+			apply: (onSuccess, thisArg, args) => {
+				Reflect.apply(onSuccess, thisArg, args);
+
 				if (queryKey) {
 					context?.makeOnChange?.(queryKey)(args[0]);
 				}
 
-				return void setRenderCount(renderCount => renderCount + 1);
-			}
+				setRenderCount(renderCount => renderCount + 1);
+			},
+		});
 
-			if (suspense && result instanceof Promise) {
-				return (result as Promise<unknown>).catch(error => {
-					onError(args[0], args[1]);
-
-					throw error;
-				});
-			}
-
-			return result;
-		},
-	});
-
-	const proxiedOnSuccess = new Proxy(onSuccess, {
-		apply: (onSuccess, thisArg, args) => {
-			Reflect.apply(onSuccess, thisArg, args);
-
-			if (queryKey) {
-				context?.makeOnChange?.(queryKey)(args[0]);
-			}
-
-			setRenderCount(renderCount => renderCount + 1);
-		},
-	});
-
-	useRememberScroll();
-
-	React.useEffect(() => {
 		const computeInitialValue = async () => {
 			const cachedValue = queryKey
 				? context?.getCachedValue(queryKey)
@@ -206,12 +206,26 @@ export const useQwery = <
 			window.addEventListener("focus", onWindowFocus);
 		}
 
+		const sendAbortSignal = abortControllerRef.current.abort;
+
 		return () => {
 			window.removeEventListener("focus", onWindowFocus);
 			unsubscribe();
-			abortControllerRef.current.abort();
+			sendAbortSignal();
 		};
-	}, []);
+	}, [
+		context,
+		debug,
+		initialValue,
+		onError,
+		queryKey,
+		refetchOnWindowFocus,
+		subscribe,
+		suspense,
+		broadcast,
+		onChange,
+		onSuccess,
+	]);
 
 	React.useDebugValue(renderCount);
 

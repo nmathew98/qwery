@@ -44,5 +44,5 @@ export const useRememberScroll = () => {
 		return () => {
 			window.removeEventListener("scroll", onScroll);
 		};
-	}, []);
+	}, [executionEnvironment]);
 };
