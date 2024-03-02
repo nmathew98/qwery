@@ -99,7 +99,7 @@ describe("useQwery csr", () => {
 	it("supports subscriptions", async () => {
 		const App = () => {
 			const api = createApi();
-			const test = useQwery<{ a: number; b: number; c: number }>({
+			const test = useQwery({
 				initialValue: api.get,
 				onChange: vitest.fn(),
 				subscribe: api.subscribe,
@@ -130,7 +130,7 @@ describe("useQwery csr", () => {
 	it("supports conditional queries", async () => {
 		const App = () => {
 			const api = createApi();
-			const test = useQwery<{ a: number; b: number; c: number }>({
+			const test = useQwery({
 				initialValue: makeMonitoredFetch({
 					fetchFn: api.get,
 					enabled: false,
@@ -164,13 +164,20 @@ describe("useQwery csr", () => {
 	it("refetches on window focus", async () => {
 		const API = createApi();
 
-		const getInitialValue = vitest.fn().mockImplementation(API.get);
+		const getInitialValue: typeof API.get = vitest
+			.fn()
+			.mockImplementation(API.get);
 
 		const App = () => {
-			const test = useQwery<{ a: number; b: number; c: number }>({
+			const test = useQwery({
 				initialValue: getInitialValue,
 				onChange: vitest.fn(),
 				refetchOnWindowFocus: true,
+				refetch: async ({ dispatch, signal: _signal }) => {
+					const result = await getInitialValue();
+
+					dispatch(result);
+				},
 			});
 
 			return (
@@ -204,7 +211,7 @@ describe("useQwery csr", () => {
 
 		const App = () => {
 			const api = createApi();
-			const test = useQwery<{ a: number; b: number; c: number }>({
+			const test = useQwery({
 				initialValue: api.get,
 				onChange: onChange,
 				onSuccess,
@@ -248,7 +255,7 @@ describe("useQwery csr", () => {
 
 		const App = () => {
 			const api = createApi();
-			const test = useQwery<{ a: number; b: number; c: number }>({
+			const test = useQwery({
 				initialValue: api.get,
 				onChange: onChange,
 				onSuccess,
