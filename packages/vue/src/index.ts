@@ -15,3 +15,4 @@ export {
 } from "@b.s/incremental";
 
 export * from "./use-execution-environment";
+export * from "./use-network-mode";
