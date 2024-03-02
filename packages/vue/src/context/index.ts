@@ -1,6 +1,6 @@
 import { inject, provide } from "vue";
 import type { QweryProviderProps } from "./types";
-import { createCacheProvider, type CacheStore } from "@b.s/incremental";
+import { createCacheProvider, type CacheProvider } from "@b.s/incremental";
 import {
 	ExecutionEnvironment,
 	useExecutionEnvironment,
@@ -20,7 +20,7 @@ export const provideQweryContext = ({ store }: QweryProviderProps) => {
 };
 
 export const useQweryContext = () => {
-	const cache = inject<CacheStore>(QweryContext);
+	const cache = inject<CacheProvider>(QweryContext);
 
 	return cache;
 };
