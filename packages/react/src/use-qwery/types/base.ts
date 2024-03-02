@@ -1,5 +1,6 @@
 import type { Serializable } from "@b.s/incremental";
 import type { RefetchQueryFn } from "./refetch";
+import type { Data } from "./options";
 
 export interface BaseUseQweryUntaggedOptions<
 	S extends boolean | undefined = false,
@@ -39,9 +40,7 @@ export interface BaseUseQweryRefetchUntaggedOptions<
 
 export interface BaseUseQweryRefetchTaggedOptions<
 	S extends boolean | undefined = false,
-	DInferred extends Record<string | number | symbol, any> | Array<any> =
-		| Record<string | number | symbol, any>
-		| Array<any>,
+	DInferred extends Data = Data,
 > {
 	initialValue: any;
 	queryKey?: Serializable;
@@ -54,9 +53,7 @@ export interface BaseUseQweryRefetchTaggedOptions<
 
 export type BaseUseQweryOptions<
 	S extends boolean | undefined = false,
-	DInferred extends Record<string | number | symbol, any> | Array<any> =
-		| Record<string | number | symbol, any>
-		| Array<any>,
+	DInferred extends Data = Data,
 > =
 	| BaseUseQweryUntaggedOptions<S>
 	| BaseUseQweryTaggedOptions<S>

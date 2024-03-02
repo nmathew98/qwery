@@ -2,23 +2,16 @@ import type { CreateCRDTParameters, Dispatch } from "@b.s/incremental";
 import type { BaseUseQweryOptions } from "./base";
 
 export type UseQweryUntaggedOptions<
-	I extends D | ((signal: AbortSignal) => Promise<D>),
+	I extends InitialValue,
 	S extends boolean | undefined,
-	D extends Record<string | number | symbol, any> =
-		| Record<string | number | symbol, any>
-		| Array<any>,
-	DInferred extends
-		| Record<string | number | symbol, any>
-		| Array<any> = I extends () => Promise<infer DInferred extends D>
+	DInferred extends Data = I extends () => Promise<
+		infer DInferred extends Data
+	>
 		? DInferred
 		: I,
-	C extends (next: DInferred, previous: DInferred) => unknown = (
-		next: DInferred,
-		previous: DInferred,
-	) => unknown,
 > = BaseUseQweryOptions<S, DInferred> &
 	Pick<
-		CreateCRDTParameters<DInferred, C>,
+		CreateCRDTParameters<DInferred>,
 		"onChange" | "onSuccess" | "onError"
 	> & {
 		initialValue: I;
@@ -28,23 +21,16 @@ export type UseQweryUntaggedOptions<
 	};
 
 export type UseQweryTaggedOptions<
-	I extends D | ((signal: AbortSignal) => Promise<D>),
+	I extends InitialValue,
 	S extends boolean | undefined,
-	D extends Record<string | number | symbol, any> =
-		| Record<string | number | symbol, any>
-		| Array<any>,
-	DInferred extends
-		| Record<string | number | symbol, any>
-		| Array<any> = I extends () => Promise<infer DInferred extends D>
+	DInferred extends Data = I extends () => Promise<
+		infer DInferred extends Data
+	>
 		? DInferred
 		: I,
-	C extends (next: DInferred, previous: DInferred) => unknown = (
-		next: DInferred,
-		previous: DInferred,
-	) => unknown,
 > = BaseUseQweryOptions<S, DInferred> &
 	Pick<
-		CreateCRDTParameters<DInferred, C>,
+		CreateCRDTParameters<DInferred>,
 		"onChange" | "onSuccess" | "onError"
 	> & {
 		initialValue?: I;
@@ -54,9 +40,12 @@ export type UseQweryTaggedOptions<
 	};
 
 export type UseQweryOptions<
-	I extends D | ((signal: AbortSignal) => Promise<D>),
+	I extends InitialValue,
 	S extends boolean | undefined,
-	D extends Record<string | number | symbol, any> =
-		| Record<string | number | symbol, any>
-		| Array<any>,
 > = UseQweryUntaggedOptions<I, S> | UseQweryTaggedOptions<I, S>;
+
+export type Data = Record<string | number | symbol, any> | Array<any>;
+
+export type InitialValue<D extends Data = Data> =
+	| D
+	| ((signal: AbortSignal) => Promise<D>);

@@ -2,15 +2,15 @@ import React from "react";
 import { type CRDT, createCRDT } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
-import type { UseQweryOptions, UseQweryReturnWithSuspense } from "./types";
+import type {
+	Data,
+	InitialValue,
+	UseQweryOptions,
+	UseQweryReturnWithSuspense,
+} from "./types";
 
 export const useQwery = <
-	I extends
-		| Record<string | number | symbol, any>
-		| Array<any>
-		| ((
-				signal: AbortSignal,
-		  ) => Promise<Record<string | number | symbol, any> | Array<any>>),
+	I extends InitialValue,
 	S extends boolean | undefined = false,
 >({
 	queryKey,
@@ -252,7 +252,7 @@ export const useQwery = <
 		})) as any;
 	}
 
-	const crdt = crdtRef.current as CRDT<any> | undefined;
+	const crdt = crdtRef.current as CRDT<Data> | undefined;
 
 	return {
 		data: crdt?.data ?? computeInitialValue(),

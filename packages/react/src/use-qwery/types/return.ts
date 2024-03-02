@@ -1,16 +1,11 @@
 import type { Dispatch } from "@b.s/incremental";
+import type { Data, InitialValue } from "./options";
 
 export interface UseQweryReturn<
-	I extends
-		| Record<string | number | symbol, any>
-		| Array<any>
-		| (() => Promise<Record<string | number | symbol, any> | Array<any>>),
-	D extends Record<string | number | symbol, any> | Array<any> =
-		| Record<string | number | symbol, any>
-		| Array<any>,
-	DInferred extends
-		| Record<string | number | symbol, any>
-		| Array<any> = I extends () => Promise<infer DInferred extends D>
+	I extends InitialValue,
+	DInferred extends Data = I extends () => Promise<
+		infer DInferred extends Data
+	>
 		? DInferred
 		: I,
 > {
@@ -20,9 +15,6 @@ export interface UseQweryReturn<
 }
 
 export type UseQweryReturnWithSuspense<
-	I extends
-		| Record<string | number | symbol, any>
-		| Array<any>
-		| (() => Promise<Record<string | number | symbol, any> | Array<any>>),
+	I extends InitialValue,
 	S extends boolean | undefined,
 > = S extends true ? Promise<UseQweryReturn<I>> : UseQweryReturn<I>;
