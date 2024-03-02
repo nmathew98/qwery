@@ -113,7 +113,7 @@ describe("useQwery ssr", () => {
 	it("supports subscriptions", async () => {
 		const App = () => {
 			const api = createApi();
-			const test = useQwery<Awaited<ReturnType<typeof api.get>>>({
+			const test = useQwery({
 				initialValue: api.get,
 				onChange: vitest.fn(),
 				subscribe: api.subscribe,
@@ -150,6 +150,11 @@ describe("useQwery ssr", () => {
 				initialValue: getInitialValue,
 				onChange: vitest.fn(),
 				refetchOnWindowFocus: true,
+				refetch: async ({ dispatch, signal: _signal }) => {
+					const result = await getInitialValue();
+
+					dispatch(result);
+				},
 			});
 
 			return (
