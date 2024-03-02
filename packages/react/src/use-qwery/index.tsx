@@ -1,16 +1,16 @@
 import React from "react";
-import { createCRDT } from "@b.s/incremental";
+import { type CRDT, createCRDT } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
-import type { UseQweryOptions, UseQweryReturnWithSuspense } from "./types";
+import type {
+	Data,
+	InitialValue,
+	UseQweryOptions,
+	UseQweryReturnWithSuspense,
+} from "./types";
 
 export const useQwery = <
-	I extends
-		| Record<string | number | symbol, any>
-		| Array<any>
-		| ((
-				signal: AbortSignal,
-		  ) => Promise<Record<string | number | symbol, any> | Array<any>>),
+	I extends InitialValue,
 	S extends boolean | undefined = false,
 >({
 	queryKey,
@@ -27,7 +27,9 @@ export const useQwery = <
 }: UseQweryOptions<I, S>): UseQweryReturnWithSuspense<I, S> => {
 	const [renderCount, setRenderCount] = React.useState(0);
 	const context = React.useContext(QweryContext);
-	const crdtRef = React.useRef<any>(null);
+	const crdtRef = React.useRef<
+		null | Promise<CRDT<any> | undefined> | CRDT<any> | undefined
+	>(null);
 	const abortControllerRef = React.useRef(new AbortController());
 	const id = React.useId();
 
@@ -112,9 +114,9 @@ export const useQwery = <
 
 			const crdt = createCRDT({
 				initialValue,
-				onChange: proxiedOnChange as any,
-				onSuccess: proxiedOnSuccess as any,
-				onError: onError as any,
+				onChange: proxiedOnChange,
+				onSuccess: proxiedOnSuccess,
+				onError: onError,
 				trackVersions: debug,
 			});
 
@@ -135,7 +137,7 @@ export const useQwery = <
 				},
 			});
 
-			const unsubscribe = subscribe?.(proxiedDispatch as any);
+			const unsubscribe = subscribe?.(proxiedDispatch);
 
 			if (!suspense) {
 				setRenderCount(renderCount => renderCount + 1);
@@ -190,7 +192,7 @@ export const useQwery = <
 			});
 
 			await refetch?.({
-				dispatch: proxiedDispatch as any,
+				dispatch: proxiedDispatch,
 				signal: abortControllerRef.current.signal,
 			});
 		};
@@ -250,7 +252,7 @@ export const useQwery = <
 		})) as any;
 	}
 
-	const crdt = crdtRef.current;
+	const crdt = crdtRef.current as CRDT<Data> | undefined;
 
 	return {
 		data: crdt?.data ?? computeInitialValue(),
