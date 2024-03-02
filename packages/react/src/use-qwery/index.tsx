@@ -215,7 +215,7 @@ export const useQwery = <
 		const channel = createBroadcastChannel();
 
 		const onBroadcast = async (
-			event: MessageEvent<{ id: string; next: any }>,
+			event: MessageEvent<{ id: string; next: Data }>,
 		) => {
 			const crdt = await crdtRef.current;
 
