@@ -1,6 +1,9 @@
 import { hasInjectionContext, inject, provide } from "vue";
-import type { QweryProviderProps } from "./types";
-import { createCacheProvider, type CacheProvider } from "@b.s/incremental";
+import {
+	createCacheProvider,
+	type CacheProvider,
+	type CacheStore,
+} from "@b.s/incremental";
 import {
 	ExecutionEnvironment,
 	useExecutionEnvironment,
@@ -9,9 +12,7 @@ import { createNoOpCache } from "./no-op-cache";
 
 export const QweryContext = Symbol("QweryContext");
 
-export const provideQweryContext = (
-	{ store }: QweryProviderProps = Object.create(null),
-) => {
+export const provideQweryContext = (store?: CacheStore) => {
 	const { executionEnvironment } = useExecutionEnvironment();
 
 	if (executionEnvironment === ExecutionEnvironment.Server && !store) {
