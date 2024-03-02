@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted, shallowReactive } from "vue";
+import { computed, onMounted, onUnmounted, shallowReactive } from "vue";
 import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
@@ -26,6 +26,10 @@ export const useQwery = <
 	suspense = false,
 }: UseQweryOptions<I, S>): UseQweryReturnWithSuspense<I, S> => {
 	const context = useQweryContext();
+
+	const id = Math.random().toString(36).substring(2);
+	const abortController = new AbortController();
+
 	const crdt = shallowReactive<{
 		data: Data | null;
 		versions: Data[] | null;
@@ -36,28 +40,10 @@ export const useQwery = <
 		dispatch: null,
 	});
 
-	const id = Math.random().toString(36).substring(2);
-	const abortController = new AbortController();
-
 	const updateCRDT = (value: CRDT<any>) => {
 		crdt.data = value.data;
 		crdt.versions = value.versions;
 		crdt.dispatch = value.dispatch;
-	};
-
-	const computeInitialValue = async () => {
-		const cachedValue = queryKey
-			? context?.getCachedValue?.(queryKey)
-			: null;
-
-		if (initialValue instanceof Function) {
-			return (
-				(await cachedValue) ??
-				(await initialValue(abortController.signal))
-			);
-		}
-
-		return (await cachedValue) ?? initialValue;
 	};
 
 	const initializeCRDT = async () => {
@@ -119,14 +105,29 @@ export const useQwery = <
 			},
 		});
 
-		const initialValue = await computeInitialValue();
+		const computeInitialValue = async () => {
+			const cachedValue = queryKey
+				? context?.getCachedValue?.(queryKey)
+				: null;
 
-		if (!initialValue) {
+			if (initialValue instanceof Function) {
+				return (
+					(await cachedValue) ??
+					(await initialValue(abortController.signal))
+				);
+			}
+
+			return (await cachedValue) ?? initialValue;
+		};
+
+		const computedInitialValue = await computeInitialValue();
+
+		if (!computedInitialValue) {
 			return;
 		}
 
 		const crdt = createCRDT({
-			initialValue,
+			initialValue: computedInitialValue,
 			onChange: proxiedOnChange,
 			onSuccess: proxiedOnSuccess,
 			onError: onError,
@@ -143,6 +144,8 @@ export const useQwery = <
 					args[0],
 					subscribeOptions,
 				]);
+
+				updateCRDT(crdt);
 
 				return result;
 			},
@@ -243,19 +246,30 @@ export const useQwery = <
 
 	useRememberScroll();
 
+	const computeInitialValueTest = () => {
+		if (typeof initialValue !== "function") {
+			return initialValue;
+		}
+	};
+
 	if (suspense) {
 		return initializedCRDT.then(result => ({
-			data: crdt.data ?? result?.crdt.data ?? computeInitialValue(),
-			dispatch: crdt.dispatch ?? result?.crdt.dispatch ?? noOpFunction,
-			versions: crdt.versions ?? result?.crdt.versions,
+			data: computed(
+				() =>
+					crdt.data ?? result?.crdt.data ?? computeInitialValueTest(),
+			),
+			dispatch: computed(
+				() => crdt.dispatch ?? result?.crdt.dispatch ?? noOpFunction,
+			),
+			versions: computed(() => crdt.versions ?? result?.crdt.versions),
 			refetch: refetch ?? noOpFunction,
 		})) as any;
 	}
 
 	return {
-		data: crdt.data ?? computeInitialValue(),
-		dispatch: crdt.dispatch ?? noOpFunction,
-		versions: crdt.versions,
+		data: computed(() => crdt.data ?? computeInitialValueTest()),
+		dispatch: computed(() => crdt.dispatch ?? noOpFunction),
+		versions: computed(() => crdt.versions),
 		refetch: refetch ?? noOpFunction,
 	} as any;
 };
