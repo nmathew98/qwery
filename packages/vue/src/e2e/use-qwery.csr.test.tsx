@@ -14,6 +14,7 @@ import CachesQueries from "./components/csr/CachedQueries.vue";
 import Subscriptions from "./components/csr/Subscriptions.vue";
 import ConditionalQueries from "./components/csr/ConditionalQueries.vue";
 import RefetchWindowFocus from "./components/csr/RefetchWindowFocus.vue";
+import QueryDispatch from "./components/csr/QueryDispatch.vue";
 
 describe("useQwery csr", () => {
 	afterEach(cleanup);
@@ -113,6 +114,48 @@ describe("useQwery csr", () => {
 
 		await waitFor(() => {
 			expect(getInitialValue).toBeCalledTimes(2);
+		});
+	});
+
+	it("invokes 'onSuccess' if async 'onChange' resolves", async () => {
+		const onChange = vitest
+			.fn()
+			.mockImplementation(() => Promise.resolve());
+		const onSuccess = vitest.fn();
+		const onError = vitest.fn();
+
+		render(QueryDispatch, {
+			props: {
+				onChange,
+				onSuccess,
+				onError,
+			},
+		});
+
+		await waitFor(() => {
+			expect(screen.getByText("a: 2")).toBeTruthy();
+			expect(onSuccess).toBeCalledTimes(1);
+			expect(onError).not.toBeCalled();
+		});
+	});
+
+	it("invokes 'onError' if async 'onChange' rejects", async () => {
+		const onChange = vitest.fn().mockImplementation(() => Promise.reject());
+		const onSuccess = vitest.fn();
+		const onError = vitest.fn();
+
+		render(QueryDispatch, {
+			props: {
+				onChange,
+				onSuccess,
+				onError,
+			},
+		});
+
+		await waitFor(() => {
+			expect(screen.getByText("a: 1")).toBeTruthy();
+			expect(onError).toBeCalledTimes(1);
+			expect(onSuccess).not.toBeCalled();
 		});
 	});
 });
