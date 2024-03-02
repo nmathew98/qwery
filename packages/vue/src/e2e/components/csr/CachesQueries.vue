@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { vitest } from "vitest";
-import { useQwery } from "../../..";
+import { useQwery } from "../../../use-qwery";
 
 const props = defineProps(["queryKey"]);
 
