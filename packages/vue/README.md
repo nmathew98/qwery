@@ -2,9 +2,9 @@
 
 ## About
 
-Asynchronous state management in React made simple.
+Asynchronous state management in Vue made simple.
 
-Most of the use cases of [React Query](https://tanstack.com/query/latest/) are covered with a similar API, React Query comes in at ~2 MB while React Qwery comes in at ~220 kB.
+Most of the use cases of [Vue Query](https://tanstack.com/query/latest/) are covered with a similar API, Vue Query comes in at ~2 MB while Vue Qwery comes in at ~220 kB.
 
 ## Features
 
@@ -58,22 +58,22 @@ const { data, dispatch } = await useQwery({
 });
 ```
 
-To opt into caching, render your component within `QweryProvider`.
+To opt into caching, provide Qwery context with `provideQweryContext`.
 
 To set cached data ahead of time (prefetching):
 
 ```typescript
-const qweryContext = React.useContext(QweryContext);
+const qweryContext = useQweryContext();
 
-qweryContext.setCachedValue(queryKey)(prefetchedData);
+qweryContext?.setCachedValue(queryKey)(prefetchedData);
 ```
 
 To invalidate cached data:
 
 ```typescript
-const qweryContext = React.useContext(QweryContext);
+const qweryContext = useQweryContext();
 
-qweryContext.makeInvalidateCachedValue(queryKey)(prefetchedData);
+qweryContext?.makeInvalidateCachedValue(queryKey)(prefetchedData);
 ```
 
 To use subscriptions:
