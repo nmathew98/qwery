@@ -147,11 +147,11 @@ export const useQwery = <
 		};
 
 		const setCrdtRef = async (
-			initializedCrdt: ReturnType<typeof initializeCRDT>,
+			initializedCRDT: ReturnType<typeof initializeCRDT>,
 		) => {
 			crdtRef.current = suspense
-				? initializedCrdt.then(result => result?.crdt)
-				: (await initializedCrdt)?.crdt;
+				? initializedCRDT.then(result => result?.crdt)
+				: (await initializedCRDT)?.crdt;
 		};
 
 		const initializedCrdt = initializeCRDT();
@@ -258,7 +258,6 @@ export const useQwery = <
 		data: crdt?.data ?? computeInitialValue(),
 		dispatch: crdt?.dispatch ?? noOpFunction,
 		versions: crdt?.versions,
-		refetch: refetch ?? noOpFunction,
 	} as any;
 };
 
