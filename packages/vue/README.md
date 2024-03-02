@@ -4,6 +4,8 @@
 
 Asynchronous state management in Vue made simple.
 
+Most of the use cases of [Vue Query](https://tanstack.com/query/latest/) are covered with a similar API, Vue Query comes in at ~2 MB while Vue Qwery comes in at ~220 kB.
+
 ## Features
 
 -   CJS + ESM ✅
@@ -22,6 +24,114 @@ Asynchronous state management in Vue made simple.
 -   Query cancellation ✅
 -   Suspense ✅
 -   SSR support ✅
+
+## Usage
+
+### Client-side rendering
+
+```typescript
+const { data, dispatch } = useQwery({
+	initialValue: INITIAL_VALUE,
+	onChange: onChangeData,
+});
+
+// or
+
+const { data, dispatch } = useQwery({
+	initialValue: () => fetch(API),
+	onChange: onChangeData,
+});
+
+// or
+
+const { data, dispatch } = useQwery({
+	queryKey: "test-data", // Anything with a `toString` method is supported
+	onChange: onChangeData,
+});
+
+// or (Suspense)
+
+const { data, dispatch } = await useQwery({
+	initialValue: () => fetch(API),
+	onChange: onChangeData,
+	suspense: true,
+});
+```
+
+To opt into caching, provide Qwery context with `provideQweryContext`.
+
+To set cached data ahead of time (prefetching):
+
+```typescript
+const qweryContext = useQweryContext();
+
+qweryContext?.setCachedValue(queryKey)(prefetchedData);
+```
+
+To invalidate cached data:
+
+```typescript
+const qweryContext = useQweryContext();
+
+qweryContext?.makeInvalidateCachedValue(queryKey)(prefetchedData);
+```
+
+To use subscriptions:
+
+```typescript
+// Assuming its an array of records
+const subscribe = async dispatch => {
+	const generator = createAsyncGenerator();
+
+	for await (const nextValue of subscription) {
+		dispatch(previousValue => {
+			previousValue.push(nextValue);
+		});
+	}
+};
+
+const { data, dispatch } = useQwery({
+	initialValue: () => fetch(API),
+	onChange: onChangeData,
+	subscribe: subscribe,
+});
+```
+
+In a similar vein, for polling:
+
+```typescript
+// Assuming its an array of records
+const subscribe = dispatch => {
+	const poll = setInterval(async () => {
+		const result = await fetch(API);
+
+		// Determine the changes and dispatch only the changes
+		// for references to remain stable if it is an array of records
+		dispatch(result);
+	}, 5000);
+
+	return () => clearInterval(poll);
+};
+
+const { data, dispatch } = useQwery({
+	initialValue: () => fetch(API),
+	onChange: onChangeData,
+	subscribe: subscribe,
+});
+```
+
+### Server-side rendering
+
+```typescript
+const { data, dispatch } = useQwery({
+	initialValue: INITIAL_VALUE, // Must be provided otherwise `data` is `undefined`
+	onChange: onChangeData,
+});
+```
+
+More information in:
+
+-   `src/e2e`
 
 ## Contributions
 
