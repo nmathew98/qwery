@@ -1,4 +1,5 @@
-import { createCRDT } from "@b.s/incremental";
+import { onMounted, onUnmounted, shallowReactive } from "vue";
+import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
 import type {
@@ -7,7 +8,6 @@ import type {
 	UseQweryOptions,
 	UseQweryReturnWithSuspense,
 } from "./types";
-import { computed, onMounted, onUnmounted, ref } from "vue";
 
 export const useQwery = <
 	I extends InitialValue,
@@ -26,14 +26,100 @@ export const useQwery = <
 	suspense = false,
 }: UseQweryOptions<I, S>): UseQweryReturnWithSuspense<I, S> => {
 	const context = useQweryContext();
-	const data = ref<any>(null);
-	const versions = ref<any>(null);
-	const dispatch = ref<any>(null);
+	const crdt = shallowReactive<{
+		data: Data | null;
+		versions: Data[] | null;
+		dispatch: Dispatch<Data> | null;
+	}>({
+		data: null,
+		versions: null,
+		dispatch: null,
+	});
 
 	const id = Math.random().toString(36).substring(2);
 	const abortController = new AbortController();
 
+	const updateCRDT = (value: CRDT<any>) => {
+		crdt.data = value.data;
+		crdt.versions = value.versions;
+		crdt.dispatch = value.dispatch;
+	};
+
+	const computeInitialValue = async () => {
+		const cachedValue = queryKey
+			? context?.getCachedValue?.(queryKey)
+			: null;
+
+		if (initialValue instanceof Function) {
+			return (
+				(await cachedValue) ??
+				(await initialValue(abortController.signal))
+			);
+		}
+
+		return (await cachedValue) ?? initialValue;
+	};
+
 	const initializeCRDT = async () => {
+		const proxiedOnChange = new Proxy(onChange, {
+			apply: (onChange, thisArg, args) => {
+				const result = Reflect.apply(onChange, thisArg, args);
+
+				if (broadcast) {
+					const channel = createBroadcastChannel();
+
+					channel?.postMessage({
+						id,
+						next: args[0],
+					});
+					channel?.close();
+				}
+
+				if (!result) {
+					if (queryKey) {
+						context?.makeOnChange?.(queryKey)(args[0]);
+					}
+
+					initializedCRDT.then(result => {
+						if (!result?.crdt) {
+							return;
+						}
+
+						updateCRDT(result?.crdt);
+					});
+				}
+
+				if (suspense && result instanceof Promise) {
+					return (result as Promise<unknown>).catch(error => {
+						onError(args[0], args[1]);
+
+						throw error;
+					});
+				}
+
+				return result;
+			},
+		});
+
+		const proxiedOnSuccess = new Proxy(onSuccess, {
+			apply: (onSuccess, thisArg, args) => {
+				Reflect.apply(onSuccess, thisArg, args);
+
+				if (queryKey) {
+					context?.makeOnChange?.(queryKey)(args[0]);
+				}
+
+				// TODO
+				initializedCRDT.then(result => {
+					if (!result?.crdt) {
+						return;
+					}
+
+					updateCRDT(result.crdt);
+				});
+			},
+		});
+
 		const initialValue = await computeInitialValue();
 
 		if (!initialValue) {
@@ -66,15 +152,13 @@ export const useQwery = <
 		const unsubscribe = subscribe?.(proxiedDispatch);
 
 		if (!suspense) {
-			data.value = crdt.data;
-			dispatch.value = crdt.dispatch;
-			versions.value = crdt.versions;
+			updateCRDT(crdt);
 		}
 
 		return { crdt, unsubscribe };
 	};
 
-	const initializedCrdt = initializeCRDT();
+	const initializedCRDT = initializeCRDT();
 
 	const createBroadcastChannel = () => {
 		if (!queryKey) {
@@ -84,118 +168,29 @@ export const useQwery = <
 		return new BroadcastChannel(queryKey.toString());
 	};
 
-	const proxiedOnChange = new Proxy(onChange, {
-		apply: (onChange, thisArg, args) => {
-			const result = Reflect.apply(onChange, thisArg, args);
-
-			if (broadcast) {
-				const channel = createBroadcastChannel();
-
-				channel?.postMessage({
-					id,
-					next: args[0],
-				});
-				channel?.close();
-			}
-
-			if (!result) {
-				if (queryKey) {
-					context?.makeOnChange?.(queryKey)(args[0]);
-				}
-
-				initializedCrdt.then(result => {
-					data.value = result?.crdt.data;
-					versions.value = result?.crdt.versions;
-				});
-			}
-
-			if (suspense && result instanceof Promise) {
-				return (result as Promise<unknown>).catch(error => {
-					onError(args[0], args[1]);
-
-					throw error;
-				});
-			}
-
-			return result;
-		},
-	});
-
-	const proxiedOnSuccess = new Proxy(onSuccess, {
-		apply: (onSuccess, thisArg, args) => {
-			Reflect.apply(onSuccess, thisArg, args);
-
-			if (queryKey) {
-				context?.makeOnChange?.(queryKey)(args[0]);
-			}
-
-			initializedCrdt.then(result => {
-				data.value = result?.crdt.data;
-				versions.value = result?.crdt.versions;
-			});
-		},
-	});
-
-	const computeInitialValue = async () => {
-		const cachedValue = queryKey
-			? context?.getCachedValue?.(queryKey)
-			: null;
-
-		if (initialValue instanceof Function) {
-			return (
-				(await cachedValue) ??
-				(await initialValue(abortController.signal))
-			);
-		}
-
-		return (await cachedValue) ?? initialValue;
-	};
-
-	const unsubscribe = async () => {
-		const unsubscribe = (await initializedCrdt)?.unsubscribe;
-
-		if (unsubscribe instanceof Promise) {
-			return void (await unsubscribe)?.();
-		}
-
-		return unsubscribe?.();
-	};
-
-	const channel = createBroadcastChannel();
-
 	const onBroadcast = async (
 		event: MessageEvent<{ id: string; next: Data }>,
 	) => {
-		const crdt = (await initializedCrdt)?.crdt;
+		const crdt = (await initializedCRDT)?.crdt;
 
-		if (event.data.id === id) {
+		if (!crdt || event.data.id === id) {
 			return;
 		}
 
-		// TODO: remove this
-		crdt?.dispatch(event.data.next as any, { isPersisted: true });
+		/// @ts-ignore: not sure why
+		crdt?.dispatch(event.data.next, { isPersisted: true });
 
-		data.value = crdt?.data;
+		updateCRDT(crdt);
 	};
 
-	onMounted(() => {
-		channel?.addEventListener("message", onBroadcast);
-	});
-
-	onUnmounted(() => {
-		channel?.removeEventListener("message", onBroadcast);
-		channel?.close();
-	});
-
 	const onWindowFocus = async () => {
-		const crdt = (await initializedCrdt)?.crdt;
-		const dispatch = (await initializedCrdt)?.crdt?.dispatch;
+		const crdt = (await initializedCRDT)?.crdt;
 
-		if (!dispatch) {
+		if (!crdt) {
 			return;
 		}
 
-		const proxiedDispatch = new Proxy(dispatch, {
+		const proxiedDispatch = new Proxy(crdt.dispatch, {
 			apply: (dispatch, thisArg, args) => {
 				const refetchOptions = {
 					isPersisted: true,
@@ -206,7 +201,8 @@ export const useQwery = <
 					refetchOptions,
 				]);
 
-				data.value = crdt?.data;
+				// TODO
+				updateCRDT(crdt);
 
 				return result;
 			},
@@ -218,15 +214,30 @@ export const useQwery = <
 		});
 	};
 
-	onMounted(() => {
-		if (!refetchOnWindowFocus) {
-			return;
-		}
+	const channel = createBroadcastChannel();
 
-		window.addEventListener("focus", onWindowFocus);
+	onMounted(() => {
+		channel?.addEventListener("message", onBroadcast);
+
+		if (refetchOnWindowFocus) {
+			window.addEventListener("focus", onWindowFocus);
+		}
 	});
 
 	onUnmounted(() => {
+		const unsubscribe = async () => {
+			const unsubscribe = (await initializedCRDT)?.unsubscribe;
+
+			if (unsubscribe instanceof Promise) {
+				return void (await unsubscribe)?.();
+			}
+
+			return unsubscribe?.();
+		};
+
+		channel?.removeEventListener("message", onBroadcast);
+		channel?.close();
+
 		window.removeEventListener("focus", onWindowFocus);
 		unsubscribe();
 		abortController.abort();
@@ -235,18 +246,18 @@ export const useQwery = <
 	useRememberScroll();
 
 	if (suspense) {
-		return initializedCrdt.then(() => ({
-			data: computed(() => data.value ?? computeInitialValue),
-			dispatch: computed(() => dispatch.value ?? noOpFunction),
-			versions: computed(() => versions.value),
+		return initializedCRDT.then(() => ({
+			data: crdt.data ?? computeInitialValue(),
+			dispatch: crdt.dispatch ?? noOpFunction,
+			versions: crdt.versions,
 			refetch: refetch ?? noOpFunction,
 		})) as any;
 	}
 
 	return {
-		data: computed(() => data.value ?? computeInitialValue()),
-		dispatch: computed(() => dispatch.value ?? noOpFunction),
-		versions: computed(() => versions.value),
+		data: crdt.data ?? computeInitialValue(),
+		dispatch: crdt.dispatch ?? noOpFunction,
+		versions: crdt.versions,
 		refetch: refetch ?? noOpFunction,
 	} as any;
 };
