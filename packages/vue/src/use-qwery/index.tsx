@@ -8,7 +8,6 @@ import type {
 	UseQweryOptions,
 	UseQweryReturnWithSuspense,
 } from "./types";
-import { useId } from "../use-id/use-id";
 
 export const useQwery = <
 	I extends InitialValue,
@@ -37,7 +36,7 @@ export const useQwery = <
 		dispatch: null,
 	});
 
-	const id = useId();
+	const id = Math.random().toString(36).substring(2);
 	const abortController = new AbortController();
 
 	const updateCRDT = (value: CRDT<any>) => {
