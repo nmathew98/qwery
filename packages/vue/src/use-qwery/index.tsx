@@ -30,21 +30,6 @@ export const useQwery = <
 	const id = Math.random().toString(36).substring(2);
 	const abortController = new AbortController();
 
-	const computeInitialValue = async () => {
-		const cachedValue = queryKey
-			? context?.getCachedValue?.(queryKey)
-			: null;
-
-		if (initialValue instanceof Function) {
-			return (
-				(await cachedValue) ??
-				(await initialValue(abortController.signal))
-			);
-		}
-
-		return (await cachedValue) ?? initialValue;
-	};
-
 	const crdt = shallowReactive<{
 		data: Data | null;
 		versions: Data[] | null;
@@ -120,14 +105,29 @@ export const useQwery = <
 			},
 		});
 
-		const initialValue = await computeInitialValue();
+		const computeInitialValue = async () => {
+			const cachedValue = queryKey
+				? context?.getCachedValue?.(queryKey)
+				: null;
 
-		if (!initialValue) {
+			if (initialValue instanceof Function) {
+				return (
+					(await cachedValue) ??
+					(await initialValue(abortController.signal))
+				);
+			}
+
+			return (await cachedValue) ?? initialValue;
+		};
+
+		const computedInitialValue = await computeInitialValue();
+
+		if (!computedInitialValue) {
 			return;
 		}
 
 		const crdt = createCRDT({
-			initialValue,
+			initialValue: computedInitialValue,
 			onChange: proxiedOnChange,
 			onSuccess: proxiedOnSuccess,
 			onError: onError,
@@ -144,6 +144,8 @@ export const useQwery = <
 					args[0],
 					subscribeOptions,
 				]);
+
+				updateCRDT(crdt);
 
 				return result;
 			},
@@ -244,10 +246,17 @@ export const useQwery = <
 
 	useRememberScroll();
 
+	const computeInitialValueTest = () => {
+		if (typeof initialValue !== "function") {
+			return initialValue;
+		}
+	};
+
 	if (suspense) {
 		return initializedCRDT.then(result => ({
 			data: computed(
-				() => crdt.data ?? result?.crdt.data ?? computeInitialValue(),
+				() =>
+					crdt.data ?? result?.crdt.data ?? computeInitialValueTest(),
 			),
 			dispatch: computed(
 				() => crdt.dispatch ?? result?.crdt.dispatch ?? noOpFunction,
@@ -258,7 +267,7 @@ export const useQwery = <
 	}
 
 	return {
-		data: computed(() => crdt.data ?? computeInitialValue()),
+		data: computed(() => crdt.data ?? computeInitialValueTest()),
 		dispatch: computed(() => crdt.dispatch ?? noOpFunction),
 		versions: computed(() => crdt.versions),
 		refetch: refetch ?? noOpFunction,
