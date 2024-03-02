@@ -1,15 +1,21 @@
 import React from "react";
-import { type CRDT, createCRDT } from "@b.s/incremental";
+import { createCRDT } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
+import type { UseQweryOptions, UseQweryReturnWithSuspense } from "./types";
 
 export const useQwery = <
-	D extends Record<string | number | symbol, any> =
+	I extends
 		| Record<string | number | symbol, any>
-		| Array<any>,
+		| Array<any>
+		| ((
+				signal: AbortSignal,
+		  ) => Promise<Record<string | number | symbol, any> | Array<any>>),
+	S extends boolean | undefined = false,
 >({
 	queryKey,
 	initialValue,
+	refetch,
 	onChange,
 	onSuccess = noOpFunction,
 	onError = noOpFunction,
@@ -18,12 +24,10 @@ export const useQwery = <
 	refetchOnWindowFocus = false,
 	broadcast = false,
 	suspense = false,
-}: any) => {
+}: UseQweryOptions<I, S>): UseQweryReturnWithSuspense<I, S> => {
 	const [renderCount, setRenderCount] = React.useState(0);
 	const context = React.useContext(QweryContext);
-	const crdtRef = React.useRef<
-		null | undefined | CRDT<D> | Promise<CRDT<D> | undefined>
-	>(null);
+	const crdtRef = React.useRef<any>(null);
 	const abortControllerRef = React.useRef(new AbortController());
 	const id = React.useId();
 
@@ -90,14 +94,17 @@ export const useQwery = <
 				: null;
 
 			if (initialValue instanceof Function) {
-				return (await cachedValue) ?? (await initialValue());
+				return (
+					(await cachedValue) ??
+					(await initialValue(abortControllerRef.current.signal))
+				);
 			}
 
 			return (await cachedValue) ?? initialValue;
 		};
 
 		const initializeCRDT = async () => {
-			const initialValue = (await computeInitialValue()) as D;
+			const initialValue = await computeInitialValue();
 
 			if (!initialValue) {
 				return;
@@ -105,9 +112,9 @@ export const useQwery = <
 
 			const crdt = createCRDT({
 				initialValue,
-				onChange: proxiedOnChange,
-				onSuccess: proxiedOnSuccess,
-				onError: onError,
+				onChange: proxiedOnChange as any,
+				onSuccess: proxiedOnSuccess as any,
+				onError: onError as any,
 				trackVersions: debug,
 			});
 
@@ -128,7 +135,7 @@ export const useQwery = <
 				},
 			});
 
-			const unsubscribe = subscribe?.(proxiedDispatch);
+			const unsubscribe = subscribe?.(proxiedDispatch as any);
 
 			if (!suspense) {
 				setRenderCount(renderCount => renderCount + 1);
@@ -182,8 +189,8 @@ export const useQwery = <
 				},
 			});
 
-			await initialValue({
-				dispatch: proxiedDispatch,
+			await refetch?.({
+				dispatch: proxiedDispatch as any,
 				signal: abortControllerRef.current.signal,
 			});
 		};
@@ -206,7 +213,7 @@ export const useQwery = <
 		const channel = createBroadcastChannel();
 
 		const onBroadcast = async (
-			event: MessageEvent<{ id: string; next: D }>,
+			event: MessageEvent<{ id: string; next: any }>,
 		) => {
 			const crdt = await crdtRef.current;
 
@@ -243,12 +250,13 @@ export const useQwery = <
 		})) as any;
 	}
 
-	const crdt = crdtRef.current as CRDT<D> | undefined;
+	const crdt = crdtRef.current;
 
 	return {
 		data: crdt?.data ?? computeInitialValue(),
 		dispatch: crdt?.dispatch ?? noOpFunction,
 		versions: crdt?.versions,
+		refetch: refetch ?? noOpFunction,
 	} as any;
 };
 
