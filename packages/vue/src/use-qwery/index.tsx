@@ -262,7 +262,6 @@ export const useQwery = <
 				() => crdt.dispatch ?? result?.crdt.dispatch ?? noOpFunction,
 			),
 			versions: computed(() => crdt.versions ?? result?.crdt.versions),
-			refetch: refetch ?? noOpFunction,
 		})) as any;
 	}
 
@@ -270,7 +269,6 @@ export const useQwery = <
 		data: computed(() => crdt.data ?? computeInitialValueTest()),
 		dispatch: computed(() => crdt.dispatch ?? noOpFunction),
 		versions: computed(() => crdt.versions),
-		refetch: refetch ?? noOpFunction,
 	} as any;
 };
 
