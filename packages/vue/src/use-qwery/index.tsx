@@ -258,16 +258,18 @@ export const useQwery = <
 				() =>
 					crdt.data ?? result?.crdt.data ?? computeInitialValueTest(),
 			),
-			dispatch: computed(
-				() => crdt.dispatch ?? result?.crdt.dispatch ?? noOpFunction,
-			),
+			get dispatch() {
+				return crdt.dispatch ?? result?.crdt.dispatch ?? noOpFunction;
+			},
 			versions: computed(() => crdt.versions ?? result?.crdt.versions),
 		})) as any;
 	}
 
 	return {
 		data: computed(() => crdt.data ?? computeInitialValueTest()),
-		dispatch: computed(() => crdt.dispatch ?? noOpFunction),
+		get dispatch() {
+			return crdt.dispatch ?? noOpFunction;
+		},
 		versions: computed(() => crdt.versions),
 	} as any;
 };
