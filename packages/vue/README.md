@@ -4,7 +4,7 @@
 
 Asynchronous state management in Vue made simple.
 
-Most of the use cases of [Vue Query](https://tanstack.com/query/latest/) are covered with a similar API, Vue Query comes in at ~2 MB while Vue Qwery comes in at ~220 kB.
+Most of the use cases of [Vue Query](https://tanstack.com/query/latest/) are covered with a similar API, Vue Query comes in at ~2 MB while Vue Qwery comes in at ~100 kB.
 
 ## Features
 
@@ -47,6 +47,7 @@ const { data, dispatch } = useQwery({
 const { data, dispatch } = useQwery({
 	queryKey: "test-data", // Anything with a `toString` method is supported
 	onChange: onChangeData,
+	broadcast: true, // Query key must be set to enable broadcasting updates between tabs
 });
 
 // or (Suspense)
