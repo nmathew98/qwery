@@ -223,7 +223,7 @@ describe("useQwery csr", () => {
 
 				watch(test.data, next => {
 					if (next?.a !== 2) {
-						test.dispatch.value(previousValue => {
+						test.dispatch(previousValue => {
 							previousValue.a = 2;
 						});
 					}
@@ -265,7 +265,7 @@ describe("useQwery csr", () => {
 
 				watch(test.data, next => {
 					if (next?.a !== 2) {
-						test.dispatch.value(previousValue => {
+						test.dispatch(previousValue => {
 							previousValue.a = 2;
 						});
 					}

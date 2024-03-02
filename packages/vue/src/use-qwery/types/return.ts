@@ -12,7 +12,7 @@ export interface UseQweryReturn<
 > {
 	data: ComputedRef<DInferred | undefined>;
 	versions: ComputedRef<DInferred[] | undefined>;
-	dispatch: ComputedRef<Dispatch<DInferred>>;
+	dispatch: Dispatch<DInferred>;
 }
 
 export type UseQweryReturnWithSuspense<
