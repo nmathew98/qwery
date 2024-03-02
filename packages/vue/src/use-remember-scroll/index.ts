@@ -3,8 +3,10 @@ import {
 	ExecutionEnvironment,
 	useExecutionEnvironment,
 } from "../use-execution-environment";
+import { useId } from "../use-id/use-id";
 
 export const useRememberScroll = () => {
+	const id = useId();
 	const { executionEnvironment } = useExecutionEnvironment();
 
 	if (executionEnvironment !== ExecutionEnvironment.Browser) {
@@ -15,7 +17,7 @@ export const useRememberScroll = () => {
 		const currentPath = window.location.pathname;
 
 		sessionStorage.setItem(
-			currentPath,
+			`${id}.${currentPath}`,
 			JSON.stringify({
 				scrollX: window.scrollX,
 				scrollY: window.scrollY,
@@ -26,8 +28,10 @@ export const useRememberScroll = () => {
 	onMounted(() => {
 		const currentPath = window.location.pathname;
 
-		const savedScroll = sessionStorage.getItem(currentPath)
-			? JSON.parse(sessionStorage.getItem(currentPath) as string)
+		const savedScroll = sessionStorage.getItem(`${id}.${currentPath}`)
+			? JSON.parse(
+					sessionStorage.getItem(`${id}.${currentPath}`) as string,
+				)
 			: null;
 
 		if (!savedScroll) {
