@@ -9,7 +9,7 @@ export interface BaseUseQweryUntaggedOptions<
 	queryKey?: never;
 	debug?: boolean;
 	refetchOnWindowFocus?: never | false;
-	refetch?: never | any;
+	refetch?: never;
 	broadcast?: never | false;
 	suspense?: S;
 }
@@ -21,7 +21,7 @@ export interface BaseUseQweryRefetchUntaggedOptions<
 	initialValue: any;
 	queryKey?: never;
 	debug?: boolean;
-	refetchOnWindowFocus?: true;
+	refetchOnWindowFocus: true;
 	refetch: RefetchQueryFn<DInferred>;
 	broadcast?: never | false;
 	suspense?: S;
@@ -34,7 +34,7 @@ export interface BaseUseQweryTaggedOptions<
 	queryKey: Serializable;
 	debug?: boolean;
 	refetchOnWindowFocus?: never | false;
-	refetch?: never | any;
+	refetch?: never;
 	broadcast?: boolean | true;
 	suspense?: S;
 }
@@ -43,12 +43,12 @@ export interface BaseUseQweryRefetchTaggedOptions<
 	S extends boolean | undefined = false,
 	DInferred extends Data = Data,
 > {
-	initialValue: any;
-	queryKey?: Serializable;
+	initialValue?: any;
+	queryKey: Serializable;
 	debug?: boolean;
-	refetchOnWindowFocus?: true;
+	refetchOnWindowFocus: true;
 	refetch: RefetchQueryFn<DInferred>;
-	broadcast?: never | false;
+	broadcast?: boolean | true;
 	suspense?: S;
 }
 
