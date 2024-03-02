@@ -10,7 +10,7 @@ export interface BaseUseQweryUntaggedOptions<
 	debug?: boolean;
 	refetchOnWindowFocus?: never | false;
 	refetch?: never;
-	broadcast?: never;
+	broadcast?: never | false;
 	suspense?: S;
 }
 
@@ -22,7 +22,7 @@ export interface BaseUseQweryTaggedOptions<
 	debug?: boolean;
 	refetchOnWindowFocus?: never | false;
 	refetch?: never;
-	broadcast?: boolean;
+	broadcast?: boolean | true;
 	suspense?: S;
 }
 
@@ -34,7 +34,7 @@ export interface BaseUseQweryRefetchUntaggedOptions<
 	debug?: boolean;
 	refetchOnWindowFocus?: never | false;
 	refetch?: never;
-	broadcast?: never;
+	broadcast?: never | false;
 	suspense?: S;
 }
 
@@ -47,7 +47,7 @@ export interface BaseUseQweryRefetchTaggedOptions<
 	debug?: boolean;
 	refetchOnWindowFocus?: true;
 	refetch: RefetchQueryFn<DInferred>;
-	broadcast?: never;
+	broadcast?: never | false;
 	suspense?: S;
 }
 
