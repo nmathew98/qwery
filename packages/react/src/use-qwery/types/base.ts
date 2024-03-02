@@ -16,18 +16,19 @@ export interface BaseUseQweryUntaggedOptions<
 export interface BaseUseQweryTaggedOptions<
 	S extends boolean | undefined = false,
 > {
-	queryKey: Serializable;
 	initialValue?: any;
-	broadcast?: boolean;
+	queryKey: Serializable;
 	debug?: boolean;
 	refetchOnWindowFocus?: never | false;
 	refetch?: never;
+	broadcast?: boolean;
 	suspense?: S;
 }
 
 export interface BaseUseQweryRefetchUntaggedOptions<
 	S extends boolean | undefined = false,
 > {
+	initialValue: any;
 	queryKey?: never;
 	debug?: boolean;
 	refetchOnWindowFocus?: never | false;
@@ -42,6 +43,7 @@ export interface BaseUseQweryRefetchTaggedOptions<
 		| Record<string | number | symbol, any>
 		| Array<any>,
 > {
+	initialValue: any;
 	queryKey?: Serializable;
 	debug?: boolean;
 	refetchOnWindowFocus?: true;
