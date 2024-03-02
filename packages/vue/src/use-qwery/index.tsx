@@ -109,7 +109,6 @@ export const useQwery = <
 					context?.makeOnChange?.(queryKey)(args[0]);
 				}
 
-				// TODO
 				initializedCRDT.then(result => {
 					if (!result?.crdt) {
 						return;
@@ -201,7 +200,6 @@ export const useQwery = <
 					refetchOptions,
 				]);
 
-				// TODO
 				updateCRDT(crdt);
 
 				return result;
@@ -246,10 +244,10 @@ export const useQwery = <
 	useRememberScroll();
 
 	if (suspense) {
-		return initializedCRDT.then(() => ({
-			data: crdt.data ?? computeInitialValue(),
-			dispatch: crdt.dispatch ?? noOpFunction,
-			versions: crdt.versions,
+		return initializedCRDT.then(result => ({
+			data: crdt.data ?? result?.crdt.data ?? computeInitialValue(),
+			dispatch: crdt.dispatch ?? result?.crdt.dispatch ?? noOpFunction,
+			versions: crdt.versions ?? result?.crdt.versions,
 			refetch: refetch ?? noOpFunction,
 		})) as any;
 	}
