@@ -9,14 +9,16 @@ import { createNoOpCache } from "./no-op-cache";
 
 export const QweryContext = Symbol("QweryContext");
 
-export const provideQweryContext = ({ store }: QweryProviderProps) => {
+export const provideQweryContext = (
+	{ store }: QweryProviderProps = Object.create(null),
+) => {
 	const { executionEnvironment } = useExecutionEnvironment();
 
 	if (executionEnvironment === ExecutionEnvironment.Server && !store) {
 		return provide(QweryContext, createCacheProvider(createNoOpCache()));
 	}
 
-	return provide(QweryContext, store);
+	return provide(QweryContext, createCacheProvider(store));
 };
 
 export const useQweryContext = () => {

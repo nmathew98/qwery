@@ -1,5 +1,6 @@
 import type { Dispatch } from "@b.s/incremental";
 import type { Data, InitialValue } from "./options";
+import type { ComputedRef } from "vue";
 
 export interface UseQweryReturn<
 	I extends InitialValue,
@@ -9,9 +10,9 @@ export interface UseQweryReturn<
 		? DInferred
 		: I,
 > {
-	data?: DInferred;
-	versions?: DInferred[];
-	dispatch: Dispatch<DInferred>;
+	data: ComputedRef<DInferred | undefined>;
+	versions: ComputedRef<DInferred[] | undefined>;
+	dispatch: ComputedRef<Dispatch<DInferred>>;
 }
 
 export type UseQweryReturnWithSuspense<

@@ -1,24 +1,68 @@
-import { describe, it, afterEach } from "vitest";
-import { render, fireEvent, screen, cleanup } from "@testing-library/vue";
-import Component from "./components/csr/Example.vue";
+import { describe, it, afterEach, expect } from "vitest";
+import { render, screen, cleanup, waitFor } from "@testing-library/vue";
+import CachesQueries from "./components/csr/CachesQueries.vue";
+import { QweryContext } from "../context";
+import { createCacheProvider } from "@b.s/incremental";
+import { createRedisCache } from "./redis";
 
 describe("useQwery csr", () => {
 	afterEach(cleanup);
 
-	it("increments value on click", async () => {
-		render(Component);
+	it("caches queries", async () => {
+		const QUERY_KEY = "test";
+		const CACHED_RECORD = {
+			a: 1,
+			b: 1,
+			c: 1,
+		};
 
-		// screen has all queries that you can use in your tests.
-		// getByText returns the first matching node for the provided text, and
-		// throws an error if no elements match or if more than one match is found.
-		screen.getByText("Times clicked: 0");
+		const CACHE = createCacheProvider();
+		CACHE.setCachedValue(QUERY_KEY)(CACHED_RECORD);
 
-		const button = screen.getByText("increment");
+		render(CachesQueries, {
+			global: {
+				provide: {
+					[QweryContext]: CACHE,
+				},
+			},
+			props: {
+				queryKey: QUERY_KEY,
+			},
+		});
 
-		// Dispatch a native click event to our button element.
-		await fireEvent.click(button);
-		await fireEvent.click(button);
+		await waitFor(() => {
+			expect(screen.getByText(`a: ${CACHED_RECORD.a}`)).toBeTruthy();
+			expect(screen.getByText(`b: ${CACHED_RECORD.b}`)).toBeTruthy();
+			expect(screen.getByText(`c: ${CACHED_RECORD.c}`)).toBeTruthy();
+		});
+	});
 
-		screen.getByText("Times clicked: 2");
+	it("supports async caches", async () => {
+		const QUERY_KEY = "test";
+		const CACHED_RECORD = {
+			a: 1,
+			b: 1,
+			c: 1,
+		};
+
+		const CACHE = createCacheProvider(createRedisCache());
+		CACHE.setCachedValue(QUERY_KEY)(CACHED_RECORD);
+
+		render(CachesQueries, {
+			global: {
+				provide: {
+					[QweryContext]: CACHE,
+				},
+			},
+			props: {
+				queryKey: QUERY_KEY,
+			},
+		});
+
+		await waitFor(() => {
+			expect(screen.getByText(`a: ${CACHED_RECORD.a}`)).toBeTruthy();
+			expect(screen.getByText(`b: ${CACHED_RECORD.b}`)).toBeTruthy();
+			expect(screen.getByText(`c: ${CACHED_RECORD.c}`)).toBeTruthy();
+		});
 	});
 });
