@@ -1,3 +1,4 @@
+import { defineComponent, watch } from "vue";
 import { describe, it, afterEach, expect, vitest } from "vitest";
 import {
 	render,
@@ -7,14 +8,10 @@ import {
 	fireEvent,
 } from "@testing-library/vue";
 import { QweryContext } from "../context";
-import { createCacheProvider } from "@b.s/incremental";
+import { createCacheProvider, makeMonitoredFetch } from "@b.s/incremental";
 import { createRedisCache } from "./redis";
 import { createApi } from "./api";
-import CachesQueries from "./components/csr/CachedQueries.vue";
-import Subscriptions from "./components/csr/Subscriptions.vue";
-import ConditionalQueries from "./components/csr/ConditionalQueries.vue";
-import RefetchWindowFocus from "./components/csr/RefetchWindowFocus.vue";
-import QueryDispatch from "./components/csr/QueryDispatch.vue";
+import { useQwery } from "../use-qwery";
 
 describe("useQwery csr", () => {
 	afterEach(cleanup);
@@ -30,14 +27,27 @@ describe("useQwery csr", () => {
 		const CACHE = createCacheProvider();
 		CACHE.setCachedValue(QUERY_KEY)(CACHED_RECORD);
 
-		render(CachesQueries, {
+		const Component = defineComponent({
+			template: `
+				<div>a: {{ test.data.value?.a }}</div>
+				<div>b: {{ test.data.value?.b }}</div>
+				<div>c: {{ test.data.value?.c }}</div>
+			`,
+			setup: () => {
+				const test = useQwery<{ a: number; b: number; c: number }>({
+					queryKey: QUERY_KEY,
+					onChange: vitest.fn(),
+				});
+
+				return { test };
+			},
+		});
+
+		render(Component, {
 			global: {
 				provide: {
 					[QweryContext]: CACHE,
 				},
-			},
-			props: {
-				queryKey: QUERY_KEY,
 			},
 		});
 
@@ -59,14 +69,27 @@ describe("useQwery csr", () => {
 		const CACHE = createCacheProvider(createRedisCache());
 		CACHE.setCachedValue(QUERY_KEY)(CACHED_RECORD);
 
-		render(CachesQueries, {
+		const Component = defineComponent({
+			template: `
+				<div>a: {{ test.data.value?.a }}</div>
+				<div>b: {{ test.data.value?.b }}</div>
+				<div>c: {{ test.data.value?.c }}</div>
+			`,
+			setup: () => {
+				const test = useQwery<{ a: number; b: number; c: number }>({
+					queryKey: QUERY_KEY,
+					onChange: vitest.fn(),
+				});
+
+				return { test };
+			},
+		});
+
+		render(Component, {
 			global: {
 				provide: {
 					[QweryContext]: CACHE,
 				},
-			},
-			props: {
-				queryKey: QUERY_KEY,
 			},
 		});
 
@@ -78,7 +101,26 @@ describe("useQwery csr", () => {
 	});
 
 	it("supports subscriptions", async () => {
-		render(Subscriptions);
+		const Component = defineComponent({
+			template: `
+				<div>a: {{ test.data.value?.a }}</div>
+				<div>b: {{ test.data.value?.b }}</div>
+				<div>c: {{ test.data.value?.c }}</div>
+			`,
+			setup: () => {
+				const api = createApi();
+
+				const test = useQwery({
+					initialValue: api.get,
+					onChange: vitest.fn(),
+					subscribe: api.subscribe,
+				});
+
+				return { test };
+			},
+		});
+
+		render(Component);
 
 		await waitFor(() => {
 			expect(screen.getByText("a: 9")).toBeTruthy();
@@ -88,7 +130,28 @@ describe("useQwery csr", () => {
 	});
 
 	it("supports conditional queries", async () => {
-		render(ConditionalQueries);
+		const Component = defineComponent({
+			template: `
+				<div>a: {{ test.data.value?.a }}</div>
+				<div>b: {{ test.data.value?.b }}</div>
+				<div>c: {{ test.data.value?.c }}</div>
+			`,
+			setup: () => {
+				const api = createApi();
+				const test = useQwery({
+					initialValue: makeMonitoredFetch({
+						fetchFn: api.get,
+						enabled: false,
+					}),
+					onChange: vitest.fn(),
+					subscribe: api.subscribe,
+				});
+
+				return { test };
+			},
+		});
+
+		render(Component);
 
 		await waitFor(() => {
 			expect(() => screen.getByText("a: 1")).toThrowError();
@@ -104,11 +167,29 @@ describe("useQwery csr", () => {
 			.fn()
 			.mockImplementation(API.get);
 
-		render(RefetchWindowFocus, {
-			props: {
-				getInitialValue,
+		const Component = defineComponent({
+			template: `
+				<div>a: {{ test.data.value?.a }}</div>
+				<div>b: {{ test.data.value?.b }}</div>
+				<div>c: {{ test.data.value?.c }}</div>
+			`,
+			setup: () => {
+				const test = useQwery<{ a: number; b: number; c: number }>({
+					initialValue: getInitialValue,
+					onChange: vitest.fn(),
+					refetchOnWindowFocus: true,
+					refetch: async ({ dispatch, signal: _signal }) => {
+						const result = await getInitialValue();
+
+						dispatch(result);
+					},
+				});
+
+				return { test };
 			},
 		});
+
+		render(Component);
 
 		fireEvent.focus(window);
 
@@ -124,13 +205,35 @@ describe("useQwery csr", () => {
 		const onSuccess = vitest.fn();
 		const onError = vitest.fn();
 
-		render(QueryDispatch, {
-			props: {
-				onChange,
-				onSuccess,
-				onError,
+		const Component = defineComponent({
+			template: `
+				<div>a: {{ test.data.value?.a }}</div>
+				<div>b: {{ test.data.value?.b }}</div>
+				<div>c: {{ test.data?.value?.c }}</div>
+			`,
+			setup: () => {
+				const api = createApi();
+
+				const test = useQwery({
+					initialValue: api.get,
+					onChange,
+					onSuccess,
+					onError,
+				});
+
+				watch(test.data, next => {
+					if (next?.a !== 2) {
+						test.dispatch.value(previousValue => {
+							previousValue.a = 2;
+						});
+					}
+				});
+
+				return { test };
 			},
 		});
+
+		render(Component);
 
 		await waitFor(() => {
 			expect(screen.getByText("a: 2")).toBeTruthy();
@@ -144,13 +247,35 @@ describe("useQwery csr", () => {
 		const onSuccess = vitest.fn();
 		const onError = vitest.fn();
 
-		render(QueryDispatch, {
-			props: {
-				onChange,
-				onSuccess,
-				onError,
+		const Component = defineComponent({
+			template: `
+				<div>a: {{ test.data.value?.a }}</div>
+				<div>b: {{ test.data.value?.b }}</div>
+				<div>c: {{ test.data?.value?.c }}</div>
+			`,
+			setup: () => {
+				const api = createApi();
+
+				const test = useQwery({
+					initialValue: api.get,
+					onChange,
+					onSuccess,
+					onError,
+				});
+
+				watch(test.data, next => {
+					if (next?.a !== 2) {
+						test.dispatch.value(previousValue => {
+							previousValue.a = 2;
+						});
+					}
+				});
+
+				return { test };
 			},
 		});
+
+		render(Component);
 
 		await waitFor(() => {
 			expect(screen.getByText("a: 1")).toBeTruthy();
