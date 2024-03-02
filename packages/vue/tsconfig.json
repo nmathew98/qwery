@@ -21,7 +21,7 @@
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitAny": false
 	},
-	"include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
+	"include": ["src"],
 	"exclude": ["src/e2e"],
 	"references": [{ "path": "./tsconfig.node.json" }]
 }
