@@ -47,6 +47,7 @@ const { data, dispatch } = useQwery({
 const { data, dispatch } = useQwery({
 	queryKey: "test-data", // Anything with a `toString` method is supported
 	onChange: onChangeData,
+	broadcast: true, // Query key must be set to enable broadcasting updates between tabs
 });
 
 // or (Suspense)
