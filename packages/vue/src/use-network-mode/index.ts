@@ -18,9 +18,9 @@ export const useNetworkMode = ({
 		isConnected.value = false;
 	};
 
-	onMounted(() => {
-		fetch(ping).then(isOnline).catch(isOffline);
+	fetch(ping).then(isOnline).catch(isOffline);
 
+	onMounted(() => {
 		window.addEventListener("online", isOnline);
 		window.addEventListener("offline", isOffline);
 	});
