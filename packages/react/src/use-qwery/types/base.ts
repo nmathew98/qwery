@@ -5,36 +5,37 @@ import type { Data } from "./options";
 export interface BaseUseQweryUntaggedOptions<
 	S extends boolean | undefined = false,
 > {
-	initialValue: any;
+	initialValue: unknown;
 	queryKey?: never;
 	debug?: boolean;
 	refetchOnWindowFocus?: never | false;
-	refetch?: never;
-	broadcast?: never;
+	refetch?: never | unknown;
+	broadcast?: never | false;
+	suspense?: S;
+}
+
+export interface BaseUseQweryRefetchUntaggedOptions<
+	S extends boolean | undefined = false,
+	DInferred extends Data = Data,
+> {
+	initialValue: unknown;
+	queryKey?: never;
+	debug?: boolean;
+	refetchOnWindowFocus?: true;
+	refetch: RefetchQueryFn<DInferred>;
+	broadcast?: never | false;
 	suspense?: S;
 }
 
 export interface BaseUseQweryTaggedOptions<
 	S extends boolean | undefined = false,
 > {
-	initialValue?: any;
+	initialValue?: unknown;
 	queryKey: Serializable;
 	debug?: boolean;
 	refetchOnWindowFocus?: never | false;
-	refetch?: never;
-	broadcast?: boolean;
-	suspense?: S;
-}
-
-export interface BaseUseQweryRefetchUntaggedOptions<
-	S extends boolean | undefined = false,
-> {
-	initialValue: any;
-	queryKey?: never;
-	debug?: boolean;
-	refetchOnWindowFocus?: never | false;
-	refetch?: never;
-	broadcast?: never;
+	refetch?: never | unknown;
+	broadcast?: boolean | true;
 	suspense?: S;
 }
 
@@ -42,12 +43,12 @@ export interface BaseUseQweryRefetchTaggedOptions<
 	S extends boolean | undefined = false,
 	DInferred extends Data = Data,
 > {
-	initialValue: any;
+	initialValue: unknown;
 	queryKey?: Serializable;
 	debug?: boolean;
 	refetchOnWindowFocus?: true;
 	refetch: RefetchQueryFn<DInferred>;
-	broadcast?: never;
+	broadcast?: never | false;
 	suspense?: S;
 }
 
@@ -57,5 +58,5 @@ export type BaseUseQweryOptions<
 > =
 	| BaseUseQweryUntaggedOptions<S>
 	| BaseUseQweryTaggedOptions<S>
-	| BaseUseQweryRefetchUntaggedOptions<S>
+	| BaseUseQweryRefetchUntaggedOptions<S, DInferred>
 	| BaseUseQweryRefetchTaggedOptions<S, DInferred>;
