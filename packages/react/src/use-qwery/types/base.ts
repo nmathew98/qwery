@@ -5,7 +5,7 @@ import type { Data } from "./options";
 export interface BaseUseQweryUntaggedOptions<
 	S extends boolean | undefined = false,
 > {
-	initialValue: any;
+	initialValue: unknown;
 	queryKey?: never;
 	debug?: boolean;
 	refetchOnWindowFocus?: never | false;
@@ -18,7 +18,7 @@ export interface BaseUseQweryRefetchUntaggedOptions<
 	S extends boolean | undefined = false,
 	DInferred extends Data = Data,
 > {
-	initialValue: any;
+	initialValue: unknown;
 	queryKey?: never;
 	debug?: boolean;
 	refetchOnWindowFocus?: true;
@@ -30,7 +30,7 @@ export interface BaseUseQweryRefetchUntaggedOptions<
 export interface BaseUseQweryTaggedOptions<
 	S extends boolean | undefined = false,
 > {
-	initialValue?: any;
+	initialValue?: unknown;
 	queryKey: Serializable;
 	debug?: boolean;
 	refetchOnWindowFocus?: never | false;
@@ -43,7 +43,7 @@ export interface BaseUseQweryRefetchTaggedOptions<
 	S extends boolean | undefined = false,
 	DInferred extends Data = Data,
 > {
-	initialValue: any;
+	initialValue: unknown;
 	queryKey?: Serializable;
 	debug?: boolean;
 	refetchOnWindowFocus?: true;
