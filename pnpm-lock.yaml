@@ -97,9 +97,6 @@ importers:
       '@rushstack/eslint-patch':
         specifier: ^1.3.3
         version: 1.7.2
-      '@tsconfig/node20':
-        specifier: ^20.1.2
-        version: 20.1.2
       '@types/jsdom':
         specifier: ^21.1.6
         version: 21.1.6
@@ -1381,10 +1378,6 @@ packages:
   /@tootallnate/once@2.0.0:
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
     engines: {node: '>= 10'}
-    dev: true
-
-  /@tsconfig/node20@20.1.2:
-    resolution: {integrity: sha512-madaWq2k+LYMEhmcp0fs+OGaLFk0OenpHa4gmI4VEmCKX4PJntQ6fnnGADVFrVkBj0wIdAlQnK/MrlYTHsa1gQ==}
     dev: true
 
   /@tufjs/canonical-json@1.0.0:
