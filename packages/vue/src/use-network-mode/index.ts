@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted, onUpdated, ref } from "vue";
+import { computed, onMounted, onUnmounted, onUpdated, ref } from "vue";
 
 export enum NetworkMode {
 	Offline = 0,
@@ -33,9 +33,9 @@ export const useNetworkMode = ({
 	});
 
 	return {
-		connectionStatus: isConnected
-			? NetworkMode.Online
-			: NetworkMode.Offline,
+		connectionStatus: computed(() =>
+			isConnected.value ? NetworkMode.Online : NetworkMode.Offline,
+		),
 		isOnline,
 		isOffline,
 	};
