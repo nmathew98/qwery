@@ -43,7 +43,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build",
-		"clean": "rm -rf dist",
+		"clean": "rm *.tgz && rm -rf dist",
 		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
 		"format": "prettier .  --write",
 		"preview": "vite preview",
