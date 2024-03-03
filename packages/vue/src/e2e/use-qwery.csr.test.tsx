@@ -174,7 +174,7 @@ describe("useQwery csr", () => {
 				<div>c: {{ test.data.value?.c }}</div>
 			`,
 			setup: () => {
-				const test = useQwery<{ a: number; b: number; c: number }>({
+				const test = useQwery({
 					initialValue: getInitialValue,
 					onChange: vitest.fn(),
 					refetchOnWindowFocus: true,
