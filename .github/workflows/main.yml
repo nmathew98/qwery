@@ -37,4 +37,4 @@ jobs:
               run: pnpm install
 
             - name: Lint, test & build
-              run: pnpx lerna run lint,test,build
+              run: pnpm lerna run lint,test,build
