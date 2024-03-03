@@ -206,6 +206,10 @@ export const useQwery = <
 					refetchOptions,
 				]);
 
+				if (queryKey) {
+					context?.setCachedValue?.(queryKey)(args[0]);
+				}
+
 				updateCRDT(crdt);
 
 				return result;
