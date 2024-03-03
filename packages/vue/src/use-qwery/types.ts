@@ -17,11 +17,6 @@ export type UseQweryReturn<
 > &
 	Pick<SharedUseQweryReturn<I, DInferred>, "dispatch">;
 
-export type UseQweryReturnWithSuspense<
-	I extends InitialValue,
-	S extends boolean | undefined,
-> = S extends true ? Promise<UseQweryReturn<I>> : UseQweryReturn<I>;
-
 type Computed<T> = {
 	[K in keyof T]: ComputedRef<T[K]>;
 };

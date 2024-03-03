@@ -2,8 +2,13 @@ import { computed, onMounted, onUnmounted, shallowReactive } from "vue";
 import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
-import type { Data, InitialValue, UseQweryOptions } from "@b.s/qwery-shared";
-import type { UseQweryReturnWithSuspense } from "./types";
+import type {
+	Data,
+	InitialValue,
+	UseQweryOptions,
+	MaybePromise,
+} from "@b.s/qwery-shared";
+import type { UseQweryReturn } from "./types";
 
 export const useQwery = <
 	I extends InitialValue,
@@ -20,7 +25,7 @@ export const useQwery = <
 	refetchOnWindowFocus = false,
 	broadcast = false,
 	suspense = false,
-}: UseQweryOptions<I, S>): UseQweryReturnWithSuspense<I, S> => {
+}: UseQweryOptions<I, S>): MaybePromise<S, UseQweryReturn<I>> => {
 	const context = useQweryContext();
 
 	const id = Math.random().toString(36).substring(2);

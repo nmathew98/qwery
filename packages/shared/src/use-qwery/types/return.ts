@@ -14,7 +14,6 @@ export interface UseQweryReturn<
 	dispatch: Dispatch<DInferred>;
 }
 
-export type UseQweryReturnWithSuspense<
-	I extends InitialValue,
-	S extends boolean | undefined,
-> = S extends true ? Promise<UseQweryReturn<I>> : UseQweryReturn<I>;
+export type MaybePromise<S extends boolean | undefined, R> = S extends true
+	? Promise<R>
+	: R;
