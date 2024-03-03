@@ -1,24 +1,24 @@
 {
-	"name": "@b.s/react-qwery",
+	"name": "@b.s/svelte-qwery",
 	"version": "1.4.4",
 	"type": "module",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/nmathew98/qwery"
 	},
-	"main": "./dist/react-qwery.umd.cjs",
-	"module": "./dist/react-qwery.js",
+	"main": "./dist/svelte-qwery.umd.cjs",
+	"module": "./dist/svelte-qwery.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
-		"import": "./dist/react-qwery.js",
-		"require": "./dist/react-qwery.umd.cjs",
+		"import": "./dist/svelte-qwery.js",
+		"require": "./dist/svelte-qwery.umd.cjs",
 		"types": "./dist/index.d.ts"
 	},
-	"description": "Simple composable async state management utilities for React",
+	"description": "Simple composable async state management utilities for Svelte",
 	"license": "MIT",
 	"keywords": [
 		"crdt",
-		"react",
+		"vue",
 		"query",
 		"asynchronous",
 		"state",
@@ -42,7 +42,7 @@
 	],
 	"scripts": {
 		"dev": "vite",
-		"build": "tsc && vite build",
+		"build": "svelte-check --tsconfig ./tsconfig.json && vite build",
 		"clean": "rm -f *.tgz && rm -rf dist",
 		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
 		"format": "prettier .  --write",
@@ -55,26 +55,20 @@
 		"@b.s/incremental": "^2.1.4",
 		"@b.s/txn": "^1.0.4"
 	},
-	"peerDependencies": {
-		"react": "^18.2.0"
-	},
 	"devDependencies": {
 		"@b.s/qwery-shared": "link:../shared",
-		"@testing-library/react": "^14.2.1",
-		"@types/node": "^20.11.20",
-		"@types/react": "^18.2.58",
-		"@types/react-dom": "^18.2.19",
+		"@sveltejs/vite-plugin-svelte": "^3.0.2",
+		"@tsconfig/svelte": "^5.0.2",
 		"@typescript-eslint/eslint-plugin": "^7.0.2",
 		"@typescript-eslint/parser": "^7.0.2",
-		"@vitejs/plugin-react-swc": "^3.5.0",
-		"eslint": "^8.56.0",
+		"eslint": "^8.57.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-prettier": "^5.1.3",
-		"eslint-plugin-react-hooks": "^4.6.0",
-		"eslint-plugin-react-refresh": "^0.4.5",
 		"jsdom": "^24.0.0",
 		"prettier": "^3.2.5",
-		"react-dom": "^18.2.0",
+		"svelte": "^4.2.11",
+		"svelte-check": "^3.6.4",
+		"tslib": "^2.6.2",
 		"typescript": "^5.2.2",
 		"vite": "^5.1.4",
 		"vite-plugin-dts": "^3.7.3",
