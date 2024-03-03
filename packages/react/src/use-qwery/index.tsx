@@ -6,7 +6,8 @@ import type {
 	Data,
 	InitialValue,
 	UseQweryOptions,
-	UseQweryReturnWithSuspense,
+	UseQweryReturn,
+	MaybePromise,
 } from "@b.s/qwery-shared";
 
 export const useQwery = <
@@ -24,7 +25,7 @@ export const useQwery = <
 	refetchOnWindowFocus = false,
 	broadcast = false,
 	suspense = false,
-}: UseQweryOptions<I, S>): UseQweryReturnWithSuspense<I, S> => {
+}: UseQweryOptions<I, S>): MaybePromise<S, UseQweryReturn<I>> => {
 	const [renderCount, setRenderCount] = React.useState(0);
 	const context = React.useContext(QweryContext);
 	const crdtRef = React.useRef<
