@@ -59,7 +59,7 @@
 		"react": "^18.2.0"
 	},
 	"devDependencies": {
-		"@b.s/qwery-shared": "link:/Users/naveenmathew/Developer/skulpture/@b.s/qwery/packages/shared",
+		"@b.s/qwery-shared": "link:../shared",
 		"@testing-library/react": "^14.2.1",
 		"@types/node": "^20.11.20",
 		"@types/react": "^18.2.58",

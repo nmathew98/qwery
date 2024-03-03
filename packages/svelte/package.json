@@ -56,7 +56,7 @@
 		"@b.s/txn": "^1.0.4"
 	},
 	"devDependencies": {
-		"@b.s/qwery-shared": "link:/Users/naveenmathew/Developer/skulpture/@b.s/qwery/packages/shared",
+		"@b.s/qwery-shared": "link:../shared",
 		"@sveltejs/vite-plugin-svelte": "^3.0.2",
 		"@tsconfig/svelte": "^5.0.2",
 		"@typescript-eslint/eslint-plugin": "^7.0.2",
