@@ -6,7 +6,7 @@
 		"type": "git",
 		"url": "https://github.com/nmathew98/qwery"
 	},
-	"main": "./dist/vue-qwery.cjs",
+	"main": "./dist/vue-qwery.umd.cjs",
 	"module": "./dist/vue-qwery.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
