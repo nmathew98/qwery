@@ -103,17 +103,24 @@ export const useQwery = <
 
 		const computeInitialValue = async () => {
 			const cachedValue = queryKey
-				? context?.getCachedValue?.(queryKey)
+				? await context?.getCachedValue?.(queryKey)
 				: null;
 
 			if (initialValue instanceof Function) {
-				return (
-					(await cachedValue) ??
-					(await initialValue(abortController.signal))
-				);
+				if (cachedValue) {
+					return cachedValue;
+				}
+
+				const fetchedValue = await initialValue(abortController.signal);
+
+				if (queryKey) {
+					context?.setCachedValue?.(queryKey);
+				}
+
+				return fetchedValue;
 			}
 
-			return (await cachedValue) ?? initialValue;
+			return cachedValue ?? initialValue;
 		};
 
 		const computedInitialValue = await computeInitialValue();
