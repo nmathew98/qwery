@@ -92,17 +92,26 @@ export const useQwery = <
 	React.useEffect(() => {
 		const computeInitialValue = async () => {
 			const cachedValue = queryKey
-				? context?.getCachedValue?.(queryKey)
+				? await context?.getCachedValue?.(queryKey)
 				: null;
 
 			if (initialValue instanceof Function) {
-				return (
-					(await cachedValue) ??
-					(await initialValue(abortControllerRef.current.signal))
+				if (cachedValue) {
+					return cachedValue;
+				}
+
+				const fetchedValue = await initialValue(
+					abortControllerRef.current.signal,
 				);
+
+				if (queryKey) {
+					context?.setCachedValue?.(queryKey)(fetchedValue);
+				}
+
+				return fetchedValue;
 			}
 
-			return (await cachedValue) ?? initialValue;
+			return cachedValue ?? initialValue;
 		};
 
 		const initializeCRDT = async () => {
