@@ -1,5 +1,6 @@
 {
 	"name": "@b.s/svelte-qwery",
+	"private": true,
 	"version": "1.4.4",
 	"type": "module",
 	"repository": {
