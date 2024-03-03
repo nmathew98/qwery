@@ -6,7 +6,7 @@
 		"type": "git",
 		"url": "https://github.com/nmathew98/qwery"
 	},
-	"main": "./dist/react-qwery.cjs",
+	"main": "./dist/react-qwery.umd.cjs",
 	"module": "./dist/react-qwery.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
