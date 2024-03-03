@@ -194,6 +194,10 @@ export const useQwery = <
 						refetchOptions,
 					]);
 
+					if (queryKey) {
+						context?.setCachedValue?.(queryKey)(args[0]);
+					}
+
 					setRenderCount(renderCount => renderCount + 1);
 
 					return result;
