@@ -53,6 +53,7 @@
 	},
 	"dependencies": {
 		"@b.s/incremental": "^2.1.4",
+		"@b.s/qwery-shared": "link:/Users/naveenmathew/Developer/skulpture/@b.s/qwery/packages/shared",
 		"@b.s/txn": "^1.0.4"
 	},
 	"peerDependencies": {

@@ -7,7 +7,7 @@ import type {
 	InitialValue,
 	UseQweryOptions,
 	UseQweryReturnWithSuspense,
-} from "./types";
+} from "@b.s/qwery-shared";
 
 export const useQwery = <
 	I extends InitialValue,

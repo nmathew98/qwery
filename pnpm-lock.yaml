@@ -17,6 +17,9 @@ importers:
       '@b.s/incremental':
         specifier: ^2.1.4
         version: 2.1.4
+      '@b.s/qwery-shared':
+        specifier: link:/Users/naveenmathew/Developer/skulpture/@b.s/qwery/packages/shared
+        version: link:../shared
       '@b.s/txn':
         specifier: ^1.0.4
         version: 1.0.4
@@ -108,6 +111,9 @@ importers:
       '@b.s/incremental':
         specifier: ^2.1.4
         version: 2.1.4
+      '@b.s/qwery-shared':
+        specifier: link:/Users/naveenmathew/Developer/skulpture/@b.s/qwery/packages/shared
+        version: link:../shared
       '@b.s/txn':
         specifier: ^1.0.4
         version: 1.0.4

@@ -2,6 +2,7 @@
 	"name": "@b.s/qwery-shared",
 	"version": "1.4.2",
 	"private": true,
+	"type": "module",
 	"devDependencies": {
 		"@b.s/incremental": "^2.1.4",
 		"eslint": "^8.56.0",
@@ -10,6 +11,9 @@
 		"prettier": "^3.0.3",
 		"typescript": "~5.3.0"
 	},
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"scripts": {
 		"build": "tsc",
 		"clean": "rm -f *.tgz && rm -rf dist",
