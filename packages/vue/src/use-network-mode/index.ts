@@ -1,13 +1,11 @@
 import { computed, onMounted, onUnmounted, onUpdated, ref } from "vue";
+import { NetworkMode, type UseNetworkModeOptions } from "@b.s/qwery-shared";
 
-export enum NetworkMode {
-	Offline = 0,
-	Online,
-}
+export { NetworkMode, type UseNetworkModeOptions } from "@b.s/qwery-shared";
 
 export const useNetworkMode = ({
 	ping = "https://captive.apple.com/hotspot-detect.html",
-}) => {
+}: UseNetworkModeOptions) => {
 	const isConnected = ref(true);
 
 	const isOnline = () => {

@@ -1,5 +1,8 @@
-import type { Dispatch } from "@b.s/incremental";
-import type { Data, InitialValue } from "./options";
+import type {
+	UseQweryReturn as SharedUseQweryReturn,
+	InitialValue,
+	Data,
+} from "@b.s/qwery-shared";
 import type { ComputedRef } from "vue";
 
 export interface UseQweryReturn<
@@ -9,10 +12,9 @@ export interface UseQweryReturn<
 	>
 		? DInferred
 		: I,
-> {
+> extends Pick<SharedUseQweryReturn<I, DInferred>, "dispatch"> {
 	data: ComputedRef<DInferred | undefined>;
 	versions: ComputedRef<DInferred[] | undefined>;
-	dispatch: Dispatch<DInferred>;
 }
 
 export type UseQweryReturnWithSuspense<

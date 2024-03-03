@@ -1,6 +1,5 @@
 import React from "react";
 import { NetworkMode, UseNetworkModeOptions } from "@b.s/qwery-shared";
-
 export { NetworkMode } from "@b.s/qwery-shared";
 
 export const useNetworkMode = ({
