@@ -194,5 +194,5 @@ export const renderSsr = (ui: React.ReactNode) => {
 	document.body.appendChild(container);
 	container.innerHTML = serverRendered;
 
-	return render(ui, { hydrate: true, container });
+	return void render(ui, { hydrate: true, container });
 };
