@@ -1,13 +1,10 @@
 import React from "react";
-
-export enum NetworkMode {
-	Offline = 0,
-	Online,
-}
+import { NetworkMode, UseNetworkModeOptions } from "@b.s/qwery-shared";
+export { NetworkMode } from "@b.s/qwery-shared";
 
 export const useNetworkMode = ({
 	ping = "https://captive.apple.com/hotspot-detect.html",
-}) => {
+}: UseNetworkModeOptions) => {
 	const [isConnected, setIsConnected] = React.useState(true);
 	const isOnline = () => setIsConnected(true);
 	const isOffline = () => setIsConnected(false);

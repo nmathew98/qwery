@@ -1,8 +1,6 @@
 import { onMounted, onUnmounted } from "vue";
-import {
-	ExecutionEnvironment,
-	useExecutionEnvironment,
-} from "../use-execution-environment";
+import { ExecutionEnvironment } from "@b.s/qwery-shared";
+import { useExecutionEnvironment } from "../use-execution-environment";
 
 export const useRememberScroll = () => {
 	const { executionEnvironment } = useExecutionEnvironment();

@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, vitest, afterEach } from "vitest";
-import { QweryContext, QweryProvider, makeMonitoredFetch, useQwery } from "..";
+import { QweryContext, QweryProvider } from "../context";
+import { useQwery } from "../use-qwery";
 import {
 	render,
 	screen,
@@ -10,6 +11,7 @@ import {
 } from "@testing-library/react";
 import { createApi } from "./api";
 import { createRedisCache } from "./redis";
+import { makeMonitoredFetch } from "@b.s/incremental";
 
 describe("useQwery csr", () => {
 	const BrowserProviders = ({ children }) => (

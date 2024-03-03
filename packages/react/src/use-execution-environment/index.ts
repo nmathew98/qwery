@@ -1,7 +1,6 @@
-export enum ExecutionEnvironment {
-	Browser = 1,
-	Server,
-}
+import { ExecutionEnvironment } from "@b.s/qwery-shared";
+
+export { ExecutionEnvironment } from "@b.s/qwery-shared";
 
 export const useExecutionEnvironment = () => {
 	const isBrowser = Boolean(

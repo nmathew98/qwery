@@ -14,9 +14,10 @@ export {
 	type CacheStore,
 } from "@b.s/incremental";
 
+export * from "@b.s/qwery-shared";
+
 export * from "./context";
 export * from "./context/types";
 export * from "./use-qwery";
-export * from "./use-qwery/types";
 export * from "./use-remember-scroll";
 export * from "./use-execution-environment";
