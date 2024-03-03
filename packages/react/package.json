@@ -1,6 +1,6 @@
 {
 	"name": "@b.s/react-qwery",
-	"version": "1.4.2",
+	"version": "1.4.3",
 	"type": "module",
 	"repository": {
 		"type": "git",
@@ -43,7 +43,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build",
-		"clean": "rm *.tgz && rm -rf dist",
+		"clean": "rm -f *.tgz && rm -rf dist",
 		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
 		"format": "prettier .  --write",
 		"preview": "vite preview",
@@ -53,6 +53,7 @@
 	},
 	"dependencies": {
 		"@b.s/incremental": "^2.1.4",
+		"@b.s/qwery-shared": "link:/Users/naveenmathew/Developer/skulpture/@b.s/qwery/packages/shared",
 		"@b.s/txn": "^1.0.4"
 	},
 	"peerDependencies": {

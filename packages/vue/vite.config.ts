@@ -9,8 +9,8 @@ export default defineConfig({
 		vue(),
 		dts({
 			rollupTypes: true,
-			include: resolve("src"),
 			logLevel: "info",
+			bundledPackages: ["@b.s/qwery-shared"],
 		}),
 	],
 	build: {

@@ -4,7 +4,7 @@
 
 Asynchronous state management made simple.
 
-Most of the use cases of [TanStack Query](https://tanstack.com/query/latest/) are covered with a similar API, TanStack Query comes in at ~2 MB while Qwery comes in at ~220 kB.
+Most of the use cases of [TanStack Query](https://tanstack.com/query/latest/) are covered with a similar API, TanStack Query comes in at most ~2 MB while Qwery comes in at most ~220 kB.
 
 ## Frameworks
 

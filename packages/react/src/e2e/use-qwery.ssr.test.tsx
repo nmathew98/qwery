@@ -3,10 +3,10 @@ import ReactDOMServer from "react-dom/server";
 import { describe, it, expect, vitest, afterEach } from "vitest";
 import {
 	ExecutionEnvironment,
-	QweryProvider,
 	useExecutionEnvironment,
-	useQwery,
-} from "..";
+} from "../use-execution-environment";
+import { QweryProvider } from "../context";
+import { useQwery } from "../use-qwery";
 import { createRedisCache } from "./redis";
 import {
 	render,
@@ -194,5 +194,5 @@ export const renderSsr = (ui: React.ReactNode) => {
 	document.body.appendChild(container);
 	container.innerHTML = serverRendered;
 
-	return render(ui, { hydrate: true, container });
+	return void render(ui, { hydrate: true, container });
 };

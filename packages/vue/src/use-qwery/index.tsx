@@ -2,12 +2,8 @@ import { computed, onMounted, onUnmounted, shallowReactive } from "vue";
 import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
-import type {
-	Data,
-	InitialValue,
-	UseQweryOptions,
-	UseQweryReturnWithSuspense,
-} from "./types";
+import type { Data, InitialValue, UseQweryOptions } from "@b.s/qwery-shared";
+import type { UseQweryReturnWithSuspense } from "./types";
 
 export const useQwery = <
 	I extends InitialValue,
@@ -107,17 +103,24 @@ export const useQwery = <
 
 		const computeInitialValue = async () => {
 			const cachedValue = queryKey
-				? context?.getCachedValue?.(queryKey)
+				? await context?.getCachedValue?.(queryKey)
 				: null;
 
 			if (initialValue instanceof Function) {
-				return (
-					(await cachedValue) ??
-					(await initialValue(abortController.signal))
-				);
+				if (cachedValue) {
+					return cachedValue;
+				}
+
+				const fetchedValue = await initialValue(abortController.signal);
+
+				if (queryKey) {
+					context?.setCachedValue?.(queryKey);
+				}
+
+				return fetchedValue;
 			}
 
-			return (await cachedValue) ?? initialValue;
+			return cachedValue ?? initialValue;
 		};
 
 		const computedInitialValue = await computeInitialValue();
@@ -202,6 +205,10 @@ export const useQwery = <
 					args[0],
 					refetchOptions,
 				]);
+
+				if (queryKey) {
+					context?.setCachedValue?.(queryKey)(args[0]);
+				}
 
 				updateCRDT(crdt);
 
