@@ -4,7 +4,6 @@ import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
 import type {
-	Data,
 	InitialValue,
 	UseQweryOptions,
 	MaybePromise,
@@ -34,16 +33,16 @@ export const useQwery = <
 	const abortController = new AbortController();
 
 	const crdt = writable<{
-		data: Data | null;
-		versions: Data[] | null;
-		dispatch: Dispatch<Data> | null;
+		data: InferData<I> | null;
+		versions: InferData<I>[] | null;
+		dispatch: Dispatch<InferData<I>> | null;
 	}>({
 		data: null,
 		versions: null,
 		dispatch: null,
 	});
 
-	const updateCRDT = (value: CRDT<any>) => {
+	const updateCRDT = (value: CRDT<InferData<I>>) => {
 		crdt.set({
 			data: value.data,
 			versions: value.versions,
@@ -282,16 +281,16 @@ export const useQwery = <
 		})) as any;
 	}
 
+	let dispatch: Dispatch<InferData<I>> | null = null;
+	const unsubscribe = crdt.subscribe($crdt => {
+		if ($crdt.dispatch) {
+			dispatch = $crdt.dispatch;
+		}
+	});
+
 	return {
 		data: derived(crdt, $crdt => $crdt.data ?? computeInitialValue()),
 		get dispatch() {
-			let dispatch: Dispatch<Data> | null = null;
-			const unsubscribe = crdt.subscribe($crdt => {
-				if ($crdt.dispatch) {
-					dispatch = $crdt.dispatch;
-				}
-			});
-
 			if (!dispatch) {
 				return noOpFunction;
 			}
