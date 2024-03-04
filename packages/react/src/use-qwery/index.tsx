@@ -8,6 +8,7 @@ import type {
 	UseQweryOptions,
 	UseQweryReturn,
 	MaybePromise,
+	InferData,
 } from "@b.s/qwery-shared";
 
 export const useQwery = <
@@ -29,7 +30,10 @@ export const useQwery = <
 	const [renderCount, setRenderCount] = React.useState(0);
 	const context = React.useContext(QweryContext);
 	const crdtRef = React.useRef<
-		null | Promise<CRDT<any> | undefined> | CRDT<any> | undefined
+		| null
+		| Promise<CRDT<InferData<I>> | undefined>
+		| CRDT<InferData<I>>
+		| undefined
 	>(null);
 	const abortControllerRef = React.useRef(new AbortController());
 	const id = React.useId();
@@ -229,7 +233,7 @@ export const useQwery = <
 		const channel = createBroadcastChannel();
 
 		const onBroadcast = async (
-			event: MessageEvent<{ id: string; next: Data }>,
+			event: MessageEvent<{ id: string; next: InferData<I> }>,
 		) => {
 			const crdt = await crdtRef.current;
 
