@@ -1,4 +1,5 @@
-import { computed, onMounted, onUnmounted, shallowReactive } from "vue";
+import { derived, writable } from "svelte/store";
+import { onDestroy, onMount } from "svelte";
 import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
@@ -32,7 +33,7 @@ export const useQwery = <
 	const id = Math.random().toString(36).substring(2);
 	const abortController = new AbortController();
 
-	const crdt = shallowReactive<{
+	const crdt = writable<{
 		data: Data | null;
 		versions: Data[] | null;
 		dispatch: Dispatch<Data> | null;
@@ -43,9 +44,11 @@ export const useQwery = <
 	});
 
 	const updateCRDT = (value: CRDT<any>) => {
-		crdt.data = value.data;
-		crdt.versions = value.versions;
-		crdt.dispatch = value.dispatch;
+		crdt.set({
+			data: value.data,
+			versions: value.versions,
+			dispatch: value.dispatch,
+		});
 	};
 
 	const initializeCRDT = async () => {
@@ -229,7 +232,7 @@ export const useQwery = <
 
 	const channel = createBroadcastChannel();
 
-	onMounted(() => {
+	onMount(() => {
 		channel?.addEventListener("message", onBroadcast);
 
 		if (refetchOnWindowFocus) {
@@ -237,7 +240,7 @@ export const useQwery = <
 		}
 	});
 
-	onUnmounted(() => {
+	onDestroy(() => {
 		const unsubscribe = async () => {
 			const unsubscribe = (await initializedCRDT)?.unsubscribe;
 
@@ -266,21 +269,39 @@ export const useQwery = <
 
 	if (suspense) {
 		return initializedCRDT.then(result => ({
-			data: computed(
-				() =>
-					crdt.data ?? result?.crdt.data ?? computeInitialValueTest(),
+			data: derived(
+				crdt,
+				$crdt =>
+					$crdt.data ??
+					result?.crdt.data ??
+					computeInitialValueTest(),
 			),
 			dispatch: result?.crdt.dispatch ?? noOpFunction,
-			versions: computed(() => crdt.versions ?? result?.crdt.versions),
+			versions: derived(
+				crdt,
+				$crdt => $crdt.versions ?? result?.crdt.versions,
+			),
 		})) as any;
 	}
 
 	return {
-		data: computed(() => crdt.data ?? computeInitialValueTest()),
+		data: derived(crdt, $crdt => $crdt.data ?? computeInitialValueTest()),
 		get dispatch() {
-			return crdt.dispatch ?? noOpFunction;
+			let dispatch: Dispatch<Data> | null = null;
+			const unsubscribe = crdt.subscribe($crdt => {
+				if ($crdt.dispatch) {
+					dispatch = $crdt.dispatch;
+				}
+			});
+
+			if (!dispatch) {
+				return noOpFunction;
+			}
+
+			unsubscribe();
+			return dispatch;
 		},
-		versions: computed(() => crdt.versions),
+		versions: derived(crdt, $crdt => $crdt.versions),
 	} as any;
 };
 

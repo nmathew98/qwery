@@ -18,5 +18,5 @@ export * from "./use-execution-environment";
 export * from "./use-network-mode";
 export * from "./context";
 export * from "./use-remember-scroll";
-// export * from "./use-qwery";
+export * from "./use-qwery";
 export * from "@b.s/qwery-shared";
