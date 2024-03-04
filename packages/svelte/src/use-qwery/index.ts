@@ -261,7 +261,7 @@ export const useQwery = <
 
 	useRememberScroll();
 
-	const computeInitialValueTest = () => {
+	const computeInitialValue = () => {
 		if (typeof initialValue !== "function") {
 			return initialValue;
 		}
@@ -272,9 +272,7 @@ export const useQwery = <
 			data: derived(
 				crdt,
 				$crdt =>
-					$crdt.data ??
-					result?.crdt.data ??
-					computeInitialValueTest(),
+					$crdt.data ?? result?.crdt.data ?? computeInitialValue(),
 			),
 			dispatch: result?.crdt.dispatch ?? noOpFunction,
 			versions: derived(
@@ -285,7 +283,7 @@ export const useQwery = <
 	}
 
 	return {
-		data: derived(crdt, $crdt => $crdt.data ?? computeInitialValueTest()),
+		data: derived(crdt, $crdt => $crdt.data ?? computeInitialValue()),
 		get dispatch() {
 			let dispatch: Dispatch<Data> | null = null;
 			const unsubscribe = crdt.subscribe($crdt => {

@@ -258,7 +258,7 @@ export const useQwery = <
 
 	useRememberScroll();
 
-	const computeInitialValueTest = () => {
+	const computeInitialValue = () => {
 		if (typeof initialValue !== "function") {
 			return initialValue;
 		}
@@ -267,8 +267,7 @@ export const useQwery = <
 	if (suspense) {
 		return initializedCRDT.then(result => ({
 			data: computed(
-				() =>
-					crdt.data ?? result?.crdt.data ?? computeInitialValueTest(),
+				() => crdt.data ?? result?.crdt.data ?? computeInitialValue(),
 			),
 			dispatch: result?.crdt.dispatch ?? noOpFunction,
 			versions: computed(() => crdt.versions ?? result?.crdt.versions),
@@ -276,7 +275,7 @@ export const useQwery = <
 	}
 
 	return {
-		data: computed(() => crdt.data ?? computeInitialValueTest()),
+		data: computed(() => crdt.data ?? computeInitialValue()),
 		get dispatch() {
 			return crdt.dispatch ?? noOpFunction;
 		},
