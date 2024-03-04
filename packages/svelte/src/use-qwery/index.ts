@@ -276,21 +276,7 @@ export const useQwery = <
 					result?.crdt.data ??
 					computeInitialValueTest(),
 			),
-			get dispatch() {
-				let dispatch: Dispatch<Data> | null = null;
-				const unsubscribe = crdt.subscribe($crdt => {
-					if ($crdt.dispatch) {
-						dispatch = $crdt.dispatch;
-					}
-				});
-
-				if (!dispatch) {
-					return noOpFunction;
-				}
-
-				unsubscribe();
-				return dispatch;
-			},
+			dispatch: result?.crdt.dispatch ?? noOpFunction,
 			versions: derived(
 				crdt,
 				$crdt => $crdt.versions ?? result?.crdt.versions,
