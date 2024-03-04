@@ -4,7 +4,6 @@ import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
 import type {
-	Data,
 	InitialValue,
 	UseQweryOptions,
 	MaybePromise,
@@ -34,8 +33,8 @@ export const useQwery = <
 	const abortController = new AbortController();
 
 	const crdt = writable<{
-		data: Data | null;
-		versions: Data[] | null;
+		data: InferData<I> | null;
+		versions: InferData<I>[] | null;
 		dispatch: Dispatch<InferData<I>> | null;
 	}>({
 		data: null,
