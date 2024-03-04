@@ -1,4 +1,4 @@
-import { derived, get, writable } from "svelte/store";
+import { derived, writable } from "svelte/store";
 import { onDestroy, onMount } from "svelte";
 import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
@@ -276,7 +276,21 @@ export const useQwery = <
 					result?.crdt.data ??
 					computeInitialValueTest(),
 			),
-			dispatch: get(crdt).dispatch,
+			get dispatch() {
+				let dispatch: Dispatch<Data> | null = null;
+				const unsubscribe = crdt.subscribe($crdt => {
+					if ($crdt.dispatch) {
+						dispatch = $crdt.dispatch;
+					}
+				});
+
+				if (!dispatch) {
+					return noOpFunction;
+				}
+
+				unsubscribe();
+				return dispatch;
+			},
 			versions: derived(
 				crdt,
 				$crdt => $crdt.versions ?? result?.crdt.versions,
@@ -286,7 +300,21 @@ export const useQwery = <
 
 	return {
 		data: derived(crdt, $crdt => $crdt.data ?? computeInitialValueTest()),
-		dispatch: get(crdt).dispatch,
+		get dispatch() {
+			let dispatch: Dispatch<Data> | null = null;
+			const unsubscribe = crdt.subscribe($crdt => {
+				if ($crdt.dispatch) {
+					dispatch = $crdt.dispatch;
+				}
+			});
+
+			if (!dispatch) {
+				return noOpFunction;
+			}
+
+			unsubscribe();
+			return dispatch;
+		},
 		versions: derived(crdt, $crdt => $crdt.versions),
 	} as any;
 };
