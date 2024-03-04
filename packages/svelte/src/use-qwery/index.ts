@@ -8,6 +8,7 @@ import type {
 	InitialValue,
 	UseQweryOptions,
 	MaybePromise,
+	InferData,
 } from "@b.s/qwery-shared";
 import type { UseQweryReturn } from "./types";
 
@@ -182,7 +183,7 @@ export const useQwery = <
 	};
 
 	const onBroadcast = async (
-		event: MessageEvent<{ id: string; next: Data }>,
+		event: MessageEvent<{ id: string; next: InferData<I> }>,
 	) => {
 		const crdt = (await initializedCRDT)?.crdt;
 
@@ -190,7 +191,6 @@ export const useQwery = <
 			return;
 		}
 
-		/// @ts-ignore: not sure why
 		crdt?.dispatch(event.data.next, { isPersisted: true });
 
 		updateCRDT(crdt);

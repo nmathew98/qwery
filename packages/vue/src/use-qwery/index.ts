@@ -188,7 +188,6 @@ export const useQwery = <
 			return;
 		}
 
-		/// @ts-ignore: not sure why
 		crdt?.dispatch(event.data.next, { isPersisted: true });
 
 		updateCRDT(crdt);
