@@ -15,6 +15,7 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitAny": false,
+		"verbatimModuleSyntax": true,
 
 		"outDir": "dist",
 		"declaration": true

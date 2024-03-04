@@ -8,7 +8,7 @@ import {
 	ExecutionEnvironment,
 	useExecutionEnvironment,
 } from "../use-execution-environment";
-import { createNoOpCache } from "./no-op-cache";
+import { createNoOpCache } from "@b.s/qwery-shared";
 
 export const QweryContext = Symbol("QweryContext");
 
