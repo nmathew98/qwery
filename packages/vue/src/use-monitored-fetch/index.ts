@@ -5,7 +5,7 @@ import {
 import { computed, ref } from "vue";
 
 export const useMonitoredFetch = () => {
-	const allFetchStatus = ref(Object.create(null));
+	const allFetchStatus = ref<{ [key: string]: boolean }>(Object.create(null));
 
 	const createId = () => Math.random().toString(32).substring(2);
 
@@ -32,7 +32,7 @@ export const useMonitoredFetch = () => {
 
 	return {
 		isFetching: computed(() =>
-			Object.values(allFetchStatus).every(Boolean),
+			Object.values(allFetchStatus.value).every(Boolean),
 		),
 		monitor,
 	};
