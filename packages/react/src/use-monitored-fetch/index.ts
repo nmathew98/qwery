@@ -1,5 +1,8 @@
 import React from "react";
-import { makeMonitoredFetch } from "@b.s/incremental";
+import {
+	makeMonitoredFetch,
+	type MakeMonitoredParameters,
+} from "@b.s/incremental";
 
 export const useMonitoredFetch = () => {
 	const [allFetchStatus, setAllFetchStatus] = React.useState(
@@ -10,10 +13,15 @@ export const useMonitoredFetch = () => {
 
 	const monitor = <F extends (...args: any[]) => Promise<any>>(
 		fetchFn: F,
+		options: Omit<
+			MakeMonitoredParameters<F>,
+			"onFetching" | "fetchFn"
+		> = Object.create(null),
 	) => {
 		const id = createId();
 
 		return makeMonitoredFetch({
+			...options,
 			fetchFn,
 			onFetching: isFetching =>
 				setAllFetchStatus(allFetchStatus => ({
