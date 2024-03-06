@@ -5,7 +5,9 @@ import {
 import { derived, writable } from "svelte/store";
 
 export const useMonitoredFetch = () => {
-	const allFetchStatus = writable(Object.create(null));
+	const allFetchStatus = writable<{ [key: string]: boolean }>(
+		Object.create(null),
+	);
 
 	const createId = () => Math.random().toString(32).substring(2);
 

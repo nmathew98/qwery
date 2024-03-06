@@ -5,9 +5,9 @@ import {
 } from "@b.s/incremental";
 
 export const useMonitoredFetch = () => {
-	const [allFetchStatus, setAllFetchStatus] = React.useState(
-		Object.create(null),
-	);
+	const [allFetchStatus, setAllFetchStatus] = React.useState<{
+		[key: string]: boolean;
+	}>(Object.create(null));
 
 	const createId = () => Math.random().toString(32).substring(2);
 
