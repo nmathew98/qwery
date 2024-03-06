@@ -22,11 +22,12 @@ export default defineConfig({
 		rollupOptions: {
 			// make sure to externalize deps that shouldn't be bundled
 			// into your library
-			external: ["@b.s/incremental", "@b.s/txn"],
+			external: ["@b.s/incremental", "@b.s/txn", "svelte"],
 			output: {
 				// Provide global variables to use in the UMD build
 				// for externalized deps
 				globals: {
+					svelte: "svelte",
 					"@b.s/incremental": "incremental",
 					"@b.s/txn": "txn",
 				},
