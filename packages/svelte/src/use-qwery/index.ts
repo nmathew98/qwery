@@ -1,9 +1,15 @@
-import { computed, onMounted, onUnmounted, shallowReactive } from "vue";
+import { derived, writable } from "svelte/store";
+import { onDestroy, onMount } from "svelte";
 import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
-import type { Data, InitialValue, UseQweryOptions } from "@b.s/qwery-shared";
-import type { UseQweryReturnWithSuspense } from "./types";
+import type {
+	InitialValue,
+	UseQweryOptions,
+	MaybePromise,
+	InferData,
+} from "@b.s/qwery-shared";
+import type { UseQweryReturn } from "./types";
 
 export const useQwery = <
 	I extends InitialValue,
@@ -20,26 +26,28 @@ export const useQwery = <
 	refetchOnWindowFocus = false,
 	broadcast = false,
 	suspense = false,
-}: UseQweryOptions<I, S>): UseQweryReturnWithSuspense<I, S> => {
+}: UseQweryOptions<I, S>): MaybePromise<S, UseQweryReturn<I>> => {
 	const context = useQweryContext();
 
 	const id = Math.random().toString(36).substring(2);
 	const abortController = new AbortController();
 
-	const crdt = shallowReactive<{
-		data: Data | null;
-		versions: Data[] | null;
-		dispatch: Dispatch<Data> | null;
+	const crdt = writable<{
+		data: InferData<I> | null;
+		versions: InferData<I>[] | null;
+		dispatch: Dispatch<InferData<I>> | null;
 	}>({
 		data: null,
 		versions: null,
 		dispatch: null,
 	});
 
-	const updateCRDT = (value: CRDT<any>) => {
-		crdt.data = value.data;
-		crdt.versions = value.versions;
-		crdt.dispatch = value.dispatch;
+	const updateCRDT = (value: CRDT<InferData<I>>) => {
+		crdt.set({
+			data: value.data,
+			versions: value.versions,
+			dispatch: value.dispatch,
+		});
 	};
 
 	const initializeCRDT = async () => {
@@ -174,7 +182,7 @@ export const useQwery = <
 	};
 
 	const onBroadcast = async (
-		event: MessageEvent<{ id: string; next: Data }>,
+		event: MessageEvent<{ id: string; next: InferData<I> }>,
 	) => {
 		const crdt = (await initializedCRDT)?.crdt;
 
@@ -182,7 +190,6 @@ export const useQwery = <
 			return;
 		}
 
-		/// @ts-ignore: not sure why
 		crdt?.dispatch(event.data.next, { isPersisted: true });
 
 		updateCRDT(crdt);
@@ -224,7 +231,7 @@ export const useQwery = <
 
 	const channel = createBroadcastChannel();
 
-	onMounted(() => {
+	onMount(() => {
 		channel?.addEventListener("message", onBroadcast);
 
 		if (refetchOnWindowFocus) {
@@ -232,7 +239,7 @@ export const useQwery = <
 		}
 	});
 
-	onUnmounted(() => {
+	onDestroy(() => {
 		const unsubscribe = async () => {
 			const unsubscribe = (await initializedCRDT)?.unsubscribe;
 
@@ -253,7 +260,7 @@ export const useQwery = <
 
 	useRememberScroll();
 
-	const computeInitialValueTest = () => {
+	const computeInitialValue = () => {
 		if (typeof initialValue !== "function") {
 			return initialValue;
 		}
@@ -261,23 +268,37 @@ export const useQwery = <
 
 	if (suspense) {
 		return initializedCRDT.then(result => ({
-			data: computed(
-				() =>
-					crdt.data ?? result?.crdt.data ?? computeInitialValueTest(),
+			data: derived(
+				crdt,
+				$crdt =>
+					$crdt.data ?? result?.crdt.data ?? computeInitialValue(),
 			),
-			get dispatch() {
-				return crdt.dispatch ?? result?.crdt.dispatch ?? noOpFunction;
-			},
-			versions: computed(() => crdt.versions ?? result?.crdt.versions),
+			dispatch: result?.crdt.dispatch ?? noOpFunction,
+			versions: derived(
+				crdt,
+				$crdt => $crdt.versions ?? result?.crdt.versions,
+			),
 		})) as any;
 	}
 
+	let dispatch: Dispatch<InferData<I>> | null = null;
+	const unsubscribe = crdt.subscribe($crdt => {
+		if ($crdt.dispatch) {
+			dispatch = $crdt.dispatch;
+		}
+	});
+
 	return {
-		data: computed(() => crdt.data ?? computeInitialValueTest()),
+		data: derived(crdt, $crdt => $crdt.data ?? computeInitialValue()),
 		get dispatch() {
-			return crdt.dispatch ?? noOpFunction;
+			if (!dispatch) {
+				return noOpFunction;
+			}
+
+			unsubscribe();
+			return dispatch;
 		},
-		versions: computed(() => crdt.versions),
+		versions: derived(crdt, $crdt => $crdt.versions),
 	} as any;
 };
 

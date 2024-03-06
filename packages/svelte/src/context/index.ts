@@ -1,4 +1,4 @@
-import { hasInjectionContext, inject, provide } from "vue";
+import { setContext, getContext, hasContext } from "svelte";
 import {
 	createCacheProvider,
 	type CacheProvider,
@@ -12,20 +12,20 @@ import { createNoOpCache } from "@b.s/qwery-shared";
 
 export const QweryContext = Symbol("QweryContext");
 
-export const provideQweryContext = (store?: CacheStore) => {
+export const setQweryContext = (store?: CacheStore) => {
 	const { executionEnvironment } = useExecutionEnvironment();
 
 	if (executionEnvironment === ExecutionEnvironment.Server && !store) {
-		return provide(QweryContext, createCacheProvider(createNoOpCache()));
+		return setContext(QweryContext, createCacheProvider(createNoOpCache()));
 	}
 
-	return provide(QweryContext, createCacheProvider(store));
+	return setContext(QweryContext, createCacheProvider(store));
 };
 
 export const useQweryContext = () => {
-	if (!hasInjectionContext()) {
+	if (!hasContext(QweryContext)) {
 		return;
 	}
 
-	return inject<CacheProvider>(QweryContext);
+	return getContext<CacheProvider>(QweryContext);
 };

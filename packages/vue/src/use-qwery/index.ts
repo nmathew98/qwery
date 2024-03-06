@@ -3,10 +3,10 @@ import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
 import type {
-	Data,
 	InitialValue,
 	UseQweryOptions,
 	MaybePromise,
+	InferData,
 } from "@b.s/qwery-shared";
 import type { UseQweryReturn } from "./types";
 
@@ -32,9 +32,9 @@ export const useQwery = <
 	const abortController = new AbortController();
 
 	const crdt = shallowReactive<{
-		data: Data | null;
-		versions: Data[] | null;
-		dispatch: Dispatch<Data> | null;
+		data: InferData<I> | null;
+		versions: InferData<I>[] | null;
+		dispatch: Dispatch<InferData<I>> | null;
 	}>({
 		data: null,
 		versions: null,
@@ -179,7 +179,7 @@ export const useQwery = <
 	};
 
 	const onBroadcast = async (
-		event: MessageEvent<{ id: string; next: Data }>,
+		event: MessageEvent<{ id: string; next: InferData<I> }>,
 	) => {
 		const crdt = (await initializedCRDT)?.crdt;
 
@@ -187,7 +187,6 @@ export const useQwery = <
 			return;
 		}
 
-		/// @ts-ignore: not sure why
 		crdt?.dispatch(event.data.next, { isPersisted: true });
 
 		updateCRDT(crdt);
@@ -258,7 +257,7 @@ export const useQwery = <
 
 	useRememberScroll();
 
-	const computeInitialValueTest = () => {
+	const computeInitialValue = () => {
 		if (typeof initialValue !== "function") {
 			return initialValue;
 		}
@@ -267,18 +266,15 @@ export const useQwery = <
 	if (suspense) {
 		return initializedCRDT.then(result => ({
 			data: computed(
-				() =>
-					crdt.data ?? result?.crdt.data ?? computeInitialValueTest(),
+				() => crdt.data ?? result?.crdt.data ?? computeInitialValue(),
 			),
-			get dispatch() {
-				return crdt.dispatch ?? result?.crdt.dispatch ?? noOpFunction;
-			},
+			dispatch: result?.crdt.dispatch ?? noOpFunction,
 			versions: computed(() => crdt.versions ?? result?.crdt.versions),
 		})) as any;
 	}
 
 	return {
-		data: computed(() => crdt.data ?? computeInitialValueTest()),
+		data: computed(() => crdt.data ?? computeInitialValue()),
 		get dispatch() {
 			return crdt.dispatch ?? noOpFunction;
 		},
