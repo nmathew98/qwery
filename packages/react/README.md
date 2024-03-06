@@ -6,6 +6,8 @@ Asynchronous state management in React made simple.
 
 Most of the use cases of [React Query](https://tanstack.com/query/latest/) are covered with a similar API, React Query comes in at ~2 MB while React Qwery comes in at ~220 kB.
 
+Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
+
 ## Features
 
 -   CJS + ESM ✅
