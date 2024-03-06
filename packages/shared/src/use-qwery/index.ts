@@ -1,7 +1,7 @@
 export * from "./types";
 
 export const mapReduceMaybePromise =
-	<Fns extends Fn[]>(fns: Fns) =>
+	<Fns extends Fn[]>(...fns: Fns) =>
 	(...args: any[]): MaybePromise<SomeReturnsPromise<Fns[number]>> => {
 		const reduced = fns.reduce(
 			(acc, fn) => {
