@@ -4,7 +4,10 @@
 
 Asynchronous state management in React made simple.
 
-Most of the use cases of [React Query](https://tanstack.com/query/latest/) are covered with a similar API, React Query comes in at ~2 MB while React Qwery comes in at ~220 kB.
+Most of the use cases of [React Query](https://tanstack.com/query/latest/) are covered with a similar API while being 65% lighter.
+
+React Query bundle size: [56.6 kB minified](https://bundlephobia.com/package/@tanstack/react-query)
+React Qwery bundle size: [19.7 kB minified](https://bundlephobia.com/package/@b.s/react-qwery)
 
 Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
 
