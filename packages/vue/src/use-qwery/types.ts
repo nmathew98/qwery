@@ -4,7 +4,7 @@ import type {
 } from "@b.s/qwery-shared";
 import type { ComputedRef } from "vue";
 
-export type UseQweryReturn<I extends InitialValue> = Computed<
+export type UseQweryReturnVue<I extends InitialValue> = Computed<
 	Maybe<Required<Omit<SharedUseQweryReturn<I>, "dispatch">>>
 > &
 	Pick<SharedUseQweryReturn<I>, "dispatch">;

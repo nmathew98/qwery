@@ -8,7 +8,7 @@ import type {
 	MaybePromise,
 	InferData,
 } from "@b.s/qwery-shared";
-import type { UseQweryReturn } from "./types";
+import type { UseQweryReturnVue } from "./types";
 
 export const useQwery = <
 	I extends InitialValue,
@@ -25,7 +25,7 @@ export const useQwery = <
 	refetchOnWindowFocus = false,
 	broadcast = false,
 	suspense = false,
-}: UseQweryOptions<I, S>): MaybePromise<S, UseQweryReturn<I>> => {
+}: UseQweryOptions<I, S>): MaybePromise<S, UseQweryReturnVue<I>> => {
 	const context = useQweryContext();
 
 	const id = Math.random().toString(36).substring(2);
@@ -263,21 +263,33 @@ export const useQwery = <
 		}
 	};
 
+	const dispatch = new Proxy(noOpFunction, {
+		apply: (
+			noOpFunction,
+			_thisArg,
+			args: Parameters<Dispatch<InferData<I>>>,
+		) => {
+			if (!crdt.dispatch) {
+				return noOpFunction();
+			}
+
+			return crdt.dispatch?.(...args);
+		},
+	}) as Dispatch<InferData<I>>;
+
 	if (suspense) {
 		return initializedCRDT.then(result => ({
 			data: computed(
 				() => crdt.data ?? result?.crdt.data ?? computeInitialValue(),
 			),
-			dispatch: result?.crdt.dispatch ?? noOpFunction,
+			dispatch,
 			versions: computed(() => crdt.versions ?? result?.crdt.versions),
 		})) as any;
 	}
 
 	return {
 		data: computed(() => crdt.data ?? computeInitialValue()),
-		get dispatch() {
-			return crdt.dispatch ?? noOpFunction;
-		},
+		dispatch,
 		versions: computed(() => crdt.versions),
 	} as any;
 };

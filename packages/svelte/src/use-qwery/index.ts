@@ -1,4 +1,4 @@
-import { derived, writable } from "svelte/store";
+import { derived, get, writable } from "svelte/store";
 import { onDestroy, onMount } from "svelte";
 import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
@@ -9,7 +9,7 @@ import type {
 	MaybePromise,
 	InferData,
 } from "@b.s/qwery-shared";
-import type { UseQweryReturn } from "./types";
+import type { UseQweryReturnSvelte } from "./types";
 
 export const useQwery = <
 	I extends InitialValue,
@@ -26,7 +26,7 @@ export const useQwery = <
 	refetchOnWindowFocus = false,
 	broadcast = false,
 	suspense = false,
-}: UseQweryOptions<I, S>): MaybePromise<S, UseQweryReturn<I>> => {
+}: UseQweryOptions<I, S>): MaybePromise<S, UseQweryReturnSvelte<I>> => {
 	const context = useQweryContext();
 
 	const id = Math.random().toString(36).substring(2);
@@ -266,6 +266,22 @@ export const useQwery = <
 		}
 	};
 
+	const dispatch = new Proxy(noOpFunction, {
+		apply: (
+			noOpFunction,
+			_thisArg,
+			args: Parameters<Dispatch<InferData<I>>>,
+		) => {
+			const value = get(crdt);
+
+			if (!value.dispatch) {
+				return noOpFunction();
+			}
+
+			return value.dispatch?.(...args);
+		},
+	}) as Dispatch<InferData<I>>;
+
 	if (suspense) {
 		return initializedCRDT.then(result => ({
 			data: derived(
@@ -273,7 +289,7 @@ export const useQwery = <
 				$crdt =>
 					$crdt.data ?? result?.crdt.data ?? computeInitialValue(),
 			),
-			dispatch: result?.crdt.dispatch ?? noOpFunction,
+			dispatch,
 			versions: derived(
 				crdt,
 				$crdt => $crdt.versions ?? result?.crdt.versions,
@@ -281,23 +297,9 @@ export const useQwery = <
 		})) as any;
 	}
 
-	let dispatch: Dispatch<InferData<I>> | null = null;
-	const unsubscribe = crdt.subscribe($crdt => {
-		if ($crdt.dispatch) {
-			dispatch = $crdt.dispatch;
-		}
-	});
-
 	return {
 		data: derived(crdt, $crdt => $crdt.data ?? computeInitialValue()),
-		get dispatch() {
-			if (!dispatch) {
-				return noOpFunction;
-			}
-
-			unsubscribe();
-			return dispatch;
-		},
+		dispatch,
 		versions: derived(crdt, $crdt => $crdt.versions),
 	} as any;
 };
