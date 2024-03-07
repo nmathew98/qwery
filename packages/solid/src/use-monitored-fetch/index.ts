@@ -32,7 +32,7 @@ export const useMonitoredFetch = () => {
 	};
 
 	return {
-		isFetching: Object.values(allFetchStatus).every(Boolean),
+		isFetching: () => Object.values(allFetchStatus()).every(Boolean),
 		monitor,
 	};
 };
