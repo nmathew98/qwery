@@ -8,7 +8,7 @@ import type {
 	InferData,
 } from "@b.s/qwery-shared";
 import { createSignal, onCleanup, onMount, useContext } from "solid-js";
-import type { UseQweryReturn } from "./types";
+import type { UseQweryReturnSolid } from "./types";
 
 export const useQwery = <
 	I extends InitialValue,
@@ -25,7 +25,7 @@ export const useQwery = <
 	refetchOnWindowFocus = false,
 	broadcast = false,
 	suspense = false,
-}: UseQweryOptions<I, S>): MaybePromise<S, UseQweryReturn<I>> => {
+}: UseQweryOptions<I, S>): MaybePromise<S, UseQweryReturnSolid<I>> => {
 	const context = useContext(QweryContext);
 
 	const id = Math.random().toString(36).substring(2);
@@ -265,20 +265,32 @@ export const useQwery = <
 		}
 	};
 
+	const dispatch = new Proxy(noOpFunction, {
+		apply: (
+			noOpFunction,
+			_thisArg,
+			args: Parameters<Dispatch<InferData<I>>>,
+		) => {
+			if (!crdt().dispatch) {
+				return noOpFunction();
+			}
+
+			return crdt().dispatch?.(...args);
+		},
+	}) as Dispatch<InferData<I>>;
+
 	if (suspense) {
 		return initializedCRDT.then(result => ({
 			data: () =>
 				crdt().data ?? result?.crdt.data ?? computeInitialValue(),
-			dispatch: result?.crdt.dispatch ?? noOpFunction,
+			dispatch,
 			versions: () => crdt().versions ?? result?.crdt.versions,
 		})) as any;
 	}
 
 	return {
 		data: () => crdt().data ?? computeInitialValue(),
-		get dispatch() {
-			return crdt().dispatch ?? noOpFunction;
-		},
+		dispatch,
 		versions: () => crdt().versions,
 	} as any;
 };
