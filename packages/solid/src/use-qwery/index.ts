@@ -4,11 +4,11 @@ import { useRememberScroll } from "../use-remember-scroll";
 import type {
 	InitialValue,
 	UseQweryOptions,
-	UseQweryReturn,
 	MaybePromise,
 	InferData,
 } from "@b.s/qwery-shared";
 import { createSignal, onCleanup, onMount, useContext } from "solid-js";
+import type { UseQweryReturn } from "./types";
 
 export const useQwery = <
 	I extends InitialValue,
