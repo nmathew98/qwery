@@ -7,6 +7,7 @@ Asynchronous state management in Solid made simple.
 Most of the use cases of [Solid Query](https://tanstack.com/query/latest/) are covered with a similar API while being 65% lighter.
 
 Solid Query bundle size: [54.6 kB minified](https://bundlephobia.com/package/@tanstack/solid-query)
+
 Solid Qwery bundle size: [19.7 kB minified](https://bundlephobia.com/package/@b.s/solid-qwery) // TODO
 
 Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
