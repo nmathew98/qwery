@@ -10,23 +10,25 @@ import { createNoOpCache } from "@b.s/qwery-shared";
 
 export const QweryContext = createContext<CacheProvider>(Object.create(null));
 
-export const QweryProvider: Component<ParentProps<QweryProviderProps>> = ({
-	store,
-	children,
-}) => {
+export const QweryProvider: Component<
+	ParentProps<QweryProviderProps>
+> = props => {
 	const { executionEnvironment } = useExecutionEnvironment();
 
 	const createContextValue = () => {
-		if (executionEnvironment === ExecutionEnvironment.Server && !store) {
+		if (
+			executionEnvironment === ExecutionEnvironment.Server &&
+			!props.store
+		) {
 			return createCacheProvider(createNoOpCache());
 		}
 
-		return createCacheProvider(store);
+		return createCacheProvider(props.store);
 	};
 
 	return (
 		<QweryContext.Provider value={createContextValue()}>
-			{children}
+			{props.children}
 		</QweryContext.Provider>
 	);
 };
