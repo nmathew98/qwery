@@ -2,13 +2,13 @@
 
 ## About
 
-Asynchronous state management in React made simple.
+Asynchronous state management in Solid made simple.
 
-Most of the use cases of [React Query](https://tanstack.com/query/latest/) are covered with a similar API while being 65% lighter.
+Most of the use cases of [Solid Query](https://tanstack.com/query/latest/) are covered with a similar API while being 65% lighter.
 
-React Query bundle size: [56.6 kB minified](https://bundlephobia.com/package/@tanstack/react-query)
+Solid Query bundle size: [54.6 kB minified](https://bundlephobia.com/package/@tanstack/solid-query)
 
-React Qwery bundle size: [19.7 kB minified](https://bundlephobia.com/package/@b.s/react-qwery)
+Solid Qwery bundle size: [19 kB minified](https://bundlephobia.com/package/@b.s/solid-qwery)
 
 Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
 
@@ -65,22 +65,22 @@ const { data, dispatch } = await useQwery({
 });
 ```
 
-To opt into caching, render your component within `QweryProvider`.
+To opt into caching, provide Qwery context with `provideQweryContext`.
 
 To set cached data ahead of time (prefetching):
 
 ```typescript
-const qweryContext = React.useContext(QweryContext);
+const qweryContext = useQweryContext();
 
-qweryContext.setCachedValue(queryKey)(prefetchedData);
+qweryContext?.setCachedValue(queryKey)(prefetchedData);
 ```
 
 To invalidate cached data:
 
 ```typescript
-const qweryContext = React.useContext(QweryContext);
+const qweryContext = useQweryContext();
 
-qweryContext.makeInvalidateCachedValue(queryKey)(prefetchedData);
+qweryContext?.makeInvalidateCachedValue(queryKey)(prefetchedData);
 ```
 
 To use subscriptions:

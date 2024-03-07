@@ -4,7 +4,11 @@
 
 Asynchronous state management in Vue made simple.
 
-Most of the use cases of [Vue Query](https://tanstack.com/query/latest/) are covered with a similar API, Vue Query comes in at ~2 MB while Vue Qwery comes in at ~100 kB.
+Most of the use cases of [Vue Query](https://tanstack.com/query/latest/) are covered with a similar API while being 65% lighter.
+
+Vue Query bundle size: [56.6 kB minified](https://bundlephobia.com/package/@tanstack/vue-query)
+
+Vue Qwery bundle size: [19.7 kB minified](https://bundlephobia.com/package/@b.s/vue-qwery)
 
 Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
 

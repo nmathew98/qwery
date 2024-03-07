@@ -4,7 +4,11 @@
 
 Asynchronous state management in React made simple.
 
-Most of the use cases of [Svelte Query](https://tanstack.com/query/latest/) are covered with a similar API, Svelte Query comes in at ~2 MB while Svelte Qwery comes in at ~100 kB.
+Most of the use cases of [Svelte Query](https://tanstack.com/query/latest/) are covered with a similar API while being 62% lighter.
+
+Svelte Query bundle size: [54.4 kB minified](https://bundlephobia.com/package/@tanstack/svelte-query)
+
+Svelte Qwery bundle size: [20.7 kB minified](https://bundlephobia.com/package/@b.s/svelte-qwery)
 
 Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
 
