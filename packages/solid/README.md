@@ -8,7 +8,7 @@ Most of the use cases of [Solid Query](https://tanstack.com/query/latest/) are c
 
 Solid Query bundle size: [54.6 kB minified](https://bundlephobia.com/package/@tanstack/solid-query)
 
-Solid Qwery bundle size: [19.7 kB minified](https://bundlephobia.com/package/@b.s/solid-qwery) // TODO
+Solid Qwery bundle size: [19 kB minified](https://bundlephobia.com/package/@b.s/solid-qwery)
 
 Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
 
