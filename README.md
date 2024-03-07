@@ -13,6 +13,7 @@ Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
 -   React ✅
 -   Vue ✅
 -   Svelte ✅
+-   Solid ✅
 
 ## Features
 
