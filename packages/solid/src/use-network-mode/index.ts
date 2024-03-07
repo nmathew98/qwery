@@ -12,16 +12,13 @@ export const useNetworkMode = ({
 	fetch(ping).then(isOnline).catch(isOffline);
 
 	onMount(() => {
-		const onOnline = () => setIsConnected(true);
-		const onOffline = () => setIsConnected(false);
+		window.addEventListener("online", isOnline);
+		window.addEventListener("offline", isOffline);
+	});
 
-		window.addEventListener("online", onOnline);
-		window.addEventListener("offline", onOffline);
-
-		return onCleanup(() => {
-			window.removeEventListener("online", onOnline);
-			window.removeEventListener("offline", onOffline);
-		});
+	onCleanup(() => {
+		window.removeEventListener("online", isOnline);
+		window.removeEventListener("offline", isOffline);
 	});
 
 	return {
