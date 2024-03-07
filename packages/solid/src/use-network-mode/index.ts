@@ -1,4 +1,4 @@
-import { createSignal, onMount } from "solid-js";
+import { createSignal, onCleanup, onMount } from "solid-js";
 import { NetworkMode, type UseNetworkModeOptions } from "@b.s/qwery-shared";
 export { NetworkMode } from "@b.s/qwery-shared";
 
@@ -18,10 +18,10 @@ export const useNetworkMode = ({
 		window.addEventListener("online", onOnline);
 		window.addEventListener("offline", onOffline);
 
-		return () => {
+		return onCleanup(() => {
 			window.removeEventListener("online", onOnline);
 			window.removeEventListener("offline", onOffline);
-		};
+		});
 	});
 
 	return {

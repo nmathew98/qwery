@@ -1,4 +1,4 @@
-import { onMount } from "solid-js";
+import { onCleanup, onMount } from "solid-js";
 import { ExecutionEnvironment } from "@b.s/qwery-shared";
 import { useExecutionEnvironment } from "../use-execution-environment";
 
@@ -39,8 +39,8 @@ export const useRememberScroll = () => {
 
 		window.addEventListener("scroll", onScroll);
 
-		return () => {
+		return onCleanup(() => {
 			window.removeEventListener("scroll", onScroll);
-		};
+		});
 	});
 };
