@@ -4,7 +4,7 @@ import type {
 } from "@b.s/qwery-shared";
 import type { Readable } from "svelte/store";
 
-export type UseQweryReturn<I extends InitialValue> = Derived<
+export type UseQweryReturnSvelte<I extends InitialValue> = Derived<
 	Maybe<Required<Omit<SharedUseQweryReturn<I>, "dispatch">>>
 > &
 	Pick<SharedUseQweryReturn<I>, "dispatch">;
