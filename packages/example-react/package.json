@@ -9,10 +9,7 @@
 		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
 		"preview": "vite preview",
 		"clean": "rm -f *.tgz && rm -rf dist",
-		"format": "prettier .  --write",
-		"test": "vitest run --passWithNoTests",
-		"test.watch": "vitest --passWithNoTests --watch",
-		"pack": "pnpm pack"
+		"format": "prettier .  --write"
 	},
 	"dependencies": {
 		"@b.s/react-qwery": "workspace:^",
