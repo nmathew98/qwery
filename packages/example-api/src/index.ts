@@ -2,6 +2,7 @@ import { createStorage, prefixStorage } from "unstorage";
 
 interface Thread {
 	createdBy: string;
+	createdAt: Date;
 	uuid: string;
 	parent?: string;
 	content: string;
@@ -34,7 +35,8 @@ export const getThread = async (uuid: string): Promise<Thread | null> => {
 };
 
 export const upsertThread = async (
-	thread: Omit<Thread, "uuid" | "children"> & Partial<Pick<Thread, "uuid">>,
+	thread: Omit<Thread, "uuid" | "children" | "createdAt"> &
+		Partial<Pick<Thread, "uuid">>,
 ): Promise<Omit<Thread, "children">> => {
 	const uuid = thread.uuid ?? Math.random().toString(36).substring(2);
 
@@ -49,6 +51,7 @@ export const upsertThread = async (
 
 	const next: Thread = {
 		uuid,
+		createdAt: new Date(),
 		...thread,
 	};
 
