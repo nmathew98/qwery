@@ -200,7 +200,7 @@ export const App = () => {
 		<div className="flex justify-center my-8">
 			<div className="flex-col space-y-8">
 				{THREADS.map(thread => (
-					<Thread key={thread.uuid} {...thread} />
+					<Thread key={thread.uuid} thread={thread} />
 				))}
 			</div>
 		</div>
