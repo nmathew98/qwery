@@ -55,7 +55,9 @@ const THREADS = faker.helpers.multiple(() => createThread(), {
 const ThreadChild = ({ child, onClick, depth = 0 }) => {
 	const rerenders = React.useRef(0);
 
-	rerenders.current = rerenders.current + 1;
+	React.useLayoutEffect(() => {
+		rerenders.current = rerenders.current + 1;
+	}, [child]);
 
 	return (
 		<AccordionItem
@@ -97,18 +99,14 @@ const ThreadChild = ({ child, onClick, depth = 0 }) => {
 	);
 };
 
-const Thread = ({
-	createdBy,
-	createdAt,
-	content,
-	likes,
-	children: childThreads,
-}) => {
+const Thread = ({ thread }) => {
 	const [replyTo, setReplyTo] = React.useState<any>(null);
 	const [newThread, setNewThread] = React.useState("");
 	const rerenders = React.useRef(0);
 
-	rerenders.current = rerenders.current + 1;
+	React.useLayoutEffect(() => {
+		rerenders.current = rerenders.current + 1;
+	}, [thread]);
 
 	const onChangeNewThread: ChangeEventHandler<HTMLInputElement> = event =>
 		setNewThread(event.target.value);
@@ -137,16 +135,18 @@ const Thread = ({
 			<DialogTrigger asChild>
 				<Card className="cursor-pointer max-w-lg">
 					<CardHeader>
-						<CardTitle>{content}</CardTitle>
+						<CardTitle>{thread.content}</CardTitle>
 						<CardDescription className="flex justify-between">
 							<span>
 								<span className="text-sm">
-									Created at {createdAt.toDateString()} by{" "}
-									{createdBy}
+									Created at {thread.createdAt.toDateString()}{" "}
+									by {thread.createdBy}
 								</span>
 							</span>
 							<span>
-								<span className="text-sm">{likes} 👍</span>
+								<span className="text-sm">
+									{thread.likes} 👍
+								</span>
 							</span>
 						</CardDescription>
 					</CardHeader>
@@ -155,14 +155,14 @@ const Thread = ({
 			<DialogContent>
 				<DialogHeader id="test">
 					<DialogTitle>View whole thread</DialogTitle>
-					<DialogDescription>{content}</DialogDescription>
+					<DialogDescription>{thread.content}</DialogDescription>
 					<div className="my-4 flex-col space-y-4">
-						{childThreads && (
+						{thread.children && (
 							<div className="max-h-[50dvh] overflow-scroll">
 								<Accordion
 									type="multiple"
 									className="flex-col space-y-8">
-									{childThreads.map(child => (
+									{thread.children.map(child => (
 										<ThreadChild
 											key={child.uuid}
 											child={child}
