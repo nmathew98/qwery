@@ -115,7 +115,7 @@ export const useQwery = <
 				});
 
 				// Relied upon by `incremental` to `createNewVersion`
-				return final;
+				return merged;
 			},
 		});
 
