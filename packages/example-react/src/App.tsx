@@ -55,7 +55,7 @@ const THREADS = faker.helpers.multiple(() => createThread(), {
 const ThreadChild = ({ child, onClick, depth = 0 }) => {
 	const rerenders = React.useRef(0);
 
-	React.useEffect(() => {
+	React.useLayoutEffect(() => {
 		rerenders.current = rerenders.current + 1;
 	}, [child]);
 
@@ -104,7 +104,7 @@ const Thread = ({ thread }) => {
 	const [newThread, setNewThread] = React.useState("");
 	const rerenders = React.useRef(0);
 
-	React.useEffect(() => {
+	React.useLayoutEffect(() => {
 		rerenders.current = rerenders.current + 1;
 	}, [thread]);
 
