@@ -1,3 +1,5 @@
+import React from "react";
+
 export const App = () => {
-	return <h1 className="font-bold text-xl">HELLO WORLD</h1>;
+	return <h1 className="font-bold font-sans text-3xl">HELLO WORLD</h1>;
 };
