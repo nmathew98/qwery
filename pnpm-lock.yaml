@@ -127,8 +127,8 @@ importers:
   packages/react:
     dependencies:
       '@b.s/incremental':
-        specifier: ^2.1.4
-        version: 2.1.4
+        specifier: ^2.1.6
+        version: 2.1.6
       '@b.s/txn':
         specifier: ^1.0.4
         version: 1.0.4
@@ -200,8 +200,8 @@ importers:
   packages/shared:
     devDependencies:
       '@b.s/incremental':
-        specifier: ^2.1.4
-        version: 2.1.4
+        specifier: ^2.1.6
+        version: 2.1.6
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -221,8 +221,8 @@ importers:
   packages/solid:
     dependencies:
       '@b.s/incremental':
-        specifier: ^2.1.4
-        version: 2.1.4
+        specifier: ^2.1.6
+        version: 2.1.6
       '@b.s/txn':
         specifier: ^1.0.4
         version: 1.0.4
@@ -252,8 +252,8 @@ importers:
   packages/svelte:
     dependencies:
       '@b.s/incremental':
-        specifier: ^2.1.4
-        version: 2.1.4
+        specifier: ^2.1.6
+        version: 2.1.6
       '@b.s/txn':
         specifier: ^1.0.4
         version: 1.0.4
@@ -313,8 +313,8 @@ importers:
   packages/vue:
     dependencies:
       '@b.s/incremental':
-        specifier: ^2.1.4
-        version: 2.1.4
+        specifier: ^2.1.6
+        version: 2.1.6
       '@b.s/txn':
         specifier: ^1.0.4
         version: 1.0.4
@@ -394,8 +394,8 @@ packages:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  /@b.s/incremental@2.1.4:
-    resolution: {integrity: sha512-d6VXfQL5nDLDGA7yVnASOYc5vfI2vCdNcSfqT1tPSqrAyPLGxtSYpfxzxLUSnpD51Biqg037/j3021JnA19UWQ==}
+  /@b.s/incremental@2.1.6:
+    resolution: {integrity: sha512-RMq1iJodWVYPViFaGM3m7Z8Pr0XpA6zZM6Voux3c/qjKlTskZ2N8dLICN3RgkaBqGKHnnzxjK7dmCaKItKPvLw==}
     dependencies:
       immer: 10.0.3
 
