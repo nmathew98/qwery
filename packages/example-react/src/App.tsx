@@ -126,7 +126,7 @@ const Thread = ({
 			setReplyTo(null);
 		}
 	};
-	const onClickChildThread = child => (event: MouseEvent) => {
+	const makeOnClickChildThread = child => (event: MouseEvent) => {
 		event.stopPropagation();
 
 		setReplyTo(child);
@@ -166,7 +166,7 @@ const Thread = ({
 										<ThreadChild
 											key={child.uuid}
 											child={child}
-											onClick={onClickChildThread}
+											onClick={makeOnClickChildThread}
 										/>
 									))}
 								</Accordion>
