@@ -68,9 +68,9 @@
 
 @layer base {
 	* {
-		@apply border-border;
+		@apply border-[border:hsl(var(--border))];
 	}
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-[background:hsl(var(--background))] text-[foreground:hsl(var(--foreground))];
 	}
 }
