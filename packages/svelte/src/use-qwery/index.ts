@@ -93,10 +93,17 @@ export const useQwery = <
 
 		const proxiedOnSuccess = new Proxy(onSuccess, {
 			apply: (onSuccess, thisArg, args) => {
-				Reflect.apply(onSuccess, thisArg, args);
+				// If `onChange` returns a result then assume that is
+				// the API response and likely has to be merged in by `onSuccess`
+				// which should return the complete document
+				// (creating a new record and we don't have `uuid`s for example)
+				const next = args[0];
+				const merged = Reflect.apply(onSuccess, thisArg, args);
+
+				const final = merged || next;
 
 				if (queryKey) {
-					context?.makeOnChange?.(queryKey)(args[0]);
+					context?.makeOnChange?.(queryKey)(final);
 				}
 
 				initializedCRDT.then(result => {
@@ -106,6 +113,9 @@ export const useQwery = <
 
 					updateCRDT(result.crdt);
 				});
+
+				// Relied upon by `incremental` to `createNewVersion`
+				return merged;
 			},
 		});
 
