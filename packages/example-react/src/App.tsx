@@ -244,6 +244,7 @@ export const NewThread = () => {
 		HTMLTextAreaElement
 	> = event => {
 		if (event.key === "Enter") {
+			event.preventDefault();
 			return onSubmitNewThread();
 		}
 	};
