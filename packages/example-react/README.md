@@ -1,30 +1,18 @@
-# React + TypeScript + Vite
+![Tests](https://github.com/nmathew98/qwery/actions/workflows/main.yml/badge.svg)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## About
 
-Currently, two official plugins are available:
+Asynchronous state management in React made simple.
 
--   [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
--   [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Most of the use cases of [React Query](https://tanstack.com/query/latest/) are covered with a similar API while being 65% lighter.
 
-## Expanding the ESLint configuration
+React Query bundle size: [56.6 kB minified](https://bundlephobia.com/package/@tanstack/react-query)
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+React Qwery bundle size: [19.7 kB minified](https://bundlephobia.com/package/@b.s/react-qwery)
 
--   Configure the top-level `parserOptions` property like this:
+Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
 
-```js
-export default {
-	// other rules...
-	parserOptions: {
-		ecmaVersion: "latest",
-		sourceType: "module",
-		project: ["./tsconfig.json", "./tsconfig.node.json"],
-		tsconfigRootDir: __dirname,
-	},
-};
-```
+## Usage
 
--   Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
--   Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
--   Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+-   Run `pmpm build` from the root (`qwery`)
+-   Run `cd packages/example-react && pnpm dev` from the root (`qwery`)
