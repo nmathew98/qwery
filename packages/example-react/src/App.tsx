@@ -26,7 +26,6 @@ import { Textarea } from "./components/ui/textarea";
 import {
 	type Thread,
 	getAllThreads,
-	getThread,
 	upsertThread,
 } from "@b.s/qwery-example-api";
 import { useQwery } from "@b.s/react-qwery";
@@ -95,7 +94,7 @@ const Thread = ({ thread }) => {
 
 	const { data, dispatch } = useQwery({
 		queryKey: `threads-${thread.uuid}`,
-		initialValue: () => getThread(thread.uuid),
+		initialValue: thread,
 		onChange: async (next: Thread) => {
 			const newItem = next.children?.find(thread => !thread.uuid);
 
@@ -123,13 +122,12 @@ const Thread = ({ thread }) => {
 			}) as Thread,
 	});
 
-	const latest = data?.uuid === currentThread.uuid ? data : currentThread;
 	React.useLayoutEffect(() => {
-		if (previous.current !== data) {
+		if (previous.current !== currentThread) {
 			rerenders.current = rerenders.current + 1 * 50;
-			previous.current = latest;
+			previous.current = currentThread;
 		}
-	}, [latest]);
+	}, [currentThread]);
 
 	const onChangeNewThread: ChangeEventHandler<HTMLInputElement> = event =>
 		setContent(event.target.value);
@@ -224,6 +222,10 @@ const Thread = ({ thread }) => {
 		setReplyTo(null);
 	};
 
+	if (!data) {
+		return null;
+	}
+
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
@@ -233,12 +235,12 @@ const Thread = ({ thread }) => {
 						borderColor: `hsl(${Math.max(250 - rerenders.current, 0)}, 100%, 50%)`,
 					}}>
 					<CardHeader>
-						<CardTitle>{thread.createdBy}</CardTitle>
+						<CardTitle>{data.createdBy}</CardTitle>
 						<CardDescription className="flex space-x-1">
-							<span>{thread.createdAt.toDateString()}</span>
+							<span>{data.createdAt.toDateString()}</span>
 							<span>&middot;</span>
 							<span className="inline-flex items-center space-x-1">
-								<span>{thread.likes}</span>
+								<span>{data.likes}</span>
 								<span>
 									<StarFilledIcon />
 								</span>
@@ -246,7 +248,7 @@ const Thread = ({ thread }) => {
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
-						<P>{thread.content}</P>
+						<P>{data.content}</P>
 					</CardContent>
 					<CardFooter>
 						<Button className="w-full">View whole thread</Button>
