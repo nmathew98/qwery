@@ -1,6 +1,7 @@
 import { createStorage, prefixStorage } from "unstorage";
+import { faker } from "@faker-js/faker";
 
-interface Thread {
+export interface Thread {
 	createdBy: string;
 	createdAt: Date;
 	uuid: string;
@@ -10,7 +11,7 @@ interface Thread {
 	children?: Thread[] | null;
 }
 
-interface ThreadMeta {
+export interface ThreadMeta {
 	children?: string[];
 }
 
@@ -23,11 +24,11 @@ export const getAllThreads = async (): Promise<Thread[]> => {
 	return Promise.all(keys.map(getThread)) as Promise<Thread[]>;
 };
 
-export const getThread = async (uuid: string): Promise<Thread | null> => {
+export const getThread = async (uuid: string): Promise<Thread> => {
 	const parent = await THREADS.getItem<Thread>(uuid);
 
 	if (!parent) {
-		return null;
+		throw new Error("Not found!!!");
 	}
 
 	const meta = (await THREADS.getMeta(uuid)) as ThreadMeta;
@@ -66,3 +67,51 @@ export const upsertThread = async (
 
 	return next;
 };
+
+const setup = () => {
+	const createCompleteThread = (
+		parent?: string,
+		depth: number = faker.number.int({ min: 0, max: 3 }),
+	) => {
+		const uuid = faker.string.uuid();
+
+		return {
+			createdBy: faker.person.fullName(),
+			createdAt: faker.date.past({
+				years: 10,
+				refDate: new Date("2023"),
+			}),
+			uuid,
+			parent,
+			content: faker.lorem.lines(),
+			likes: faker.number.int({ min: 0, max: 100 }),
+			children:
+				depth > 0
+					? new Array(faker.number.int({ min: 5, max: 10 }))
+							.fill(() => null)
+							.map(() => createCompleteThread(uuid, depth - 1))
+					: null,
+		};
+	};
+
+	const THREADS = faker.helpers.multiple(() => createCompleteThread(), {
+		count: {
+			min: 5,
+			max: 10,
+		},
+	});
+
+	const createThread = ({ children, ...thread }: Thread) => {
+		upsertThread(thread);
+
+		if (!children) {
+			return;
+		}
+
+		children.forEach(upsertThread);
+	};
+
+	THREADS.forEach(createThread);
+};
+
+setup();

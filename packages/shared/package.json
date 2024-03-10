@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"devDependencies": {
-		"@b.s/incremental": "^2.1.6",
+		"@b.s/incremental": "^2.1.7",
 		"eslint": "^8.57.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-prettier": "^5.1.3",
