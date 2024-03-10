@@ -1,6 +1,6 @@
 {
 	"name": "@b.s/qwery-example-api",
-	"version": "1.0.0",
+	"version": "1.5.3",
 	"private": true,
 	"type": "module",
 	"devDependencies": {
