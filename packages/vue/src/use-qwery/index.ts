@@ -52,7 +52,9 @@ export const useQwery = <
 			apply: (onChange, thisArg, args) => {
 				const result = Reflect.apply(onChange, thisArg, args);
 
-				if (broadcast) {
+				// If the result is not a `Promise` then `result` is falsy
+				// and `result` is complete
+				if (!result && queryKey && broadcast) {
 					const channel = createBroadcastChannel();
 
 					channel?.postMessage({
@@ -98,6 +100,17 @@ export const useQwery = <
 				const merged = Reflect.apply(onSuccess, thisArg, args);
 
 				const final = merged || next;
+
+				// The final version of data is given by `final`
+				if (queryKey && broadcast) {
+					const channel = createBroadcastChannel();
+
+					channel?.postMessage({
+						id,
+						next: final,
+					});
+					channel?.close();
+				}
 
 				if (queryKey) {
 					context?.makeOnChange?.(queryKey)(final);

@@ -83,18 +83,18 @@ const ThreadChild = ({ child, onClickReply, onClickExpand }) => {
 	);
 };
 
-const Thread = ({ thread }) => {
+const Thread = ({ initialValue, dispatch: landingDispatch }) => {
 	const name = React.useRef(faker.person.fullName());
-	const [currentThread, setCurrentThread] = React.useState(thread);
+	const [currentThread, setCurrentThread] = React.useState(initialValue);
 	const [replyTo, setReplyTo] = React.useState<any>(null);
 	const [content, setContent] = React.useState("");
 
-	const previous = React.useRef(thread);
+	const previous = React.useRef(initialValue);
 	const rerenders = React.useRef(0);
 
 	const { data, dispatch } = useQwery({
-		queryKey: `threads-${thread.uuid}`,
-		initialValue: thread,
+		queryKey: `threads-${initialValue.uuid}`,
+		initialValue: initialValue as Thread,
 		onChange: async (next: Thread) => {
 			const newItem = next.children?.find(thread => !thread.uuid);
 
@@ -120,6 +120,7 @@ const Thread = ({ thread }) => {
 					return child;
 				}),
 			}) as Thread,
+		broadcast: true,
 	});
 
 	React.useLayoutEffect(() => {
@@ -129,6 +130,20 @@ const Thread = ({ thread }) => {
 		}
 	}, [currentThread]);
 
+	/**
+	 * When we have updates which are broadcasted,
+	 * `data` will be updated each time an update is broadcast,
+	 * so we have to update `currentThread` with the broadcasted
+	 * updates
+	 */
+	React.useEffect(() => {
+		if (!data) {
+			return;
+		}
+
+		setCurrentThread(findDeep(currentThread.uuid, data));
+	}, [currentThread.uuid, data]);
+
 	const onChangeNewThread: ChangeEventHandler<HTMLInputElement> = event =>
 		setContent(event.target.value);
 	const onSubmitNewThread = async () => {
@@ -136,24 +151,6 @@ const Thread = ({ thread }) => {
 		// we are creating a child thread for a child thread
 		// and then dispatch the update specifying it has already been persisted
 		if (replyTo) {
-			const findDeep = (uuid: string, thread: Thread) => {
-				if (thread.uuid === uuid) {
-					return thread;
-				}
-
-				if (!thread.children) {
-					return null;
-				}
-
-				for (let i = 0; i < thread.children.length; i++) {
-					const result = findDeep(uuid, thread.children[i]);
-
-					if (result) {
-						return result;
-					}
-				}
-			};
-
 			const newThread = {
 				createdBy: name.current,
 				content: content,
@@ -174,6 +171,17 @@ const Thread = ({ thread }) => {
 				},
 				{ isPersisted: true },
 			) as Thread;
+
+			landingDispatch(
+				allThreads => {
+					const currentThread = allThreads.find(
+						thread => thread.uuid === latest.uuid,
+					);
+
+					currentThread.children = latest.children;
+				},
+				{ isPersisted: true },
+			);
 
 			setCurrentThread(findDeep(currentThread.uuid, latest));
 
@@ -218,7 +226,7 @@ const Thread = ({ thread }) => {
 		setCurrentThread(child);
 	};
 	const onClickReturnToMainThread = () => {
-		setCurrentThread(thread);
+		setCurrentThread(data);
 		setReplyTo(null);
 	};
 
@@ -296,7 +304,7 @@ const Thread = ({ thread }) => {
 					)}
 				</div>
 				<DialogFooter>
-					{currentThread.uuid !== thread.uuid && (
+					{currentThread.uuid !== initialValue.uuid && (
 						<Button
 							onClick={onClickReturnToMainThread}
 							variant="secondary"
@@ -392,9 +400,10 @@ export const App = () => {
 
 				return thread;
 			}),
+		broadcast: true,
 	});
 
-	const allThreads = data?.sort(
+	const allThreads = [...(data ?? [])]?.sort(
 		(a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
 	);
 
@@ -409,10 +418,32 @@ export const App = () => {
 					<H1>My Feed</H1>
 					<NewThread dispatch={dispatch} />
 					{allThreads?.map(thread => (
-						<Thread key={thread.uuid} thread={thread} />
+						<Thread
+							key={thread.uuid}
+							initialValue={thread}
+							dispatch={dispatch}
+						/>
 					))}
 				</div>
 			</div>
 		</ThemeProvider>
 	);
+};
+
+const findDeep = (uuid: string, thread: Thread) => {
+	if (thread.uuid === uuid) {
+		return thread;
+	}
+
+	if (!thread.children) {
+		return null;
+	}
+
+	for (let i = 0; i < thread.children.length; i++) {
+		const result = findDeep(uuid, thread.children[i]);
+
+		if (result) {
+			return result;
+		}
+	}
 };
