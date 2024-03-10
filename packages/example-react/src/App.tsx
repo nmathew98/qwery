@@ -142,7 +142,7 @@ const Thread = ({ initialValue, dispatch: landingDispatch }) => {
 		}
 
 		setCurrentThread(findDeep(currentThread.uuid, data));
-	}, [data]);
+	}, [currentThread.uuid, data]);
 
 	const onChangeNewThread: ChangeEventHandler<HTMLInputElement> = event =>
 		setContent(event.target.value);
