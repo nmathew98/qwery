@@ -1,5 +1,5 @@
 import React from "react";
-import { type CRDT, createCRDT } from "@b.s/incremental";
+import { type CRDT, createCRDT, type DispatchOptions } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
 import type {
@@ -36,7 +36,7 @@ export const useQwery = <
 		| undefined
 	>(null);
 	const abortControllerRef = React.useRef(new AbortController());
-	const id = React.useRef(Math.random().toString(36).substring(2));
+	const idRef = React.useRef(Math.random().toString(36).substring(2));
 
 	const createBroadcastChannel = () => {
 		if (!queryKey || !broadcast) {
@@ -56,7 +56,7 @@ export const useQwery = <
 				const channel = createBroadcastChannel();
 
 				channel?.postMessage({
-					id,
+					id: idRef.current,
 					next: args[0],
 				});
 				channel?.close();
@@ -98,7 +98,7 @@ export const useQwery = <
 				const channel = createBroadcastChannel();
 
 				channel?.postMessage({
-					id,
+					id: idRef.current,
 					next: final,
 				});
 				channel?.close();
@@ -180,7 +180,39 @@ export const useQwery = <
 				setRenderCount(renderCount => renderCount + 1);
 			}
 
-			return { crdt, unsubscribe };
+			const broadcastingDispatch = new Proxy(crdt.dispatch, {
+				apply: (dispatch, thisArg, args) => {
+					const options = args[1] as
+						| DispatchOptions<InferData<I>>
+						| undefined;
+
+					const result = Reflect.apply(dispatch, thisArg, args);
+
+					// In this case `onChange` will not be triggered,
+					// so if `broadcast` is true then we will have to trigger it
+					// after `dispatch`ing
+					if (
+						options?.isPersisted &&
+						!(options as Record<string, any>)?.broadcasted &&
+						broadcast
+					) {
+						const channel = createBroadcastChannel();
+
+						channel?.postMessage({
+							id: idRef.current,
+							next: result,
+						});
+					}
+
+					return result;
+				},
+			});
+
+			const crdtWithBroadcastingDispatch = Object.assign(crdt, {
+				dispatch: broadcastingDispatch,
+			});
+
+			return { crdt: crdtWithBroadcastingDispatch, unsubscribe };
 		};
 
 		const setCrdtRef = async (
@@ -260,11 +292,18 @@ export const useQwery = <
 		) => {
 			const crdt = await crdtRef.current;
 
-			if (event.data.id === id.current) {
+			if (event.data.id === idRef.current) {
 				return;
 			}
 
-			crdt?.dispatch(event.data.next, { isPersisted: true });
+			// Otherwise we get a loop de loop
+			// Persisted dispatches will trigger this handler
+			// which triggers another dispatch and so forth
+			// TODO: Cleanup
+			crdt?.dispatch(event.data.next, {
+				isPersisted: true,
+				broadcasted: true,
+			} as DispatchOptions<InferData<I>>);
 
 			setRenderCount(renderCount => renderCount + 1);
 		};
