@@ -69,7 +69,7 @@ const ThreadChild = ({ child, onClickReply, onClickExpand }) => {
 		<Card
 			className="cursor-pointer border-2"
 			style={{
-				borderColor: `hsl(${250 - rerenders.current}, 100%, 50%)`,
+				borderColor: `hsl(${Math.max(250 - rerenders.current, 0)}, 100%, 50%)`,
 			}}>
 			<CardHeader>
 				<CardTitle>{child.createdBy}</CardTitle>
@@ -120,6 +120,7 @@ const Thread = ({ thread }) => {
 		queryKey: `threads-${thread.uuid}`,
 		initialValue: () =>
 			getThread(thread.uuid) as Promise<Record<string, any>>,
+		// Create a child Thread to the main Thread
 		onChange: async next => {
 			const newItemIdx = next.children.findIndex(thread => !thread.uuid);
 
@@ -127,6 +128,7 @@ const Thread = ({ thread }) => {
 
 			return result;
 		},
+		// Update the new child Thread with `uuid` and `createdAt` from the response
 		onSuccess: (next, _previous, result) => ({
 			...next,
 			children: next.children.map(child => {
@@ -142,16 +144,20 @@ const Thread = ({ thread }) => {
 		}),
 	});
 
+	const latest = data?.uuid === currentThread.uuid ? data : currentThread;
 	React.useLayoutEffect(() => {
-		if (previous.current !== thread) {
+		if (previous.current !== latest) {
 			rerenders.current = rerenders.current + 1 * 50;
-			previous.current = thread;
+			previous.current = latest;
 		}
-	}, [thread]);
+	}, [latest]);
 
 	const onChangeNewThread: ChangeEventHandler<HTMLInputElement> = event =>
 		setContent(event.target.value);
 	const onSubmitNewThread = async () => {
+		// This is a really deep update so manually create the new `Thread`
+		// we are creating a child thread for a child thread
+		// and then dispatch the update specifying it has already been persisted
 		if (replyTo) {
 			const findDeep = (uuid: string, thread) => {
 				if (thread.uuid === uuid) {
@@ -178,6 +184,8 @@ const Thread = ({ thread }) => {
 
 			const result = await upsertThread(newThread);
 
+			// `dispatch` returns the `latest` version of the main thread here
+			// since the global `onChange` which is async is not triggered
 			const latest = dispatch(
 				thread => {
 					const replyingTo = findDeep(replyTo.uuid, thread);
@@ -200,6 +208,7 @@ const Thread = ({ thread }) => {
 			likes: 0,
 		};
 
+		// `dispatch` returns a `Promise` here since the global `onChange` is triggered
 		dispatch(thread => {
 			thread.children ??= [];
 
@@ -233,15 +242,13 @@ const Thread = ({ thread }) => {
 		setReplyTo(null);
 	};
 
-	const latest = data?.uuid === currentThread.uuid ? data : currentThread;
-
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
 				<Card
 					className="cursor-pointer max-w-2xl border-2"
 					style={{
-						borderColor: `hsl(${250 - rerenders.current}, 100%, 50%)`,
+						borderColor: `hsl(${Math.max(250 - rerenders.current, 0)}, 100%, 50%)`,
 					}}>
 					<CardHeader>
 						<CardTitle>{thread.createdBy}</CardTitle>
@@ -336,6 +343,7 @@ export const NewThread = ({ dispatch }) => {
 			likes: 0,
 		};
 
+		// Dispatch and create a new `Thread`
 		dispatch(allThreads => void allThreads.unshift(newThread));
 
 		setContent("");
@@ -375,9 +383,11 @@ export const NewThread = ({ dispatch }) => {
 };
 
 export const App = () => {
+	// We have many main `Thread`s and each `Thread` can have zero or more
+	// child `Thread`s
 	const { data, dispatch } = useQwery({
 		queryKey: "threads",
-		initialValue: getAllThreads,
+		initialValue: getAllThreads, // Get all main threads
 		onChange: async next => {
 			const newItemIdx = next.findIndex(thread => !thread.uuid);
 
