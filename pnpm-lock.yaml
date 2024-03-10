@@ -14,6 +14,9 @@ importers:
 
   packages/example-api:
     devDependencies:
+      '@faker-js/faker':
+        specifier: ^8.4.1
+        version: 8.4.1
       eslint:
         specifier: ^8.56.0
         version: 8.57.0
@@ -35,6 +38,9 @@ importers:
 
   packages/example-react:
     dependencies:
+      '@b.s/react-qwery':
+        specifier: workspace:^
+        version: link:../react
       '@b.s/s.o.o.n':
         specifier: ^1.0.2
         version: 1.0.2(react-dom@18.2.0)(react@18.2.0)
@@ -78,9 +84,6 @@ importers:
       '@b.s/qwery-example-api':
         specifier: link:../example-api
         version: link:../example-api
-      '@b.s/react-qwery':
-        specifier: link:../react
-        version: link:../react
       '@faker-js/faker':
         specifier: ^8.4.1
         version: 8.4.1
@@ -133,8 +136,8 @@ importers:
   packages/react:
     dependencies:
       '@b.s/incremental':
-        specifier: ^2.1.6
-        version: 2.1.6
+        specifier: ^2.1.7
+        version: 2.1.7
       '@b.s/txn':
         specifier: ^1.0.4
         version: 1.0.4
@@ -206,8 +209,8 @@ importers:
   packages/shared:
     devDependencies:
       '@b.s/incremental':
-        specifier: ^2.1.6
-        version: 2.1.6
+        specifier: ^2.1.7
+        version: 2.1.7
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -227,8 +230,8 @@ importers:
   packages/solid:
     dependencies:
       '@b.s/incremental':
-        specifier: ^2.1.6
-        version: 2.1.6
+        specifier: ^2.1.7
+        version: 2.1.7
       '@b.s/txn':
         specifier: ^1.0.4
         version: 1.0.4
@@ -258,8 +261,8 @@ importers:
   packages/svelte:
     dependencies:
       '@b.s/incremental':
-        specifier: ^2.1.6
-        version: 2.1.6
+        specifier: ^2.1.7
+        version: 2.1.7
       '@b.s/txn':
         specifier: ^1.0.4
         version: 1.0.4
@@ -319,8 +322,8 @@ importers:
   packages/vue:
     dependencies:
       '@b.s/incremental':
-        specifier: ^2.1.6
-        version: 2.1.6
+        specifier: ^2.1.7
+        version: 2.1.7
       '@b.s/txn':
         specifier: ^1.0.4
         version: 1.0.4
@@ -404,8 +407,8 @@ packages:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  /@b.s/incremental@2.1.6:
-    resolution: {integrity: sha512-RMq1iJodWVYPViFaGM3m7Z8Pr0XpA6zZM6Voux3c/qjKlTskZ2N8dLICN3RgkaBqGKHnnzxjK7dmCaKItKPvLw==}
+  /@b.s/incremental@2.1.7:
+    resolution: {integrity: sha512-iCZ6r/e5hQVnH9+vxH3dFS3zB7LHD4XtbR5MooF/Oztz6t8CUwPbCVuhnAGH0Ih8xbBqz6FoARxU9snqByii6g==}
     dependencies:
       immer: 10.0.3
 

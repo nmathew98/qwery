@@ -23,36 +23,12 @@ import { ThemeProvider } from "./components/theme-provider";
 import { H1, P } from "./components/ui/typography";
 import { StarFilledIcon } from "@radix-ui/react-icons";
 import { Textarea } from "./components/ui/textarea";
-import { getAllThreads, getThread, upsertThread } from "@b.s/qwery-example-api";
+import {
+	type Thread,
+	getAllThreads,
+	upsertThread,
+} from "@b.s/qwery-example-api";
 import { useQwery } from "@b.s/react-qwery";
-
-const createThread = (
-	parent?: string,
-	depth: number = faker.number.int({ min: 0, max: 3 }),
-) => {
-	const uuid = faker.string.uuid();
-
-	return {
-		createdBy: faker.person.fullName(),
-		createdAt: faker.date.anytime(),
-		uuid,
-		parent,
-		content: faker.lorem.lines(),
-		likes: faker.number.int({ min: 0, max: 100 }),
-		children:
-			depth > 0
-				? new Array(faker.number.int({ min: 5, max: 10 }))
-						.fill(() => null)
-						.map(() => createThread(uuid, depth - 1))
-				: null,
-	};
-};
-const THREADS = faker.helpers.multiple(() => createThread(), {
-	count: {
-		min: 5,
-		max: 10,
-	},
-});
 
 const ThreadChild = ({ child, onClickReply, onClickExpand }) => {
 	const previous = React.useRef(child);
@@ -118,39 +94,40 @@ const Thread = ({ thread }) => {
 
 	const { data, dispatch } = useQwery({
 		queryKey: `threads-${thread.uuid}`,
-		initialValue: () =>
-			getThread(thread.uuid) as Promise<Record<string, any>>,
-		// Create a child Thread to the main Thread
-		onChange: async next => {
-			const newItemIdx = next.children.findIndex(thread => !thread.uuid);
+		initialValue: thread,
+		onChange: async (next: Thread) => {
+			const newItem = next.children?.find(thread => !thread.uuid);
 
-			const result = await upsertThread(next.children[newItemIdx]);
+			if (!newItem) {
+				throw new Error("Unexpected error: New thread not found");
+			}
+
+			const result = await upsertThread(newItem);
 
 			return result;
 		},
-		// Update the new child Thread with `uuid` and `createdAt` from the response
-		onSuccess: (next, _previous, result) => ({
-			...next,
-			children: next.children.map(child => {
-				if (!child.uuid) {
-					return {
-						...child,
-						...result,
-					};
-				}
+		onSuccess: (next: Thread, _previous: Thread, result) =>
+			({
+				...next,
+				children: next.children!.map(child => {
+					if (!child.uuid) {
+						return {
+							...child,
+							...(result as Omit<Thread, "children">),
+						};
+					}
 
-				return child;
-			}),
-		}),
+					return child;
+				}),
+			}) as Thread,
 	});
 
-	const latest = data?.uuid === currentThread.uuid ? data : currentThread;
 	React.useLayoutEffect(() => {
-		if (previous.current !== latest) {
+		if (previous.current !== currentThread) {
 			rerenders.current = rerenders.current + 1 * 50;
-			previous.current = latest;
+			previous.current = currentThread;
 		}
-	}, [latest]);
+	}, [currentThread]);
 
 	const onChangeNewThread: ChangeEventHandler<HTMLInputElement> = event =>
 		setContent(event.target.value);
@@ -159,9 +136,13 @@ const Thread = ({ thread }) => {
 		// we are creating a child thread for a child thread
 		// and then dispatch the update specifying it has already been persisted
 		if (replyTo) {
-			const findDeep = (uuid: string, thread) => {
+			const findDeep = (uuid: string, thread: Thread) => {
 				if (thread.uuid === uuid) {
 					return thread;
+				}
+
+				if (!thread.children) {
+					return null;
 				}
 
 				for (let i = 0; i < thread.children.length; i++) {
@@ -171,8 +152,6 @@ const Thread = ({ thread }) => {
 						return result;
 					}
 				}
-
-				return null;
 			};
 
 			const newThread = {
@@ -194,7 +173,7 @@ const Thread = ({ thread }) => {
 					replyingTo.children.unshift(result);
 				},
 				{ isPersisted: true },
-			) as Record<string, any>;
+			) as Thread;
 
 			setCurrentThread(findDeep(currentThread.uuid, latest));
 
@@ -209,13 +188,14 @@ const Thread = ({ thread }) => {
 		};
 
 		// `dispatch` returns a `Promise` here since the global `onChange` is triggered
-		dispatch(thread => {
+		const latest = (await dispatch(thread => {
 			thread.children ??= [];
 
-			thread.children.unshift(newThread);
-		});
+			thread.children.unshift(newThread as Thread);
+		})) as Thread;
 
-		return setContent("");
+		setContent("");
+		return setCurrentThread(latest);
 	};
 	const replyToMainThread = () => setReplyTo(null);
 	const onKeyDownNewThread: KeyboardEventHandler<
@@ -242,6 +222,10 @@ const Thread = ({ thread }) => {
 		setReplyTo(null);
 	};
 
+	if (!data) {
+		return null;
+	}
+
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
@@ -251,12 +235,12 @@ const Thread = ({ thread }) => {
 						borderColor: `hsl(${Math.max(250 - rerenders.current, 0)}, 100%, 50%)`,
 					}}>
 					<CardHeader>
-						<CardTitle>{thread.createdBy}</CardTitle>
+						<CardTitle>{data.createdBy}</CardTitle>
 						<CardDescription className="flex space-x-1">
-							<span>{thread.createdAt.toDateString()}</span>
+							<span>{data.createdAt.toDateString()}</span>
 							<span>&middot;</span>
 							<span className="inline-flex items-center space-x-1">
-								<span>{thread.likes}</span>
+								<span>{data.likes}</span>
 								<span>
 									<StarFilledIcon />
 								</span>
@@ -264,7 +248,7 @@ const Thread = ({ thread }) => {
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
-						<P>{thread.content}</P>
+						<P>{data.content}</P>
 					</CardContent>
 					<CardFooter>
 						<Button className="w-full">View whole thread</Button>
@@ -274,11 +258,13 @@ const Thread = ({ thread }) => {
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>View whole thread</DialogTitle>
-					<DialogDescription>{latest.content}</DialogDescription>
+					<DialogDescription>
+						{currentThread.content}
+					</DialogDescription>
 				</DialogHeader>
-				{latest.children && (
+				{currentThread.children && (
 					<div className="max-h-[50dvh] overflow-scroll flex-col space-y-8">
-						{latest.children.map(child => (
+						{currentThread.children.map(child => (
 							<ThreadChild
 								key={child.uuid}
 								child={child}
@@ -310,7 +296,7 @@ const Thread = ({ thread }) => {
 					)}
 				</div>
 				<DialogFooter>
-					{latest.uuid !== thread.uuid && (
+					{currentThread.uuid !== thread.uuid && (
 						<Button
 							onClick={onClickReturnToMainThread}
 							variant="secondary"
@@ -408,7 +394,13 @@ export const App = () => {
 			}),
 	});
 
-	const allThreads = [...(data ?? []), ...THREADS].sort((a, b) => b - a);
+	const allThreads = data?.sort(
+		(a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+	);
+
+	if (!data) {
+		return null;
+	}
 
 	return (
 		<ThemeProvider defaultTheme="dark">
@@ -416,7 +408,7 @@ export const App = () => {
 				<div className="flex-col space-y-8">
 					<H1>My Feed</H1>
 					<NewThread dispatch={dispatch} />
-					{allThreads.map(thread => (
+					{allThreads?.map(thread => (
 						<Thread key={thread.uuid} thread={thread} />
 					))}
 				</div>
