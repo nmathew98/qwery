@@ -83,18 +83,18 @@ const ThreadChild = ({ child, onClickReply, onClickExpand }) => {
 	);
 };
 
-const Thread = ({ thread }) => {
+const Thread = ({ initialValue, dispatch: landingDispatch }) => {
 	const name = React.useRef(faker.person.fullName());
-	const [currentThread, setCurrentThread] = React.useState(thread);
+	const [currentThread, setCurrentThread] = React.useState(initialValue);
 	const [replyTo, setReplyTo] = React.useState<any>(null);
 	const [content, setContent] = React.useState("");
 
-	const previous = React.useRef(thread);
+	const previous = React.useRef(initialValue);
 	const rerenders = React.useRef(0);
 
 	const { data, dispatch } = useQwery({
-		queryKey: `threads-${thread.uuid}`,
-		initialValue: thread,
+		queryKey: `threads-${initialValue.uuid}`,
+		initialValue: initialValue as Thread,
 		onChange: async (next: Thread) => {
 			const newItem = next.children?.find(thread => !thread.uuid);
 
@@ -175,6 +175,17 @@ const Thread = ({ thread }) => {
 				{ isPersisted: true },
 			) as Thread;
 
+			landingDispatch(
+				allThreads => {
+					const currentThread = allThreads.find(
+						thread => thread.uuid === latest.uuid,
+					);
+
+					currentThread.children = latest.children;
+				},
+				{ isPersisted: true },
+			);
+
 			setCurrentThread(findDeep(currentThread.uuid, latest));
 
 			return setContent("");
@@ -218,7 +229,7 @@ const Thread = ({ thread }) => {
 		setCurrentThread(child);
 	};
 	const onClickReturnToMainThread = () => {
-		setCurrentThread(thread);
+		setCurrentThread(data);
 		setReplyTo(null);
 	};
 
@@ -296,7 +307,7 @@ const Thread = ({ thread }) => {
 					)}
 				</div>
 				<DialogFooter>
-					{currentThread.uuid !== thread.uuid && (
+					{currentThread.uuid !== initialValue.uuid && (
 						<Button
 							onClick={onClickReturnToMainThread}
 							variant="secondary"
@@ -409,7 +420,11 @@ export const App = () => {
 					<H1>My Feed</H1>
 					<NewThread dispatch={dispatch} />
 					{allThreads?.map(thread => (
-						<Thread key={thread.uuid} thread={thread} />
+						<Thread
+							key={thread.uuid}
+							initialValue={thread}
+							dispatch={dispatch}
+						/>
 					))}
 				</div>
 			</div>
