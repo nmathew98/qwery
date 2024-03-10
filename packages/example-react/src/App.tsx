@@ -1,7 +1,9 @@
 import React, { ChangeEventHandler, KeyboardEventHandler } from "react";
 import {
 	Card,
+	CardContent,
 	CardDescription,
+	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
@@ -17,12 +19,9 @@ import {
 	DialogTrigger,
 } from "./components/ui/dialog";
 import { Input } from "./components/ui/input";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@/components/ui/accordion";
+import { ThemeProvider } from "./components/theme-provider";
+import { H1, P } from "./components/ui/typography";
+import { StarFilledIcon } from "@radix-ui/react-icons";
 
 const createThread = (
 	parent?: string,
@@ -52,7 +51,7 @@ const THREADS = faker.helpers.multiple(() => createThread(), {
 	},
 });
 
-const ThreadChild = ({ child, onClick, depth = 0 }) => {
+const ThreadChild = ({ child, onClickReply, onClickExpand }) => {
 	const rerenders = React.useRef(0);
 
 	React.useLayoutEffect(() => {
@@ -60,46 +59,49 @@ const ThreadChild = ({ child, onClick, depth = 0 }) => {
 	}, [child]);
 
 	return (
-		<AccordionItem
-			style={{ marginLeft: `${depth * 0.5}rem` }}
-			value={child.uuid}
-			onClick={onClick(child)}>
-			<AccordionTrigger className="text-left">
-				{child.content}
-			</AccordionTrigger>
-			<AccordionContent className="flex justify-between">
-				<div className="flex-col">
-					<div className="flex justify-between">
+		<Card
+			className="cursor-pointer border-2"
+			style={{
+				borderColor: `hsl(${250 - rerenders.current}, 100%, 50%)`,
+			}}>
+			<CardHeader>
+				<CardTitle>{child.createdBy}</CardTitle>
+				<CardDescription className="flex space-x-1">
+					<span>{child.createdAt.toDateString()}</span>
+					<span>&middot;</span>
+					<span className="inline-flex items-center space-x-1">
+						<span>{child.likes}</span>
 						<span>
-							<span className="text-sm">
-								Created at&nbsp;
-								{child.createdAt.toDateString()}
-								&nbsp; by {child.createdBy}
-							</span>
+							<StarFilledIcon />
 						</span>
-						<span>
-							<span className="text-sm">{child.likes} 👍</span>
-						</span>
-					</div>
-					{child.children && (
-						<Accordion type="multiple">
-							{child.children.map(child => (
-								<ThreadChild
-									key={child.uuid}
-									depth={depth + 1}
-									child={child}
-									onClick={onClick}
-								/>
-							))}
-						</Accordion>
-					)}
-				</div>
-			</AccordionContent>
-		</AccordionItem>
+					</span>
+				</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<P>{child.content}</P>
+			</CardContent>
+			<CardFooter className="flex-col space-y-4">
+				{child.children && (
+					<Button
+						className="w-full"
+						variant="secondary"
+						onClick={onClickExpand(child)}>
+						View whole thread
+					</Button>
+				)}
+				<Button
+					variant="default"
+					className="w-full"
+					onClick={onClickReply(child)}>
+					Reply
+				</Button>
+			</CardFooter>
+		</Card>
 	);
 };
 
 const Thread = ({ thread }) => {
+	const [currentThread, setCurrentThread] = React.useState(thread);
 	const [replyTo, setReplyTo] = React.useState<any>(null);
 	const [newThread, setNewThread] = React.useState("");
 	const rerenders = React.useRef(0);
@@ -113,6 +115,7 @@ const Thread = ({ thread }) => {
 	const onSubmitNewThead = () => {
 		setNewThread("");
 	};
+	const replyToMainThread = () => setReplyTo(null);
 	const onKeyDownEnterNewThread: KeyboardEventHandler<
 		HTMLInputElement
 	> = event => {
@@ -121,71 +124,97 @@ const Thread = ({ thread }) => {
 		}
 
 		if (event.key === "Backspace" && !newThread) {
-			setReplyTo(null);
+			replyToMainThread();
 		}
 	};
-	const makeOnClickChildThread = child => (event: MouseEvent) => {
+	const makeOnClickReply = child => (event: MouseEvent) => {
 		event.stopPropagation();
 
 		setReplyTo(child);
 	};
+	const makeOnClickExpandThread = child => () => {
+		setCurrentThread(child);
+	};
+	const onClickReturnToMainThread = () => setCurrentThread(thread);
 
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
-				<Card className="cursor-pointer max-w-lg">
+				<Card
+					className="cursor-pointer max-w-2xl border-2"
+					style={{
+						borderColor: `hsl(${250 - rerenders.current}, 100%, 50%)`,
+					}}>
 					<CardHeader>
-						<CardTitle>{thread.content}</CardTitle>
-						<CardDescription className="flex justify-between">
-							<span>
-								<span className="text-sm">
-									Created at {thread.createdAt.toDateString()}{" "}
-									by {thread.createdBy}
-								</span>
-							</span>
-							<span>
-								<span className="text-sm">
-									{thread.likes} 👍
+						<CardTitle>{thread.createdBy}</CardTitle>
+						<CardDescription className="flex space-x-1">
+							<span>{thread.createdAt.toDateString()}</span>
+							<span>&middot;</span>
+							<span className="inline-flex items-center space-x-1">
+								<span>{thread.likes}</span>
+								<span>
+									<StarFilledIcon />
 								</span>
 							</span>
 						</CardDescription>
 					</CardHeader>
+					<CardContent>
+						<P>{thread.content}</P>
+					</CardContent>
+					<CardFooter>
+						<Button className="w-full">View whole thread</Button>
+					</CardFooter>
 				</Card>
 			</DialogTrigger>
 			<DialogContent>
-				<DialogHeader id="test">
+				<DialogHeader>
 					<DialogTitle>View whole thread</DialogTitle>
-					<DialogDescription>{thread.content}</DialogDescription>
-					<div className="my-4 flex-col space-y-4">
-						{thread.children && (
-							<div className="max-h-[50dvh] overflow-scroll">
-								<Accordion
-									type="multiple"
-									className="flex-col space-y-8">
-									{thread.children.map(child => (
-										<ThreadChild
-											key={child.uuid}
-											child={child}
-											onClick={makeOnClickChildThread}
-										/>
-									))}
-								</Accordion>
-							</div>
-						)}
-						<Input
-							value={newThread}
-							onChange={onChangeNewThread}
-							onKeyDown={onKeyDownEnterNewThread}
-							placeholder={
-								replyTo
-									? `Reply to ${replyTo.createdBy}`
-									: "Share a thought...?"
-							}
-							type="text"
-						/>
-					</div>
+					<DialogDescription>
+						{currentThread.content}
+					</DialogDescription>
 				</DialogHeader>
+				{currentThread.children && (
+					<div className="max-h-[50dvh] overflow-scroll flex-col space-y-8">
+						{currentThread.children.map(child => (
+							<ThreadChild
+								key={child.uuid}
+								child={child}
+								onClickExpand={makeOnClickExpandThread}
+								onClickReply={makeOnClickReply}
+							/>
+						))}
+					</div>
+				)}
+				<div className="flex-col space-y-2">
+					<Input
+						value={newThread}
+						onChange={onChangeNewThread}
+						onKeyDown={onKeyDownEnterNewThread}
+						placeholder={
+							replyTo
+								? `Reply to ${replyTo.createdBy}`
+								: "Share a thought...?"
+						}
+						type="text"
+					/>
+					{replyTo !== null && (
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={replyToMainThread}>
+							Reply to main thread
+						</Button>
+					)}
+				</div>
 				<DialogFooter>
+					{currentThread !== thread && (
+						<Button
+							onClick={onClickReturnToMainThread}
+							variant="secondary"
+							type="reset">
+							View main thread
+						</Button>
+					)}
 					<Button onClick={onSubmitNewThead} type="submit">
 						Confirm
 					</Button>
@@ -197,12 +226,15 @@ const Thread = ({ thread }) => {
 
 export const App = () => {
 	return (
-		<div className="flex justify-center my-8">
-			<div className="flex-col space-y-8">
-				{THREADS.map(thread => (
-					<Thread key={thread.uuid} thread={thread} />
-				))}
+		<ThemeProvider defaultTheme="dark">
+			<div className="flex justify-center my-8 mx-4 sm:mx-0">
+				<div className="flex-col space-y-8">
+					<H1>My Feed</H1>
+					{THREADS.map(thread => (
+						<Thread key={thread.uuid} thread={thread} />
+					))}
+				</div>
 			</div>
-		</div>
+		</ThemeProvider>
 	);
 };
