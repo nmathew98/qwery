@@ -120,6 +120,7 @@ const Thread = ({ initialValue, dispatch: landingDispatch }) => {
 					return child;
 				}),
 			}) as Thread,
+		broadcast: true,
 	});
 
 	React.useLayoutEffect(() => {
@@ -129,6 +130,20 @@ const Thread = ({ initialValue, dispatch: landingDispatch }) => {
 		}
 	}, [currentThread]);
 
+	/**
+	 * When we have updates which are broadcasted,
+	 * `data` will be updated each time an update is broadcast,
+	 * so we have to update `currentThread` with the broadcasted
+	 * updates
+	 */
+	React.useEffect(() => {
+		if (!data) {
+			return;
+		}
+
+		setCurrentThread(findDeep(currentThread.uuid, data));
+	}, [data]);
+
 	const onChangeNewThread: ChangeEventHandler<HTMLInputElement> = event =>
 		setContent(event.target.value);
 	const onSubmitNewThread = async () => {
@@ -136,24 +151,6 @@ const Thread = ({ initialValue, dispatch: landingDispatch }) => {
 		// we are creating a child thread for a child thread
 		// and then dispatch the update specifying it has already been persisted
 		if (replyTo) {
-			const findDeep = (uuid: string, thread: Thread) => {
-				if (thread.uuid === uuid) {
-					return thread;
-				}
-
-				if (!thread.children) {
-					return null;
-				}
-
-				for (let i = 0; i < thread.children.length; i++) {
-					const result = findDeep(uuid, thread.children[i]);
-
-					if (result) {
-						return result;
-					}
-				}
-			};
-
 			const newThread = {
 				createdBy: name.current,
 				content: content,
@@ -403,9 +400,10 @@ export const App = () => {
 
 				return thread;
 			}),
+		broadcast: true,
 	});
 
-	const allThreads = data?.sort(
+	const allThreads = [...(data ?? [])]?.sort(
 		(a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
 	);
 
@@ -430,4 +428,22 @@ export const App = () => {
 			</div>
 		</ThemeProvider>
 	);
+};
+
+const findDeep = (uuid: string, thread: Thread) => {
+	if (thread.uuid === uuid) {
+		return thread;
+	}
+
+	if (!thread.children) {
+		return null;
+	}
+
+	for (let i = 0; i < thread.children.length; i++) {
+		const result = findDeep(uuid, thread.children[i]);
+
+		if (result) {
+			return result;
+		}
+	}
 };

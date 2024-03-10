@@ -36,10 +36,10 @@ export const useQwery = <
 		| undefined
 	>(null);
 	const abortControllerRef = React.useRef(new AbortController());
-	const id = React.useId();
+	const id = React.useRef(Math.random().toString(36).substring(2));
 
 	const createBroadcastChannel = () => {
-		if (!queryKey) {
+		if (!queryKey || !broadcast) {
 			return null;
 		}
 
@@ -50,7 +50,9 @@ export const useQwery = <
 		apply: (onChange, thisArg, args) => {
 			const result = Reflect.apply(onChange, thisArg, args);
 
-			if (broadcast) {
+			// If the result is not a `Promise` then `result` is falsy
+			// and `result` is complete
+			if (!result && queryKey && broadcast) {
 				const channel = createBroadcastChannel();
 
 				channel?.postMessage({
@@ -90,6 +92,17 @@ export const useQwery = <
 			const merged = Reflect.apply(onSuccess, thisArg, args);
 
 			const final = merged || next;
+
+			// The final version of data is given by `final`
+			if (queryKey && broadcast) {
+				const channel = createBroadcastChannel();
+
+				channel?.postMessage({
+					id,
+					next: final,
+				});
+				channel?.close();
+			}
 
 			if (queryKey) {
 				context?.makeOnChange?.(queryKey)(final);
@@ -247,7 +260,7 @@ export const useQwery = <
 		) => {
 			const crdt = await crdtRef.current;
 
-			if (event.data.id === id) {
+			if (event.data.id === id.current) {
 				return;
 			}
 

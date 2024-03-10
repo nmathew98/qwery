@@ -2,7 +2,7 @@ import type { Dispatch } from "@b.s/incremental";
 import type { Data, InitialValue } from "./options";
 
 export interface UseQweryReturn<I extends InitialValue> {
-	data?: InferData<I>;
+	data?: Readonly<InferData<I>>;
 	versions?: InferData<I>[];
 	dispatch: Dispatch<InferData<I>>;
 }
