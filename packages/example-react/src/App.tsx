@@ -123,16 +123,20 @@ const Thread = ({ thread }) => {
 			}) as Thread,
 	});
 
+	const latest = data?.uuid === currentThread.uuid ? data : currentThread;
 	React.useLayoutEffect(() => {
 		if (previous.current !== data) {
 			rerenders.current = rerenders.current + 1 * 50;
-			previous.current = thread;
+			previous.current = latest;
 		}
-	}, [thread]);
+	}, [latest]);
 
 	const onChangeNewThread: ChangeEventHandler<HTMLInputElement> = event =>
 		setContent(event.target.value);
 	const onSubmitNewThread = async () => {
+		// This is a really deep update so manually create the new `Thread`
+		// we are creating a child thread for a child thread
+		// and then dispatch the update specifying it has already been persisted
 		if (replyTo) {
 			const findDeep = (uuid: string, thread: Thread) => {
 				if (thread.uuid === uuid) {
@@ -161,6 +165,8 @@ const Thread = ({ thread }) => {
 
 			const result = await upsertThread(newThread);
 
+			// `dispatch` returns the `latest` version of the main thread here
+			// since the global `onChange` which is async is not triggered
 			const latest = dispatch(
 				thread => {
 					const replyingTo = findDeep(replyTo.uuid, thread);
@@ -321,6 +327,7 @@ export const NewThread = ({ dispatch }) => {
 			likes: 0,
 		};
 
+		// Dispatch and create a new `Thread`
 		dispatch(allThreads => void allThreads.unshift(newThread));
 
 		setContent("");
@@ -360,9 +367,11 @@ export const NewThread = ({ dispatch }) => {
 };
 
 export const App = () => {
+	// We have many main `Thread`s and each `Thread` can have zero or more
+	// child `Thread`s
 	const { data, dispatch } = useQwery({
 		queryKey: "threads",
-		initialValue: getAllThreads,
+		initialValue: getAllThreads, // Get all main threads
 		onChange: async next => {
 			const newItemIdx = next.findIndex(thread => !thread.uuid);
 
