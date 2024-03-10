@@ -36,7 +36,7 @@ importers:
   packages/example-react:
     dependencies:
       '@b.s/react-qwery':
-        specifier: ^1.5.1
+        specifier: link:../react
         version: link:../react
       '@b.s/s.o.o.n':
         specifier: ^1.0.2
@@ -79,7 +79,7 @@ importers:
         version: 1.0.7(tailwindcss@3.4.1)
     devDependencies:
       '@b.s/qwery-example-api':
-        specifier: ../example-api
+        specifier: link:../example-api
         version: link:../example-api
       '@faker-js/faker':
         specifier: ^8.4.1
