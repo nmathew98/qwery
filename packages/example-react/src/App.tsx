@@ -135,7 +135,10 @@ const Thread = ({ thread }) => {
 	const makeOnClickExpandThread = child => () => {
 		setCurrentThread(child);
 	};
-	const onClickReturnToMainThread = () => setCurrentThread(thread);
+	const onClickReturnToMainThread = () => {
+		setCurrentThread(thread);
+		setReplyTo(null);
+	};
 
 	return (
 		<Dialog>
