@@ -17,6 +17,12 @@ interface ThreadMeta {
 const STORAGE = createStorage();
 const THREADS = prefixStorage(STORAGE, "threads");
 
+export const getAllThreads = async (): Promise<Thread[]> => {
+	const keys = await THREADS.getKeys();
+
+	return Promise.all(keys.map(getThread)) as Promise<Thread[]>;
+};
+
 export const getThread = async (uuid: string): Promise<Thread | null> => {
 	const parent = await THREADS.getItem<Thread>(uuid);
 
@@ -28,6 +34,7 @@ export const getThread = async (uuid: string): Promise<Thread | null> => {
 
 	return {
 		...parent,
+		createdAt: new Date(parent.createdAt),
 		children: !meta.children
 			? null
 			: ((await Promise.all(meta.children.map(getThread))) as Thread[]),

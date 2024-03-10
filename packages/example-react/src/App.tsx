@@ -23,6 +23,8 @@ import { ThemeProvider } from "./components/theme-provider";
 import { H1, P } from "./components/ui/typography";
 import { StarFilledIcon } from "@radix-ui/react-icons";
 import { Textarea } from "./components/ui/textarea";
+import { getAllThreads, getThread, upsertThread } from "@b.s/qwery-example-api";
+import { useQwery } from "@b.s/react-qwery";
 
 const createThread = (
 	parent?: string,
@@ -102,19 +104,100 @@ const ThreadChild = ({ child, onClickReply, onClickExpand }) => {
 };
 
 const Thread = ({ thread }) => {
+	const name = React.useRef(faker.person.fullName());
 	const [currentThread, setCurrentThread] = React.useState(thread);
 	const [replyTo, setReplyTo] = React.useState<any>(null);
-	const [newThread, setNewThread] = React.useState("");
+	const [content, setContent] = React.useState("");
 	const rerenders = React.useRef(0);
+
+	const { data, dispatch } = useQwery({
+		queryKey: `threads-${thread.uuid}`,
+		initialValue: () =>
+			getThread(thread.uuid) as Promise<Record<string, any>>,
+		onChange: async next => {
+			const newItemIdx = next.children.findIndex(thread => !thread.uuid);
+
+			const result = await upsertThread(next.children[newItemIdx]);
+
+			return result;
+		},
+		onSuccess: (next, _previous, result) => ({
+			...next,
+			children: next.children.map(child => {
+				if (!child.uuid) {
+					return {
+						...child,
+						...result,
+					};
+				}
+
+				return child;
+			}),
+		}),
+	});
 
 	React.useLayoutEffect(() => {
 		rerenders.current = rerenders.current + 1;
 	}, [thread]);
 
 	const onChangeNewThread: ChangeEventHandler<HTMLInputElement> = event =>
-		setNewThread(event.target.value);
-	const onSubmitNewThread = () => {
-		setNewThread("");
+		setContent(event.target.value);
+	const onSubmitNewThread = async () => {
+		if (replyTo) {
+			const findDeep = (uuid: string, thread) => {
+				if (thread.uuid === uuid) {
+					return thread;
+				}
+
+				for (let i = 0; i < thread.children.length; i++) {
+					const result = findDeep(uuid, thread.children[i]);
+
+					if (result) {
+						return result;
+					}
+				}
+
+				return null;
+			};
+
+			const newThread = {
+				createdBy: name.current,
+				content: content,
+				parent: replyTo.uuid,
+				likes: 0,
+			};
+
+			const result = await upsertThread(newThread);
+
+			const latest = dispatch(
+				thread => {
+					const replyingTo = findDeep(replyTo.uuid, thread);
+
+					replyingTo.children ??= [];
+					replyingTo.children.unshift(result);
+				},
+				{ isPersisted: true },
+			) as Record<string, any>;
+
+			setCurrentThread(findDeep(currentThread.uuid, latest));
+
+			return setContent("");
+		}
+
+		const newThread = {
+			createdBy: name.current,
+			content: content,
+			parent: currentThread.uuid,
+			likes: 0,
+		};
+
+		dispatch(thread => {
+			thread.children ??= [];
+
+			thread.children.unshift(newThread);
+		});
+
+		return setContent("");
 	};
 	const replyToMainThread = () => setReplyTo(null);
 	const onKeyDownNewThread: KeyboardEventHandler<
@@ -124,7 +207,7 @@ const Thread = ({ thread }) => {
 			return onSubmitNewThread();
 		}
 
-		if (event.key === "Backspace" && !newThread) {
+		if (event.key === "Backspace" && !setContent) {
 			replyToMainThread();
 		}
 	};
@@ -140,6 +223,8 @@ const Thread = ({ thread }) => {
 		setCurrentThread(thread);
 		setReplyTo(null);
 	};
+
+	const latest = data?.uuid === currentThread.uuid ? data : currentThread;
 
 	return (
 		<Dialog>
@@ -173,13 +258,11 @@ const Thread = ({ thread }) => {
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>View whole thread</DialogTitle>
-					<DialogDescription>
-						{currentThread.content}
-					</DialogDescription>
+					<DialogDescription>{latest.content}</DialogDescription>
 				</DialogHeader>
-				{currentThread.children && (
+				{latest.children && (
 					<div className="max-h-[50dvh] overflow-scroll flex-col space-y-8">
-						{currentThread.children.map(child => (
+						{latest.children.map(child => (
 							<ThreadChild
 								key={child.uuid}
 								child={child}
@@ -191,7 +274,7 @@ const Thread = ({ thread }) => {
 				)}
 				<div className="flex-col space-y-2">
 					<Input
-						value={newThread}
+						value={content}
 						onChange={onChangeNewThread}
 						onKeyDown={onKeyDownNewThread}
 						placeholder={
@@ -211,7 +294,7 @@ const Thread = ({ thread }) => {
 					)}
 				</div>
 				<DialogFooter>
-					{currentThread !== thread && (
+					{latest.uuid !== thread.uuid && (
 						<Button
 							onClick={onClickReturnToMainThread}
 							variant="secondary"
@@ -220,7 +303,7 @@ const Thread = ({ thread }) => {
 						</Button>
 					)}
 					<Button
-						disabled={!newThread}
+						disabled={!content}
 						onClick={onSubmitNewThread}
 						type="submit">
 						Submit
@@ -231,14 +314,22 @@ const Thread = ({ thread }) => {
 	);
 };
 
-export const NewThread = () => {
+export const NewThread = ({ dispatch }) => {
 	const name = React.useRef(faker.person.fullName());
-	const [newThread, setNewThread] = React.useState("");
+	const [content, setContent] = React.useState("");
 
 	const onChangeNewThread: ChangeEventHandler<HTMLTextAreaElement> = event =>
-		setNewThread(event.target.value);
+		setContent(event.target.value);
 	const onSubmitNewThread = () => {
-		setNewThread("");
+		const newThread = {
+			createdBy: name.current,
+			content: content,
+			likes: 0,
+		};
+
+		dispatch(allThreads => void allThreads.unshift(newThread));
+
+		setContent("");
 	};
 	const onKeyDownNewThread: KeyboardEventHandler<
 		HTMLTextAreaElement
@@ -256,7 +347,7 @@ export const NewThread = () => {
 			</CardHeader>
 			<CardContent>
 				<Textarea
-					value={newThread}
+					value={content}
 					onChange={onChangeNewThread}
 					onKeyDown={onKeyDownNewThread}
 					placeholder="Share a thought...?"
@@ -265,7 +356,7 @@ export const NewThread = () => {
 			<CardFooter>
 				<Button
 					onClick={onSubmitNewThread}
-					disabled={!newThread}
+					disabled={!content}
 					className="w-full">
 					Submit
 				</Button>
@@ -275,13 +366,38 @@ export const NewThread = () => {
 };
 
 export const App = () => {
+	const { data, dispatch } = useQwery({
+		queryKey: "threads",
+		initialValue: getAllThreads,
+		onChange: async next => {
+			const newItemIdx = next.findIndex(thread => !thread.uuid);
+
+			const result = await upsertThread(next[newItemIdx]);
+
+			return result;
+		},
+		onSuccess: (next, _previous, result) =>
+			next.map(thread => {
+				if (!thread.uuid) {
+					return {
+						...thread,
+						...result,
+					};
+				}
+
+				return thread;
+			}),
+	});
+
+	const allThreads = [...(data ?? []), ...THREADS].sort((a, b) => b - a);
+
 	return (
 		<ThemeProvider defaultTheme="dark">
 			<div className="flex justify-center my-8 mx-4 sm:mx-0">
 				<div className="flex-col space-y-8">
 					<H1>My Feed</H1>
-					<NewThread />
-					{THREADS.map(thread => (
+					<NewThread dispatch={dispatch} />
+					{allThreads.map(thread => (
 						<Thread key={thread.uuid} thread={thread} />
 					))}
 				</div>
