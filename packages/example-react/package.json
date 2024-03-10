@@ -12,6 +12,7 @@
 		"format": "prettier .  --write"
 	},
 	"dependencies": {
+		"@b.s/react-qwery": "workspace:^",
 		"@b.s/s.o.o.n": "^1.0.2",
 		"@radix-ui/react-accordion": "^1.1.2",
 		"@radix-ui/react-collapsible": "^1.0.3",
@@ -27,7 +28,6 @@
 		"tailwindcss-animate": "^1.0.7"
 	},
 	"devDependencies": {
-		"@b.s/react-qwery": "link:../react",
 		"@b.s/qwery-example-api": "link:../example-api",
 		"@faker-js/faker": "^8.4.1",
 		"@types/react": "^18.2.56",
