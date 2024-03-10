@@ -36,7 +36,7 @@ importers:
   packages/example-react:
     dependencies:
       '@b.s/react-qwery':
-        specifier: workspace:^
+        specifier: ^1.5.1
         version: link:../react
       '@b.s/s.o.o.n':
         specifier: ^1.0.2
