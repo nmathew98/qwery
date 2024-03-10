@@ -22,6 +22,7 @@ import { Input } from "./components/ui/input";
 import { ThemeProvider } from "./components/theme-provider";
 import { H1, P } from "./components/ui/typography";
 import { StarFilledIcon } from "@radix-ui/react-icons";
+import { Textarea } from "./components/ui/textarea";
 
 const createThread = (
 	parent?: string,
@@ -112,15 +113,15 @@ const Thread = ({ thread }) => {
 
 	const onChangeNewThread: ChangeEventHandler<HTMLInputElement> = event =>
 		setNewThread(event.target.value);
-	const onSubmitNewThead = () => {
+	const onSubmitNewThread = () => {
 		setNewThread("");
 	};
 	const replyToMainThread = () => setReplyTo(null);
-	const onKeyDownEnterNewThread: KeyboardEventHandler<
+	const onKeyDownNewThread: KeyboardEventHandler<
 		HTMLInputElement
 	> = event => {
 		if (event.key === "Enter") {
-			return onSubmitNewThead();
+			return onSubmitNewThread();
 		}
 
 		if (event.key === "Backspace" && !newThread) {
@@ -192,7 +193,7 @@ const Thread = ({ thread }) => {
 					<Input
 						value={newThread}
 						onChange={onChangeNewThread}
-						onKeyDown={onKeyDownEnterNewThread}
+						onKeyDown={onKeyDownNewThread}
 						placeholder={
 							replyTo
 								? `Reply to ${replyTo.createdBy}`
@@ -220,7 +221,7 @@ const Thread = ({ thread }) => {
 					)}
 					<Button
 						disabled={!newThread}
-						onClick={onSubmitNewThead}
+						onClick={onSubmitNewThread}
 						type="submit">
 						Submit
 					</Button>
@@ -230,12 +231,55 @@ const Thread = ({ thread }) => {
 	);
 };
 
+export const NewThread = () => {
+	const name = React.useRef(faker.person.fullName());
+	const [newThread, setNewThread] = React.useState("");
+
+	const onChangeNewThread: ChangeEventHandler<HTMLTextAreaElement> = event =>
+		setNewThread(event.target.value);
+	const onSubmitNewThread = () => {
+		setNewThread("");
+	};
+	const onKeyDownNewThread: KeyboardEventHandler<
+		HTMLTextAreaElement
+	> = event => {
+		if (event.key === "Enter") {
+			return onSubmitNewThread();
+		}
+	};
+
+	return (
+		<Card className="cursor-pointer max-w-2xl border-2">
+			<CardHeader>
+				<CardTitle>{name.current}</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<Textarea
+					value={newThread}
+					onChange={onChangeNewThread}
+					onKeyDown={onKeyDownNewThread}
+					placeholder="Share a thought...?"
+				/>
+			</CardContent>
+			<CardFooter>
+				<Button
+					onClick={onSubmitNewThread}
+					disabled={!newThread}
+					className="w-full">
+					Submit
+				</Button>
+			</CardFooter>
+		</Card>
+	);
+};
+
 export const App = () => {
 	return (
 		<ThemeProvider defaultTheme="dark">
 			<div className="flex justify-center my-8 mx-4 sm:mx-0">
 				<div className="flex-col space-y-8">
 					<H1>My Feed</H1>
+					<NewThread />
 					{THREADS.map(thread => (
 						<Thread key={thread.uuid} thread={thread} />
 					))}
