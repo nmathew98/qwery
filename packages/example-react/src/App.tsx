@@ -55,10 +55,14 @@ const THREADS = faker.helpers.multiple(() => createThread(), {
 });
 
 const ThreadChild = ({ child, onClickReply, onClickExpand }) => {
+	const previous = React.useRef(child);
 	const rerenders = React.useRef(0);
 
 	React.useLayoutEffect(() => {
-		rerenders.current = rerenders.current + 1;
+		if (previous.current !== child) {
+			rerenders.current = rerenders.current + 1 * 50;
+			previous.current = child;
+		}
 	}, [child]);
 
 	return (
@@ -108,6 +112,8 @@ const Thread = ({ thread }) => {
 	const [currentThread, setCurrentThread] = React.useState(thread);
 	const [replyTo, setReplyTo] = React.useState<any>(null);
 	const [content, setContent] = React.useState("");
+
+	const previous = React.useRef(thread);
 	const rerenders = React.useRef(0);
 
 	const { data, dispatch } = useQwery({
@@ -137,7 +143,10 @@ const Thread = ({ thread }) => {
 	});
 
 	React.useLayoutEffect(() => {
-		rerenders.current = rerenders.current + 1;
+		if (previous.current !== thread) {
+			rerenders.current = rerenders.current + 1 * 50;
+			previous.current = thread;
+		}
 	}, [thread]);
 
 	const onChangeNewThread: ChangeEventHandler<HTMLInputElement> = event =>
