@@ -39,5 +39,11 @@ jobs:
             - name: Build order
               run: pnpm lerna list --all --toposort
 
-            - name: Lint, test & build
-              run: pnpm lerna run lint,test,build
+            - name: Lint
+              run: pnpm lint
+
+            - name: Test
+              run: pnpm test
+
+            - name: Build
+              run: pnpm build
