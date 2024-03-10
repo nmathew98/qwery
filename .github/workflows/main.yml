@@ -36,5 +36,14 @@ jobs:
             - name: Install modules
               run: pnpm install
 
-            - name: Lint, test & build
-              run: pnpm lerna run lint,test,build
+            - name: Build order
+              run: pnpm lerna list --all --toposort
+
+            - name: Lint
+              run: pnpm lint
+
+            - name: Build
+              run: pnpm build
+
+            - name: Test
+              run: pnpm test

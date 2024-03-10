@@ -12,6 +12,8 @@ React Qwery bundle size: [19.7 kB minified](https://bundlephobia.com/package/@b.
 
 Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
 
+Try it out: [StackBlitz](https://stackblitz.com/edit/react-qwery-threads?file=README.md)
+
 ## Features
 
 -   CJS + ESM ✅
