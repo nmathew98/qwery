@@ -218,8 +218,11 @@ const Thread = ({ thread }) => {
 							View main thread
 						</Button>
 					)}
-					<Button onClick={onSubmitNewThead} type="submit">
-						Confirm
+					<Button
+						disabled={!newThread}
+						onClick={onSubmitNewThead}
+						type="submit">
+						Submit
 					</Button>
 				</DialogFooter>
 			</DialogContent>
