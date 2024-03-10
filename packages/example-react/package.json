@@ -5,14 +5,12 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
-		"build": "vite build",
 		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
 		"preview": "vite preview",
 		"clean": "rm -f *.tgz && rm -rf dist",
 		"format": "prettier .  --write"
 	},
 	"dependencies": {
-		"@b.s/react-qwery": "workspace:^",
 		"@b.s/s.o.o.n": "^1.0.2",
 		"@radix-ui/react-accordion": "^1.1.2",
 		"@radix-ui/react-collapsible": "^1.0.3",
@@ -28,9 +26,9 @@
 		"tailwindcss-animate": "^1.0.7"
 	},
 	"devDependencies": {
-		"@b.s/qwery-example-api": "../example-api",
+		"@b.s/react-qwery": "link:../react",
+		"@b.s/qwery-example-api": "link:../example-api",
 		"@faker-js/faker": "^8.4.1",
-		"@tailwindcss/vite": "4.0.0-alpha.7",
 		"@types/react": "^18.2.56",
 		"@types/react-dom": "^18.2.19",
 		"@typescript-eslint/eslint-plugin": "^7.0.2",
