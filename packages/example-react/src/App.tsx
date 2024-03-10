@@ -83,7 +83,7 @@ const ThreadChild = ({ child, onClickReply, onClickExpand }) => {
 	);
 };
 
-const Thread = ({ thread }) => {
+const Thread = ({ thread, landingDispatch }) => {
 	const name = React.useRef(faker.person.fullName());
 	const [currentThread, setCurrentThread] = React.useState(thread);
 	const [replyTo, setReplyTo] = React.useState<any>(null);
@@ -94,7 +94,7 @@ const Thread = ({ thread }) => {
 
 	const { data, dispatch } = useQwery({
 		queryKey: `threads-${thread.uuid}`,
-		initialValue: thread,
+		initialValue: thread as Thread,
 		onChange: async (next: Thread) => {
 			const newItem = next.children?.find(thread => !thread.uuid);
 
@@ -175,6 +175,17 @@ const Thread = ({ thread }) => {
 				{ isPersisted: true },
 			) as Thread;
 
+			landingDispatch(
+				allThreads => {
+					const currentThread = allThreads.find(
+						thread => thread.uuid === latest.uuid,
+					);
+
+					currentThread.children = latest.children;
+				},
+				{ isPersisted: true },
+			);
+
 			setCurrentThread(findDeep(currentThread.uuid, latest));
 
 			return setContent("");
@@ -218,7 +229,7 @@ const Thread = ({ thread }) => {
 		setCurrentThread(child);
 	};
 	const onClickReturnToMainThread = () => {
-		setCurrentThread(thread);
+		setCurrentThread(data);
 		setReplyTo(null);
 	};
 
@@ -409,7 +420,11 @@ export const App = () => {
 					<H1>My Feed</H1>
 					<NewThread dispatch={dispatch} />
 					{allThreads?.map(thread => (
-						<Thread key={thread.uuid} thread={thread} />
+						<Thread
+							key={thread.uuid}
+							thread={thread}
+							landingDispatch={dispatch}
+						/>
 					))}
 				</div>
 			</div>
