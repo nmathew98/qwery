@@ -3,11 +3,10 @@ import {
 	type MakeMonitoredParameters,
 } from "@b.s/incremental";
 import { computed, ref } from "vue";
+import { createId } from "@b.s/qwery-shared";
 
 export const useMonitoredFetch = () => {
 	const allFetchStatus = ref<{ [key: string]: boolean }>(Object.create(null));
-
-	const createId = () => Math.random().toString(32).substring(2);
 
 	const monitor = <F extends (...args: any[]) => Promise<any>>(
 		fetchFn: F,
