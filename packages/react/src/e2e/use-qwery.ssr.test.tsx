@@ -1,10 +1,6 @@
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 import { describe, it, expect, vitest, afterEach } from "vitest";
-import {
-	ExecutionEnvironment,
-	useExecutionEnvironment,
-} from "../use-execution-environment";
 import { QweryProvider } from "../context";
 import { useQwery } from "../use-qwery";
 import { createRedisCache } from "./redis";
@@ -16,6 +12,7 @@ import {
 	fireEvent,
 } from "@testing-library/react";
 import { createApi } from "./api";
+import { isBrowser } from "@b.s/qwery-shared";
 
 describe("useQwery ssr", () => {
 	const SsrProviders = ({ children }) => (
@@ -34,13 +31,10 @@ describe("useQwery ssr", () => {
 		};
 
 		const App = () => {
-			const { executionEnvironment } = useExecutionEnvironment();
-
 			const test = useQwery({
-				initialValue:
-					executionEnvironment === ExecutionEnvironment.Server
-						? { a: 2, b: 3, c: 4 }
-						: INITIAL_VALUE,
+				initialValue: isBrowser()
+					? { a: 2, b: 3, c: 4 }
+					: INITIAL_VALUE,
 				onChange: vitest.fn(),
 			});
 

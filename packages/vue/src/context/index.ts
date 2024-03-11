@@ -4,18 +4,12 @@ import {
 	type CacheProvider,
 	type CacheStore,
 } from "@b.s/incremental";
-import {
-	ExecutionEnvironment,
-	useExecutionEnvironment,
-} from "../use-execution-environment";
-import { createNoOpCache } from "@b.s/qwery-shared";
+import { createNoOpCache, isBrowser } from "@b.s/qwery-shared";
 
 export const QweryContext = Symbol("QweryContext");
 
 export const provideQweryContext = (store?: CacheStore) => {
-	const { executionEnvironment } = useExecutionEnvironment();
-
-	if (executionEnvironment === ExecutionEnvironment.Server && !store) {
+	if (isBrowser() && !store) {
 		return provide(QweryContext, createCacheProvider(createNoOpCache()));
 	}
 

@@ -1,10 +1,7 @@
 import { onCleanup, onMount } from "solid-js";
-import { ExecutionEnvironment } from "@b.s/qwery-shared";
-import { useExecutionEnvironment } from "../use-execution-environment";
+import { isBrowser } from "@b.s/qwery-shared";
 
 export const useRememberScroll = () => {
-	const { executionEnvironment } = useExecutionEnvironment();
-
 	const onScroll = () => {
 		const currentPath = window.location.pathname;
 
@@ -18,7 +15,7 @@ export const useRememberScroll = () => {
 	};
 
 	onMount(() => {
-		if (executionEnvironment !== ExecutionEnvironment.Browser) {
+		if (!isBrowser()) {
 			return;
 		}
 
