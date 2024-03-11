@@ -1,6 +1,11 @@
 import { derived, get, writable } from "svelte/store";
 import { onDestroy, onMount } from "svelte";
-import { createCRDT, type CRDT, type Dispatch } from "@b.s/incremental";
+import {
+	createCRDT,
+	type CRDT,
+	type Dispatch,
+	type DispatchOptions,
+} from "@b.s/incremental";
 import { useQweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
 import type {
@@ -191,7 +196,39 @@ export const useQwery = <
 			updateCRDT(crdt);
 		}
 
-		return { crdt, unsubscribe };
+		const broadcastingDispatch = new Proxy(crdt.dispatch, {
+			apply: (dispatch, thisArg, args) => {
+				const options = args[1] as
+					| DispatchOptions<InferData<I>>
+					| undefined;
+
+				const result = Reflect.apply(dispatch, thisArg, args);
+
+				// In this case `onChange` will not be triggered,
+				// so if `broadcast` is true then we will have to trigger it
+				// after `dispatch`ing
+				if (
+					options?.isPersisted &&
+					!(options as Record<string, any>)?.broadcasted &&
+					broadcast
+				) {
+					const channel = createBroadcastChannel();
+
+					channel?.postMessage({
+						id,
+						next: result,
+					});
+				}
+
+				return result;
+			},
+		});
+
+		const crdtWithBroadcastingDispatch = Object.assign(crdt, {
+			dispatch: broadcastingDispatch,
+		});
+
+		return { crdt: crdtWithBroadcastingDispatch, unsubscribe };
 	};
 
 	const initializedCRDT = initializeCRDT();
@@ -213,7 +250,14 @@ export const useQwery = <
 			return;
 		}
 
-		crdt?.dispatch(event.data.next, { isPersisted: true });
+		// Otherwise we get a loop de loop
+		// Persisted dispatches will trigger this handler
+		// which triggers another dispatch and so forth
+		// TODO: Cleanup
+		crdt?.dispatch(event.data.next, {
+			isPersisted: true,
+			broadcasted: true,
+		} as DispatchOptions<InferData<I>>);
 
 		updateCRDT(crdt);
 	};
