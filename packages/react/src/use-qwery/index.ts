@@ -111,17 +111,7 @@ export const useQwery = <
 
 			sendAbortSignal();
 		};
-	}, [
-		broadcast,
-		cache,
-		debug,
-		initialValue,
-		onChange,
-		onError,
-		onSuccess,
-		queryKey,
-		suspense,
-	]);
+	}, []); /* eslint react-hooks/exhaustive-deps: "off" */
 
 	React.useEffect(() => {
 		if (!qwery) {
@@ -143,7 +133,7 @@ export const useQwery = <
 		return () => {
 			observedPromise.then(unsubscribe => unsubscribe());
 		};
-	}, [qwery, subscribe]);
+	}, [qwery]);
 
 	React.useEffect(() => {
 		if (!qwery) {
@@ -180,7 +170,7 @@ export const useQwery = <
 		return () => {
 			cleanupPromise.then(cleanup => cleanup());
 		};
-	}, [qwery, cache, queryKey]);
+	}, [qwery]);
 
 	React.useEffect(() => {
 		if (!qwery || !refetchOnWindowFocus) {
@@ -215,7 +205,7 @@ export const useQwery = <
 		return () => {
 			cleanupPromise.then(cleanup => cleanup());
 		};
-	}, [qwery, refetchOnWindowFocus, cache, queryKey, refetch]);
+	}, [qwery]);
 
 	React.useDebugValue(renderCount);
 
