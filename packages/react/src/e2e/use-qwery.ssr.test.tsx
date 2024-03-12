@@ -32,7 +32,7 @@ describe("useQwery ssr", () => {
 
 		const App = () => {
 			const test = useQwery({
-				initialValue: isBrowser()
+				initialValue: !isBrowser()
 					? { a: 2, b: 3, c: 4 }
 					: INITIAL_VALUE,
 				onChange: vitest.fn(),
@@ -166,9 +166,9 @@ describe("useQwery ssr", () => {
 			</SsrProviders>,
 		);
 
-		fireEvent.focus(window);
-
 		await waitFor(() => {
+			fireEvent.focus(window);
+
 			expect(getInitialValue).toBeCalledTimes(2);
 		});
 	});

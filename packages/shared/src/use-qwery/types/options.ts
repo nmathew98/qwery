@@ -1,4 +1,8 @@
-import type { CreateCRDTParameters, Dispatch } from "@b.s/incremental";
+import type {
+	CreateCRDTParameters,
+	Dispatch,
+	DispatchOptions,
+} from "@b.s/incremental";
 import type { BaseUseQweryOptions } from "./base";
 
 export type UseQweryUntaggedOptions<
@@ -19,6 +23,10 @@ export type UseQweryUntaggedOptions<
 			dispatch: Dispatch<DInferred>,
 		) => Promise<(() => void) | void> | (() => void) | void;
 	};
+
+export interface DispatchOptionsInternal extends DispatchOptions {
+	isBroadcasted?: boolean;
+}
 
 export type UseQweryTaggedOptions<
 	I extends InitialValue,
