@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type MutableRefObject } from "react";
 import { type CRDT } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
@@ -39,8 +39,23 @@ export const useQwery = <
 	>(null);
 	const cache = React.useContext(QweryContext);
 	const abortControllerRef = React.useRef(new AbortController());
+	const reactivePropsRef = React.useRef({
+		onChange,
+		onSuccess,
+		onError,
+		subscribe,
+		refetch,
+	});
 
 	useRememberScroll();
+
+	reactivePropsRef.current = {
+		onChange,
+		onSuccess,
+		onError,
+		subscribe,
+		refetch,
+	};
 
 	React.useEffect(() => {
 		const rerender = () => setRenderCount(renderCount => renderCount + 1);
@@ -60,9 +75,9 @@ export const useQwery = <
 			const qwery = createQwery({
 				queryKey,
 				initialValue: cachedValueOrInitialValue,
-				onChange,
-				onSuccess,
-				onError,
+				onChange: forwardArgs(reactivePropsRef, "onChange"),
+				onSuccess: forwardArgs(reactivePropsRef, "onSuccess"),
+				onError: forwardArgs(reactivePropsRef, "onError"),
 				broadcast,
 				suspense,
 				cache,
@@ -125,7 +140,10 @@ export const useQwery = <
 				typeof createQwery
 			>;
 
-			return subscribeQwery(awaitedQwery, { rerender, subscribe });
+			return subscribeQwery(awaitedQwery, {
+				rerender,
+				subscribe: forwardArgs(reactivePropsRef, "subscribe"),
+			});
 		};
 
 		const observedPromise = observe();
@@ -188,7 +206,7 @@ export const useQwery = <
 				queryKey,
 				cache,
 				rerender,
-				refetch,
+				refetch: forwardArgs(reactivePropsRef, "refetch"),
 			});
 
 			window.addEventListener("focus", onWindowFocus);
@@ -233,3 +251,8 @@ export const useQwery = <
 };
 
 const noOpFunction = () => {};
+
+const forwardArgs =
+	(ref: MutableRefObject<any>, prop: string) =>
+	(...args: any[]) =>
+		ref.current[prop]?.(...args);
