@@ -1,14 +1,18 @@
-import React from "react";
-import { type CRDT, createCRDT, type DispatchOptions } from "@b.s/incremental";
+import React, { type MutableRefObject } from "react";
+import { type CRDT } from "@b.s/incremental";
 import { QweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
-import type {
-	Data,
-	InitialValue,
-	UseQweryOptions,
-	UseQweryReturn,
-	MaybePromise,
-	InferData,
+import {
+	type InitialValue,
+	type UseQweryOptions,
+	type UseQweryReturn,
+	type MaybePromise,
+	createQwery,
+	computeInitialQweryValue,
+	subscribeQwery,
+	makeOnBroadcast,
+	makeOnWindowFocus,
+	type InferData,
 } from "@b.s/qwery-shared";
 
 export const useQwery = <
@@ -28,317 +32,227 @@ export const useQwery = <
 	suspense = false,
 }: UseQweryOptions<I, S>): MaybePromise<S, UseQweryReturn<I>> => {
 	const [renderCount, setRenderCount] = React.useState(0);
-	const context = React.useContext(QweryContext);
-	const crdtRef = React.useRef<
+	const [qwery, setQwery] = React.useState<
+		| ReturnType<typeof createQwery>
+		| Promise<ReturnType<typeof createQwery>>
 		| null
-		| Promise<CRDT<InferData<I>> | undefined>
-		| CRDT<InferData<I>>
-		| undefined
 	>(null);
+	const cache = React.useContext(QweryContext);
 	const abortControllerRef = React.useRef(new AbortController());
-	const idRef = React.useRef(Math.random().toString(36).substring(2));
-
-	const createBroadcastChannel = () => {
-		if (!queryKey || !broadcast) {
-			return null;
-		}
-
-		return new BroadcastChannel(queryKey.toString());
-	};
-
-	const proxiedOnChange = new Proxy(onChange, {
-		apply: (onChange, thisArg, args) => {
-			const result = Reflect.apply(onChange, thisArg, args);
-
-			// If the result is not a `Promise` then `result` is falsy
-			// and `result` is complete
-			if (!result && queryKey && broadcast) {
-				const channel = createBroadcastChannel();
-
-				channel?.postMessage({
-					id: idRef.current,
-					next: args[0],
-				});
-				channel?.close();
-			}
-
-			if (!result) {
-				if (queryKey) {
-					context?.makeOnChange?.(queryKey)(args[0]);
-				}
-
-				return void setRenderCount(renderCount => renderCount + 1);
-			}
-
-			if (suspense && result instanceof Promise) {
-				return (result as Promise<unknown>).catch(error => {
-					onError(args[0], args[1]);
-
-					throw error;
-				});
-			}
-
-			return result;
-		},
-	});
-
-	const proxiedOnSuccess = new Proxy(onSuccess, {
-		apply: (onSuccess, thisArg, args) => {
-			// If `onChange` returns a result then assume that is
-			// the API response and likely has to be merged in by `onSuccess`
-			// which should return the complete document
-			// (creating a new record and we don't have `uuid`s for example)
-			const next = args[0];
-			const merged = Reflect.apply(onSuccess, thisArg, args);
-
-			const final = merged || next;
-
-			// The final version of data is given by `final`
-			if (queryKey && broadcast) {
-				const channel = createBroadcastChannel();
-
-				channel?.postMessage({
-					id: idRef.current,
-					next: final,
-				});
-				channel?.close();
-			}
-
-			if (queryKey) {
-				context?.makeOnChange?.(queryKey)(final);
-			}
-
-			setRenderCount(renderCount => renderCount + 1);
-
-			// Relied upon by `incremental` to `createNewVersion`
-			return merged;
-		},
+	const reactivePropsRef = React.useRef({
+		onChange,
+		onSuccess,
+		onError,
+		subscribe,
+		refetch,
 	});
 
 	useRememberScroll();
 
+	reactivePropsRef.current = {
+		onChange,
+		onSuccess,
+		onError,
+		subscribe,
+		refetch,
+	};
+
 	React.useEffect(() => {
-		const computeInitialValue = async () => {
-			const cachedValue = queryKey
-				? await context?.getCachedValue?.(queryKey)
-				: null;
+		const rerender = () => setRenderCount(renderCount => renderCount + 1);
 
-			if (initialValue instanceof Function) {
-				if (cachedValue) {
-					return cachedValue;
-				}
-
-				const fetchedValue = await initialValue(
-					abortControllerRef.current.signal,
-				);
-
-				if (queryKey) {
-					context?.setCachedValue?.(queryKey)(fetchedValue);
-				}
-
-				return fetchedValue;
-			}
-
-			return cachedValue ?? initialValue;
-		};
-
-		const initializeCRDT = async () => {
-			const initialValue = await computeInitialValue();
-
-			if (!initialValue) {
-				return;
-			}
-
-			const crdt = createCRDT({
+		const create = async () => {
+			const cachedValueOrInitialValue = await computeInitialQweryValue({
 				initialValue,
-				onChange: proxiedOnChange,
-				onSuccess: proxiedOnSuccess,
-				onError: onError,
-				trackVersions: debug,
+				queryKey,
+				cache,
+				abortController: abortControllerRef.current,
 			});
 
-			const proxiedDispatch = new Proxy(crdt.dispatch, {
-				apply: (dispatch, thisArg, args) => {
-					const subscribeOptions = {
-						isPersisted: true,
-					};
-
-					const result = Reflect.apply(dispatch, thisArg, [
-						args[0],
-						subscribeOptions,
-					]);
-
-					setRenderCount(renderCount => renderCount + 1);
-
-					return result;
-				},
-			});
-
-			const unsubscribe = subscribe?.(proxiedDispatch);
-
-			if (!suspense) {
-				setRenderCount(renderCount => renderCount + 1);
-			}
-
-			const broadcastingDispatch = new Proxy(crdt.dispatch, {
-				apply: (dispatch, thisArg, args) => {
-					const options = args[1] as
-						| DispatchOptions<InferData<I>>
-						| undefined;
-
-					const result = Reflect.apply(dispatch, thisArg, args);
-
-					// In this case `onChange` will not be triggered,
-					// so if `broadcast` is true then we will have to trigger it
-					// after `dispatch`ing
-					if (
-						options?.isPersisted &&
-						!(options as Record<string, any>)?.broadcasted &&
-						broadcast
-					) {
-						const channel = createBroadcastChannel();
-
-						channel?.postMessage({
-							id: idRef.current,
-							next: result,
-						});
-					}
-
-					return result;
-				},
-			});
-
-			const crdtWithBroadcastingDispatch = Object.assign(crdt, {
-				dispatch: broadcastingDispatch,
-			});
-
-			return { crdt: crdtWithBroadcastingDispatch, unsubscribe };
-		};
-
-		const setCrdtRef = async (
-			initializedCRDT: ReturnType<typeof initializeCRDT>,
-		) => {
-			crdtRef.current = suspense
-				? initializedCRDT.then(result => result?.crdt)
-				: (await initializedCRDT)?.crdt;
-		};
-
-		const initializedCrdt = initializeCRDT();
-		setCrdtRef(initializedCrdt);
-
-		const unsubscribe = async () => {
-			const unsubscribe = (await initializedCrdt)?.unsubscribe;
-
-			if (unsubscribe instanceof Promise) {
-				return void (await unsubscribe)?.();
-			}
-
-			return unsubscribe?.();
-		};
-
-		const onWindowFocus = async () => {
-			const dispatch = (await initializedCrdt)?.crdt?.dispatch;
-
-			if (!dispatch) {
+			if (!cachedValueOrInitialValue) {
 				return;
 			}
 
-			const proxiedDispatch = new Proxy(dispatch, {
-				apply: (dispatch, thisArg, args) => {
-					const refetchOptions = {
-						isPersisted: true,
-					};
-
-					const result = Reflect.apply(dispatch, thisArg, [
-						args[0],
-						refetchOptions,
-					]);
-
-					if (queryKey) {
-						context?.setCachedValue?.(queryKey)(args[0]);
-					}
-
-					setRenderCount(renderCount => renderCount + 1);
-
-					return result;
-				},
+			const qwery = createQwery({
+				queryKey,
+				initialValue: cachedValueOrInitialValue,
+				onChange: forwardArgs(reactivePropsRef, "onChange"),
+				onSuccess: forwardArgs(reactivePropsRef, "onSuccess"),
+				onError: forwardArgs(reactivePropsRef, "onError"),
+				broadcast,
+				suspense,
+				cache,
+				rerender,
+				debug,
+				abortController: abortControllerRef.current,
 			});
 
-			await refetch?.({
-				dispatch: proxiedDispatch,
-				signal: abortControllerRef.current.signal,
+			return qwery;
+		};
+
+		const assign = async (qwery: ReturnType<typeof create>) => {
+			if (suspense) {
+				const awaitedQwery = await qwery;
+
+				if (awaitedQwery) {
+					setQwery(awaitedQwery);
+
+					return awaitedQwery;
+				}
+
+				return;
+			}
+
+			return void qwery.then(qwery => {
+				if (!qwery) {
+					return;
+				}
+
+				setQwery(qwery);
+
+				return qwery;
 			});
 		};
 
-		if (refetchOnWindowFocus) {
-			window.addEventListener("focus", onWindowFocus);
-		}
+		const qweryPromise = assign(create());
 
 		const sendAbortSignal = abortControllerRef.current.abort.bind(
 			abortControllerRef.current,
 		);
+
 		return () => {
-			window.removeEventListener("focus", onWindowFocus);
-			unsubscribe();
+			qweryPromise.then(qwery => {
+				qwery?.channel?.close();
+			});
+
 			sendAbortSignal();
 		};
 	}, []); /* eslint react-hooks/exhaustive-deps: "off" */
 
 	React.useEffect(() => {
-		const channel = createBroadcastChannel();
+		if (!qwery) {
+			return;
+		}
 
-		const onBroadcast = async (
-			event: MessageEvent<{ id: string; next: InferData<I> }>,
-		) => {
-			const crdt = await crdtRef.current;
+		const rerender = () => setRenderCount(renderCount => renderCount + 1);
 
-			if (event.data.id === idRef.current) {
-				return;
-			}
+		const observe = async () => {
+			const awaitedQwery = (await qwery) as ReturnType<
+				typeof createQwery
+			>;
 
-			// Otherwise we get a loop de loop
-			// Persisted dispatches will trigger this handler
-			// which triggers another dispatch and so forth
-			// TODO: Cleanup
-			crdt?.dispatch(event.data.next, {
-				isPersisted: true,
-				broadcasted: true,
-			} as DispatchOptions<InferData<I>>);
-
-			setRenderCount(renderCount => renderCount + 1);
+			return subscribeQwery(awaitedQwery, {
+				rerender,
+				subscribe: forwardArgs(reactivePropsRef, "subscribe"),
+			});
 		};
 
-		channel?.addEventListener("message", onBroadcast);
+		const observedPromise = observe();
 
 		return () => {
-			channel?.removeEventListener("message", onBroadcast);
-			channel?.close();
+			observedPromise.then(unsubscribe => unsubscribe?.());
 		};
-	}, []); /* eslint react-hooks/exhaustive-deps: "off" */
+	}, [qwery]);
+
+	React.useEffect(() => {
+		if (!qwery) {
+			return;
+		}
+
+		const rerender = () => setRenderCount(renderCount => renderCount + 1);
+
+		const listen = async () => {
+			const awaitedQwery = (await qwery) as ReturnType<
+				typeof createQwery
+			>;
+
+			const onBroadcast = makeOnBroadcast(awaitedQwery, {
+				queryKey,
+				cache,
+				rerender,
+			});
+
+			awaitedQwery.channel?.addEventListener("message", onBroadcast);
+
+			const cleanup = () => {
+				awaitedQwery.channel?.removeEventListener(
+					"message",
+					onBroadcast,
+				);
+			};
+
+			return cleanup;
+		};
+
+		const cleanupPromise = listen();
+
+		return () => {
+			cleanupPromise.then(cleanup => cleanup());
+		};
+	}, [qwery]);
+
+	React.useEffect(() => {
+		if (!qwery || !refetchOnWindowFocus) {
+			return;
+		}
+
+		const rerender = () => setRenderCount(renderCount => renderCount + 1);
+
+		const listen = async () => {
+			const awaitedQwery = (await qwery) as ReturnType<
+				typeof createQwery
+			>;
+
+			const onWindowFocus = makeOnWindowFocus(awaitedQwery, {
+				queryKey,
+				cache,
+				rerender,
+				refetch: forwardArgs(reactivePropsRef, "refetch"),
+			});
+
+			window.addEventListener("focus", onWindowFocus);
+
+			const cleanup = () => {
+				window.removeEventListener("focus", onWindowFocus);
+			};
+
+			return cleanup;
+		};
+
+		const cleanupPromise = listen();
+
+		return () => {
+			cleanupPromise.then(cleanup => cleanup());
+		};
+	}, [qwery]);
 
 	React.useDebugValue(renderCount);
 
-	const computeInitialValue = () => {
-		if (typeof initialValue !== "function") {
-			return initialValue;
-		}
-	};
-
-	if (suspense && crdtRef.current instanceof Promise) {
-		return crdtRef.current.then(crdt => ({
-			data: crdt?.data ?? computeInitialValue(),
-			dispatch: crdt?.dispatch ?? noOpFunction,
-			versions: crdt?.versions,
+	if (suspense && qwery instanceof Promise) {
+		return qwery.then(qwery => ({
+			data:
+				qwery.crdt?.data ??
+				(typeof initialValue !== "function" ? initialValue : null),
+			dispatch: qwery.crdt?.dispatch ?? noOpFunction,
+			versions: qwery.crdt?.versions,
 		})) as any;
 	}
 
-	const crdt = crdtRef.current as CRDT<Data> | undefined;
+	const crdt = (qwery as ReturnType<typeof createQwery>)?.crdt as
+		| CRDT<InferData<I>>
+		| undefined;
 
 	return {
-		data: crdt?.data ?? computeInitialValue(),
+		data:
+			crdt?.data ??
+			(typeof initialValue !== "function" ? initialValue : null),
 		dispatch: crdt?.dispatch ?? noOpFunction,
 		versions: crdt?.versions,
 	} as any;
 };
 
 const noOpFunction = () => {};
+
+const forwardArgs =
+	(ref: MutableRefObject<any>, prop: string) =>
+	(...args: any[]) =>
+		ref.current[prop]?.(...args);

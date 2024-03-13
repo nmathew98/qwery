@@ -1,12 +1,9 @@
 import React from "react";
-import { ExecutionEnvironment } from "@b.s/qwery-shared";
-import { useExecutionEnvironment } from "../use-execution-environment";
+import { isBrowser } from "@b.s/qwery-shared";
 
 export const useRememberScroll = () => {
-	const { executionEnvironment } = useExecutionEnvironment();
-
 	React.useEffect(() => {
-		if (executionEnvironment !== ExecutionEnvironment.Browser) {
+		if (!isBrowser()) {
 			return;
 		}
 

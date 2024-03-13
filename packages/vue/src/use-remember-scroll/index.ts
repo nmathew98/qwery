@@ -1,11 +1,8 @@
 import { onMounted, onUnmounted } from "vue";
-import { ExecutionEnvironment } from "@b.s/qwery-shared";
-import { useExecutionEnvironment } from "../use-execution-environment";
+import { isBrowser } from "@b.s/qwery-shared";
 
 export const useRememberScroll = () => {
-	const { executionEnvironment } = useExecutionEnvironment();
-
-	if (executionEnvironment !== ExecutionEnvironment.Browser) {
+	if (isBrowser()) {
 		return;
 	}
 
