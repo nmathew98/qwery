@@ -105,7 +105,7 @@ export const useQwery = <
 	const unsubscribePromise = subscription();
 
 	onCleanup(() => {
-		unsubscribePromise.then(unsubscribe => unsubscribe());
+		unsubscribePromise.then(unsubscribe => unsubscribe?.());
 	});
 
 	const onBroadcast = makeOnBroadcast(qweryPromise, {

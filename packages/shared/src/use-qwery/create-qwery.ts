@@ -128,12 +128,16 @@ export const createQwery = ({
 };
 
 export const subscribeQwery = (
-	qwery: ReturnType<typeof createQwery>,
+	qwery: ReturnType<typeof createQwery> | undefined,
 	{
 		rerender,
 		subscribe,
 	}: Pick<UseQweryOptions<any, any>, "subscribe"> & { rerender: any },
 ) => {
+	if (!qwery) {
+		return;
+	}
+
 	const proxiedDispatch = new Proxy(qwery.crdt.dispatch, {
 		apply: (dispatch, thisArg, args) => {
 			const subscribeOptions: DispatchOptions = {
