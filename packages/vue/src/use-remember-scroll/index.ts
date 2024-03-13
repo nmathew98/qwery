@@ -2,7 +2,7 @@ import { onMounted, onUnmounted } from "vue";
 import { isBrowser } from "@b.s/qwery-shared";
 
 export const useRememberScroll = () => {
-	if (isBrowser()) {
+	if (!isBrowser()) {
 		return;
 	}
 

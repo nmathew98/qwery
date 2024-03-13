@@ -2,7 +2,7 @@ import { onMount, onDestroy } from "svelte";
 import { isBrowser } from "@b.s/qwery-shared";
 
 export const useRememberScroll = () => {
-	if (isBrowser()) {
+	if (!isBrowser()) {
 		return;
 	}
 
