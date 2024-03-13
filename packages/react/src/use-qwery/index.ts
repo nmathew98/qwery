@@ -149,7 +149,7 @@ export const useQwery = <
 		const observedPromise = observe();
 
 		return () => {
-			observedPromise.then(unsubscribe => unsubscribe());
+			observedPromise.then(unsubscribe => unsubscribe?.());
 		};
 	}, [qwery]);
 
