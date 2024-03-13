@@ -40,6 +40,8 @@ export const useQwery = <
 
 	useRememberScroll();
 
+	// With Vue, things behave like in React, ref reference
+	// changes and it causes a rerender
 	const rerender = (value?: ReturnType<typeof createQwery> | null) => {
 		qwery.value = { ...(value ?? qwery.value ?? Object.create(null)) };
 	};

@@ -41,9 +41,9 @@ export const useQwery = <
 
 	// With Svelte stores, using `update` does not trigger a rerender
 	// if references (of fields) do not change, so with `crdt` even if we
-	// spread `qwery` since the reference for `crdt` is stable
-	// there are no rerenders, it seems to be granularly reactive
-	// `set` seems to cause a definite rerender
+	// spread the result since the reference for `crdt` is stable
+	// there are no rerenders
+	// `set` causes a definite rerender
 	const rerender = () =>
 		qweryPromise.then(result => {
 			if (!result) {
