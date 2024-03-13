@@ -28,14 +28,12 @@ export const useRememberScroll = () => {
 			? JSON.parse(sessionStorage.getItem(currentPath) as string)
 			: null;
 
-		if (!savedScroll) {
-			return;
+		if (savedScroll) {
+			window.scrollTo({
+				left: savedScroll.scrollX,
+				top: savedScroll.scrollY,
+			});
 		}
-
-		window.scrollTo({
-			left: savedScroll.scrollX,
-			top: savedScroll.scrollY,
-		});
 
 		window.addEventListener("scroll", onScroll);
 	});

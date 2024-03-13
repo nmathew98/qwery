@@ -10,6 +10,19 @@ export const useRememberScroll = () => {
 			return;
 		}
 
+		const currentPath = window.location.pathname;
+
+		const savedScroll = sessionStorage.getItem(currentPath)
+			? JSON.parse(sessionStorage.getItem(currentPath) as string)
+			: null;
+
+		if (savedScroll) {
+			window.scrollTo({
+				left: savedScroll.scrollX,
+				top: savedScroll.scrollY,
+			});
+		}
+
 		const onScroll = () => {
 			const currentPath = window.location.pathname;
 
@@ -21,21 +34,6 @@ export const useRememberScroll = () => {
 				}),
 			);
 		};
-
-		const currentPath = window.location.pathname;
-
-		const savedScroll = sessionStorage.getItem(currentPath)
-			? JSON.parse(sessionStorage.getItem(currentPath) as string)
-			: null;
-
-		if (!savedScroll) {
-			return;
-		}
-
-		window.scrollTo({
-			left: savedScroll.scrollX,
-			top: savedScroll.scrollY,
-		});
 
 		window.addEventListener("scroll", onScroll);
 
