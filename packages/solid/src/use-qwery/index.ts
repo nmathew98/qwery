@@ -40,13 +40,15 @@ export const useQwery = <
 
 	useRememberScroll();
 
+	// With Solid, things behave like in React, signal reference
+	// changes and it causes a rerender
 	const rerender = () =>
-		setQwery(qwery => {
-			if (!qwery) {
-				return null;
+		qweryPromise.then(result => {
+			if (!result) {
+				return;
 			}
 
-			return { ...qwery };
+			setQwery({ ...result });
 		});
 
 	const create = async () => {

@@ -1,11 +1,7 @@
 import type { DispatchOptionsInternal, UseQweryOptions } from "./types";
 import { createBroadcastChannel } from "./create-broadcast-channel";
 import { createId } from "../utilities";
-import type {
-	CacheProvider,
-	DispatchOptions,
-	Serializable,
-} from "@b.s/incremental";
+import type { CacheProvider, Serializable } from "@b.s/incremental";
 import { createCRDT } from "@b.s/incremental";
 
 export const createQwery = ({
@@ -140,8 +136,9 @@ export const subscribeQwery = (
 
 	const proxiedDispatch = new Proxy(qwery.crdt.dispatch, {
 		apply: (dispatch, thisArg, args) => {
-			const subscribeOptions: DispatchOptions = {
+			const subscribeOptions: DispatchOptionsInternal = {
 				isPersisted: true,
+				isBroadcasted: true,
 			};
 
 			const result = Reflect.apply(dispatch, thisArg, [

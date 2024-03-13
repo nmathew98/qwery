@@ -1,18 +1,18 @@
 import { derived, get, writable } from "svelte/store";
 import { onDestroy, onMount } from "svelte";
-import {
-	createCRDT,
-	type CRDT,
-	type Dispatch,
-	type DispatchOptions,
-} from "@b.s/incremental";
+import type { Dispatch } from "@b.s/incremental";
 import { useQweryContext } from "../context";
 import { useRememberScroll } from "../use-remember-scroll";
-import type {
-	InitialValue,
-	UseQweryOptions,
-	MaybePromise,
-	InferData,
+import {
+	type InitialValue,
+	type UseQweryOptions,
+	type MaybePromise,
+	type InferData,
+	createQwery,
+	computeInitialQweryValue,
+	subscribeQwery,
+	makeOnBroadcast,
+	makeOnWindowFocus,
 } from "@b.s/qwery-shared";
 import type { UseQweryReturnSvelte } from "./types";
 
@@ -32,342 +32,172 @@ export const useQwery = <
 	broadcast = false,
 	suspense = false,
 }: UseQweryOptions<I, S>): MaybePromise<S, UseQweryReturnSvelte<I>> => {
-	const context = useQweryContext();
-
-	const id = Math.random().toString(36).substring(2);
+	const cache = useQweryContext();
 	const abortController = new AbortController();
 
-	const crdt = writable<{
-		data: InferData<I> | null;
-		versions: InferData<I>[] | null;
-		dispatch: Dispatch<InferData<I>> | null;
-	}>({
-		data: null,
-		versions: null,
-		dispatch: null,
-	});
-
-	const updateCRDT = (value: CRDT<InferData<I>>) => {
-		crdt.set({
-			data: value.data,
-			versions: value.versions,
-			dispatch: value.dispatch,
-		});
-	};
-
-	const initializeCRDT = async () => {
-		const proxiedOnChange = new Proxy(onChange, {
-			apply: (onChange, thisArg, args) => {
-				const result = Reflect.apply(onChange, thisArg, args);
-
-				// If the result is not a `Promise` then `result` is falsy
-				// and `result` is complete
-				if (!result && queryKey && broadcast) {
-					const channel = createBroadcastChannel();
-
-					channel?.postMessage({
-						id,
-						next: args[0],
-					});
-					channel?.close();
-				}
-
-				if (!result) {
-					if (queryKey) {
-						context?.makeOnChange?.(queryKey)(args[0]);
-					}
-
-					initializedCRDT.then(result => {
-						if (!result?.crdt) {
-							return;
-						}
-
-						updateCRDT(result?.crdt);
-					});
-				}
-
-				if (suspense && result instanceof Promise) {
-					return (result as Promise<unknown>).catch(error => {
-						onError(args[0], args[1]);
-
-						throw error;
-					});
-				}
-
-				return result;
-			},
-		});
-
-		const proxiedOnSuccess = new Proxy(onSuccess, {
-			apply: (onSuccess, thisArg, args) => {
-				// If `onChange` returns a result then assume that is
-				// the API response and likely has to be merged in by `onSuccess`
-				// which should return the complete document
-				// (creating a new record and we don't have `uuid`s for example)
-				const next = args[0];
-				const merged = Reflect.apply(onSuccess, thisArg, args);
-
-				const final = merged || next;
-
-				// The final version of data is given by `final`
-				if (queryKey && broadcast) {
-					const channel = createBroadcastChannel();
-
-					channel?.postMessage({
-						id,
-						next: final,
-					});
-					channel?.close();
-				}
-
-				if (queryKey) {
-					context?.makeOnChange?.(queryKey)(final);
-				}
-
-				initializedCRDT.then(result => {
-					if (!result?.crdt) {
-						return;
-					}
-
-					updateCRDT(result.crdt);
-				});
-
-				// Relied upon by `incremental` to `createNewVersion`
-				return merged;
-			},
-		});
-
-		const computeInitialValue = async () => {
-			const cachedValue = queryKey
-				? await context?.getCachedValue?.(queryKey)
-				: null;
-
-			if (initialValue instanceof Function) {
-				if (cachedValue) {
-					return cachedValue;
-				}
-
-				const fetchedValue = await initialValue(abortController.signal);
-
-				if (queryKey) {
-					context?.setCachedValue?.(queryKey);
-				}
-
-				return fetchedValue;
-			}
-
-			return cachedValue ?? initialValue;
-		};
-
-		const computedInitialValue = await computeInitialValue();
-
-		if (!computedInitialValue) {
-			return;
-		}
-
-		const crdt = createCRDT({
-			initialValue: computedInitialValue,
-			onChange: proxiedOnChange,
-			onSuccess: proxiedOnSuccess,
-			onError: onError,
-			trackVersions: debug,
-		});
-
-		const proxiedDispatch = new Proxy(crdt.dispatch, {
-			apply: (dispatch, thisArg, args) => {
-				const subscribeOptions = {
-					isPersisted: true,
-				};
-
-				const result = Reflect.apply(dispatch, thisArg, [
-					args[0],
-					subscribeOptions,
-				]);
-
-				updateCRDT(crdt);
-
-				return result;
-			},
-		});
-
-		const unsubscribe = subscribe?.(proxiedDispatch);
-
-		if (!suspense) {
-			updateCRDT(crdt);
-		}
-
-		const broadcastingDispatch = new Proxy(crdt.dispatch, {
-			apply: (dispatch, thisArg, args) => {
-				const options = args[1] as
-					| DispatchOptions<InferData<I>>
-					| undefined;
-
-				const result = Reflect.apply(dispatch, thisArg, args);
-
-				// In this case `onChange` will not be triggered,
-				// so if `broadcast` is true then we will have to trigger it
-				// after `dispatch`ing
-				if (
-					options?.isPersisted &&
-					!(options as Record<string, any>)?.broadcasted &&
-					broadcast
-				) {
-					const channel = createBroadcastChannel();
-
-					channel?.postMessage({
-						id,
-						next: result,
-					});
-				}
-
-				return result;
-			},
-		});
-
-		const crdtWithBroadcastingDispatch = Object.assign(crdt, {
-			dispatch: broadcastingDispatch,
-		});
-
-		return { crdt: crdtWithBroadcastingDispatch, unsubscribe };
-	};
-
-	const initializedCRDT = initializeCRDT();
-
-	const createBroadcastChannel = () => {
-		if (!queryKey) {
-			return null;
-		}
-
-		return new BroadcastChannel(queryKey.toString());
-	};
-
-	const onBroadcast = async (
-		event: MessageEvent<{ id: string; next: InferData<I> }>,
-	) => {
-		const crdt = (await initializedCRDT)?.crdt;
-
-		if (!crdt || event.data.id === id) {
-			return;
-		}
-
-		// Otherwise we get a loop de loop
-		// Persisted dispatches will trigger this handler
-		// which triggers another dispatch and so forth
-		// TODO: Cleanup
-		crdt?.dispatch(event.data.next, {
-			isPersisted: true,
-			broadcasted: true,
-		} as DispatchOptions<InferData<I>>);
-
-		updateCRDT(crdt);
-	};
-
-	const onWindowFocus = async () => {
-		const crdt = (await initializedCRDT)?.crdt;
-
-		if (!crdt) {
-			return;
-		}
-
-		const proxiedDispatch = new Proxy(crdt.dispatch, {
-			apply: (dispatch, thisArg, args) => {
-				const refetchOptions = {
-					isPersisted: true,
-				};
-
-				const result = Reflect.apply(dispatch, thisArg, [
-					args[0],
-					refetchOptions,
-				]);
-
-				if (queryKey) {
-					context?.setCachedValue?.(queryKey)(args[0]);
-				}
-
-				updateCRDT(crdt);
-
-				return result;
-			},
-		});
-
-		await refetch?.({
-			dispatch: proxiedDispatch,
-			signal: abortController.signal,
-		});
-	};
-
-	const channel = createBroadcastChannel();
-
-	onMount(() => {
-		channel?.addEventListener("message", onBroadcast);
-
-		if (refetchOnWindowFocus) {
-			window.addEventListener("focus", onWindowFocus);
-		}
-	});
-
-	onDestroy(() => {
-		const unsubscribe = async () => {
-			const unsubscribe = (await initializedCRDT)?.unsubscribe;
-
-			if (unsubscribe instanceof Promise) {
-				return void (await unsubscribe)?.();
-			}
-
-			return unsubscribe?.();
-		};
-
-		channel?.removeEventListener("message", onBroadcast);
-		channel?.close();
-
-		window.removeEventListener("focus", onWindowFocus);
-		unsubscribe();
-		abortController.abort();
-	});
+	const qwery = writable<ReturnType<typeof createQwery> | null>(null);
 
 	useRememberScroll();
 
-	const computeInitialValue = () => {
-		if (typeof initialValue !== "function") {
-			return initialValue;
+	// With Svelte stores, using `update` does not trigger a rerender
+	// if references (of fields) do not change, so with `crdt` even if we
+	// spread `qwery` since the reference for `crdt` is stable
+	// there are no rerenders, it seems to be granularly reactive
+	// `set` seems to cause a definite rerender
+	const rerender = () =>
+		qweryPromise.then(result => {
+			if (!result) {
+				return;
+			}
+
+			qwery.set(result);
+		});
+
+	const create = async () => {
+		const cachedValueOrInitialValue = await computeInitialQweryValue({
+			initialValue,
+			queryKey,
+			cache,
+			abortController,
+		});
+
+		if (!cachedValueOrInitialValue) {
+			return;
 		}
+
+		const qwery = createQwery({
+			queryKey,
+			initialValue: cachedValueOrInitialValue,
+			onChange,
+			onSuccess,
+			onError,
+			broadcast,
+			suspense,
+			cache,
+			rerender,
+			debug,
+			abortController,
+		});
+
+		return qwery;
 	};
 
+	const assign = async (value: ReturnType<typeof create>) => {
+		const awaitedQwery = await value;
+
+		if (!awaitedQwery) {
+			return;
+		}
+
+		qwery.set(awaitedQwery);
+
+		return awaitedQwery;
+	};
+
+	const qweryPromise = assign(create());
+
+	const subscription = async () => {
+		const awaitedQwery = (await qweryPromise) as ReturnType<
+			typeof createQwery
+		>;
+
+		return subscribeQwery(awaitedQwery, {
+			rerender,
+			subscribe,
+		});
+	};
+	const unsubscribePromise = subscription();
+
+	onDestroy(() => {
+		unsubscribePromise.then(unsubscribe => unsubscribe?.());
+	});
+
+	const onBroadcast = makeOnBroadcast(qweryPromise, {
+		queryKey,
+		cache,
+		rerender,
+	});
+
+	onMount(() => {
+		qweryPromise.then(qwery => {
+			void qwery?.channel?.addEventListener("message", onBroadcast);
+		});
+	});
+
+	onDestroy(() => {
+		qweryPromise.then(qwery => {
+			void qwery?.channel?.removeEventListener("message", onBroadcast);
+		});
+	});
+
+	const onWindowFocus = makeOnWindowFocus(qweryPromise, {
+		queryKey,
+		cache,
+		rerender,
+		refetch,
+	});
+
+	onMount(() => {
+		if (!refetchOnWindowFocus) {
+			return;
+		}
+
+		window.addEventListener("focus", onWindowFocus);
+	});
+
+	onDestroy(() => {
+		if (!refetchOnWindowFocus) {
+			return;
+		}
+
+		window.removeEventListener("focus", onWindowFocus);
+	});
+
+	let value;
 	const dispatch = new Proxy(noOpFunction, {
 		apply: (
 			noOpFunction,
 			_thisArg,
 			args: Parameters<Dispatch<InferData<I>>>,
 		) => {
-			const value = get(crdt);
+			value ??= get(qwery);
 
-			if (!value.dispatch) {
+			if (!value?.crdt.dispatch) {
 				return noOpFunction();
 			}
 
-			return value.dispatch?.(...args);
+			const result = value.crdt.dispatch(...args);
+
+			return result;
 		},
 	}) as Dispatch<InferData<I>>;
 
 	if (suspense) {
-		return initializedCRDT.then(result => ({
+		return qweryPromise.then(result => ({
 			data: derived(
-				crdt,
-				$crdt =>
-					$crdt.data ?? result?.crdt.data ?? computeInitialValue(),
+				qwery,
+				$qwery =>
+					$qwery?.crdt.data ??
+					result?.crdt.data ??
+					(typeof initialValue !== "function" ? initialValue : null),
 			),
 			dispatch,
 			versions: derived(
-				crdt,
-				$crdt => $crdt.versions ?? result?.crdt.versions,
+				qwery,
+				$qwery => $qwery?.crdt.versions ?? result?.crdt.versions,
 			),
 		})) as any;
 	}
 
 	return {
-		data: derived(crdt, $crdt => $crdt.data ?? computeInitialValue()),
+		data: derived(
+			qwery,
+			$qwery =>
+				$qwery?.crdt.data ??
+				(typeof initialValue !== "function" ? initialValue : null),
+		),
 		dispatch,
-		versions: derived(crdt, $crdt => $crdt.versions),
+		versions: derived(qwery, $qwery => $qwery?.crdt.versions),
 	} as any;
 };
 
