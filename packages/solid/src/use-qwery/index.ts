@@ -159,7 +159,7 @@ export const useQwery = <
 				return noOpFunction();
 			}
 
-			return qwery()?.crdt.dispatch?.(...args);
+			return qwery()?.crdt.dispatch(...args);
 		},
 	}) as Dispatch<InferData<I>>;
 
