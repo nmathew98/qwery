@@ -2,6 +2,10 @@ import { onCleanup, onMount } from "solid-js";
 import { isBrowser } from "@b.s/qwery-shared";
 
 export const useRememberScroll = () => {
+	if (!isBrowser()) {
+		return;
+	}
+
 	const onScroll = () => {
 		const currentPath = window.location.pathname;
 
@@ -15,10 +19,6 @@ export const useRememberScroll = () => {
 	};
 
 	onMount(() => {
-		if (!isBrowser()) {
-			return;
-		}
-
 		const currentPath = window.location.pathname;
 
 		const savedScroll = sessionStorage.getItem(currentPath)
