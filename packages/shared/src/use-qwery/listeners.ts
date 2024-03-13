@@ -2,9 +2,18 @@ import type { Data, DispatchOptionsInternal } from "./types";
 import type { createQwery } from "./create-qwery";
 
 export const makeOnBroadcast =
-	(qwery: ReturnType<typeof createQwery>, { queryKey, cache, rerender }) =>
-	(event: MessageEvent<{ id: string; next: Data }>) => {
-		if (event.data.id === qwery.id) {
+	(
+		qwery: MaybePromise<ReturnType<typeof createQwery> | undefined>,
+		{ queryKey, cache, rerender },
+	) =>
+	async (event: MessageEvent<{ id: string; next: Data }>) => {
+		const awaitedQwery = await qwery;
+
+		if (!awaitedQwery) {
+			return;
+		}
+
+		if (event.data.id === awaitedQwery.id) {
 			return;
 		}
 
@@ -17,39 +26,48 @@ export const makeOnBroadcast =
 			cache?.setCachedValue?.(queryKey)(event.data.next);
 		}
 
-		qwery.crdt?.dispatch(event.data.next, options);
+		awaitedQwery.crdt?.dispatch(event.data.next, options);
 
 		rerender();
 	};
 
-export const makeOnWindowFocus = (
-	qwery: ReturnType<typeof createQwery>,
-	{ queryKey, cache, rerender, refetch },
-) => {
-	const proxiedDispatch = new Proxy(qwery.crdt.dispatch, {
-		apply: (dispatch, thisArg, args) => {
-			const refetchOptions = {
-				isPersisted: true,
-			};
+export const makeOnWindowFocus =
+	(
+		qwery: MaybePromise<ReturnType<typeof createQwery> | undefined>,
+		{ queryKey, cache, rerender, refetch },
+	) =>
+	async () => {
+		const awaitedQwery = await qwery;
 
-			const result = Reflect.apply(dispatch, thisArg, [
-				args[0],
-				refetchOptions,
-			]);
+		if (!awaitedQwery) {
+			return;
+		}
 
-			if (queryKey) {
-				cache?.setCachedValue?.(queryKey)(args[0]);
-			}
+		const proxiedDispatch = new Proxy(awaitedQwery.crdt.dispatch, {
+			apply: (dispatch, thisArg, args) => {
+				const refetchOptions = {
+					isPersisted: true,
+				};
 
-			rerender();
+				const result = Reflect.apply(dispatch, thisArg, [
+					args[0],
+					refetchOptions,
+				]);
 
-			return result;
-		},
-	});
+				if (queryKey) {
+					cache?.setCachedValue?.(queryKey)(args[0]);
+				}
 
-	return () =>
+				rerender();
+
+				return result;
+			},
+		});
+
 		refetch?.({
 			dispatch: proxiedDispatch,
-			signal: qwery.abortController.signal,
+			signal: awaitedQwery.abortController.signal,
 		});
-};
+	};
+
+type MaybePromise<T> = T | Promise<T>;

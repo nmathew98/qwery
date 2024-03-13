@@ -23,11 +23,11 @@ export const createQwery = ({
 }: Omit<UseQweryOptions<any, any>, "queryKey"> & {
 	queryKey?: Serializable;
 	abortController: AbortController;
-	cache: CacheProvider;
+	cache?: CacheProvider;
 	rerender: any;
 }) => {
 	const id = createId();
-	const channel = createBroadcastChannel(queryKey);
+	const channel = !broadcast ? null : createBroadcastChannel(queryKey);
 
 	const proxiedOnChange = new Proxy(onChange, {
 		apply: (onChange, thisArg, args) => {
@@ -171,8 +171,8 @@ export const computeInitialQweryValue = async ({
 	abortController,
 }: {
 	initialValue: any;
-	queryKey: any;
-	cache: CacheProvider;
+	queryKey?: Serializable;
+	cache?: CacheProvider;
 	abortController: AbortController;
 }) => {
 	const cachedValue = queryKey
