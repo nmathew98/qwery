@@ -39,10 +39,9 @@ export const useQwery = <
 
 	useRememberScroll();
 
-	// With Svelte stores, using `update` does not trigger a rerender
-	// if references (of fields) do not change, so with `crdt` even if we
-	// spread the result since the reference for `crdt` is stable
-	// there are no rerenders
+	// With Svelte, using `update` sometimes does not cause a rerender as expected
+	// tested with having a subscription and a timeout dispatch the timeout
+	// dispatch required triggering a rerender twice for DOM to update
 	// `set` causes a definite rerender
 	const rerender = () =>
 		qweryPromise.then(result => {
