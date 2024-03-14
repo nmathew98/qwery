@@ -6,7 +6,10 @@ export const useMonitoredFetch = () => {
 		[key: string]: boolean;
 	}>(Object.create(null));
 
-	const monitor = React.useCallback(() => makeMonitor(setAllFetchStatus), []);
+	const monitor = React.useCallback(
+		makeMonitor(setAllFetchStatus),
+		[],
+	); /* eslint react-hooks/exhaustive-deps: "off" */
 
 	return {
 		isFetching: Object.values(allFetchStatus).every(Boolean),
