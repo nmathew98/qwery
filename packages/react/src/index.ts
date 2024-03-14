@@ -14,11 +14,11 @@ export {
 	type CacheStore,
 } from "@b.s/incremental";
 
-export * from "@b.s/qwery-shared";
+export { isBrowser, mapReduceMaybePromise } from "@b.s/qwery-shared";
 
 export * from "./context";
 export * from "./context/types";
-export * from "./use-qwery";
-export * from "./use-remember-scroll";
 export * from "./use-monitored-fetch";
 export * from "./use-network-mode";
+export * from "./use-qwery";
+export * from "./use-remember-scroll";
