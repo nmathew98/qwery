@@ -28,7 +28,7 @@ import {
 	getAllThreads,
 	upsertThread,
 } from "@b.s/qwery-example-api";
-import { useQwery } from "@b.s/react-qwery";
+import { useQwery, useNetworkMode, useMonitoredFetch } from "@b.s/react-qwery";
 
 const ThreadChild = ({ child, onClickReply, onClickExpand }) => {
 	const previous = React.useRef(child);
@@ -352,7 +352,7 @@ export const NewThread = ({ dispatch }) => {
 	};
 
 	return (
-		<Card className="cursor-pointer max-w-2xl border-2">
+		<Card className="w-[42rem] border-2">
 			<CardHeader>
 				<CardTitle>{name.current}</CardTitle>
 			</CardHeader>
@@ -377,11 +377,14 @@ export const NewThread = ({ dispatch }) => {
 };
 
 export const App = () => {
+	const { connectionStatus } = useNetworkMode();
+	const { isFetching, monitor } = useMonitoredFetch();
+
 	// We have many main `Thread`s and each `Thread` can have zero or more
 	// child `Thread`s
 	const { data, dispatch } = useQwery({
 		queryKey: "threads",
-		initialValue: getAllThreads, // Get all main threads
+		initialValue: monitor(getAllThreads), // Get all main threads
 		onChange: async next => {
 			const newItemIdx = next.findIndex(thread => !thread.uuid);
 
@@ -407,10 +410,6 @@ export const App = () => {
 		(a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
 	);
 
-	if (!data) {
-		return null;
-	}
-
 	return (
 		<ThemeProvider defaultTheme="dark">
 			<div className="flex justify-center my-8 mx-4 sm:mx-0">
@@ -424,6 +423,24 @@ export const App = () => {
 							dispatch={dispatch}
 						/>
 					))}
+				</div>
+			</div>
+			<div className="absolute top-6 right-10">
+				<div className="flex space-x-4">
+					<div
+						className={`px-4 py-3 rounded-full ${connectionStatus ? "bg-emerald-700" : "bg-rose-700"}`}>
+						<span
+							className={`font-bold ${connectionStatus ? "text-emerald-400" : "text-rose-400"}`}>
+							{connectionStatus ? "Online!" : "Offline!"}
+						</span>
+					</div>
+					<div
+						className={`px-4 py-3 rounded-full ${!isFetching ? "bg-emerald-700" : "bg-rose-700"}`}>
+						<span
+							className={`font-bold ${!isFetching ? "text-emerald-400" : "text-rose-400"}`}>
+							{!isFetching ? "Fetched!" : "Fetching!"}
+						</span>
+					</div>
 				</div>
 			</div>
 		</ThemeProvider>

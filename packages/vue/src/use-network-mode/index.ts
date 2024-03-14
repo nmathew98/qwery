@@ -3,9 +3,11 @@ import { NetworkMode, type UseNetworkModeOptions } from "@b.s/qwery-shared";
 
 export { NetworkMode, type UseNetworkModeOptions } from "@b.s/qwery-shared";
 
-export const useNetworkMode = ({
-	ping = "https://captive.apple.com/hotspot-detect.html",
-}: UseNetworkModeOptions) => {
+export const useNetworkMode = (
+	{
+		ping = "https://captive.apple.com/hotspot-detect.html",
+	}: UseNetworkModeOptions = Object.create(null),
+) => {
 	const isConnected = ref(true);
 
 	const isOnline = () => {

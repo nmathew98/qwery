@@ -197,9 +197,9 @@ describe("useQwery csr", () => {
 			</BrowserProviders>,
 		);
 
-		fireEvent.focus(window);
-
 		await waitFor(() => {
+			fireEvent.focus(window);
+
 			expect(getInitialValue).toBeCalledTimes(2);
 		});
 	});
@@ -291,6 +291,144 @@ describe("useQwery csr", () => {
 			expect(screen.getByText("a: 1")).toBeTruthy();
 			expect(onError).toBeCalledTimes(1);
 			expect(onSuccess).not.toBeCalled();
+		});
+	});
+
+	describe("broadcast channel", () => {
+		it("it broadcasts updates which are not persisted", async () => {
+			let rerenders = 0;
+
+			const App = () => {
+				const api = createApi();
+				const recordOne = useQwery({
+					queryKey: "test",
+					initialValue: api.get,
+					onChange: vitest.fn(),
+					broadcast: true,
+				});
+
+				const recordTwo = useQwery({
+					queryKey: "test",
+					initialValue: api.get,
+					onChange: vitest.fn(),
+					broadcast: true,
+				});
+
+				rerenders++;
+
+				React.useEffect(() => {
+					if (!(recordOne.data as Record<string, any>)?.d) {
+						recordOne.dispatch(updates => ({
+							...updates,
+							d: {
+								e: {
+									g: {
+										h: 1,
+									},
+								},
+							},
+						}));
+					}
+				}, [recordOne]);
+
+				return (
+					<>
+						<div>
+							{(recordOne.data as Record<string, any>)?.d?.e.g
+								.h ===
+								(recordTwo.data as Record<string, any>)?.d?.e.g
+									.h &&
+							(recordOne.data as Record<string, any>)?.d
+								? "true"
+								: "false"}
+						</div>
+					</>
+				);
+			};
+
+			render(
+				<BrowserProviders>
+					<App />
+				</BrowserProviders>,
+			);
+
+			await waitFor(() => {
+				expect(screen.getByText("true")).toBeTruthy();
+				// 1: initial render
+				// 2: data resolves
+				// 3: dispatch update
+				// 4: `onChange` rerender
+				expect(rerenders).toBe(4);
+			});
+		});
+
+		it("broadcasts updates which are persisted", async () => {
+			let rerenders = 0;
+
+			const App = () => {
+				const api = createApi();
+				const recordOne = useQwery({
+					queryKey: "test",
+					initialValue: api.get,
+					onChange: vitest.fn(),
+					broadcast: true,
+				});
+
+				const recordTwo = useQwery({
+					queryKey: "test",
+					initialValue: api.get,
+					onChange: vitest.fn(),
+					broadcast: true,
+				});
+
+				rerenders++;
+
+				React.useEffect(() => {
+					if (!(recordOne.data as Record<string, any>)?.d) {
+						recordOne.dispatch(
+							updates => ({
+								...updates,
+								d: {
+									e: {
+										g: {
+											h: 1,
+										},
+									},
+								},
+							}),
+							{ isPersisted: true },
+						);
+					}
+				}, [recordOne]);
+
+				return (
+					<>
+						<div>
+							{(recordOne.data as Record<string, any>)?.d?.e.g
+								.h ===
+								(recordTwo.data as Record<string, any>)?.d?.e.g
+									.h &&
+							(recordOne.data as Record<string, any>)?.d
+								? "true"
+								: "false"}
+						</div>
+					</>
+				);
+			};
+
+			render(
+				<BrowserProviders>
+					<App />
+				</BrowserProviders>,
+			);
+
+			await waitFor(() => {
+				expect(screen.getByText("true")).toBeTruthy();
+				// 1: initial render
+				// 2: data resolves
+				// 3: dispatch update
+				expect(rerenders).toBe(3);
+			});
 		});
 	});
 });
