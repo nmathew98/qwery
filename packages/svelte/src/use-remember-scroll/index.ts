@@ -1,36 +1,15 @@
 import { onMount, onDestroy } from "svelte";
-import { isBrowser } from "@b.s/qwery-shared";
+import { isBrowser, makeOnScroll, restoreScroll } from "@b.s/qwery-shared";
 
 export const useRememberScroll = () => {
 	if (!isBrowser()) {
 		return;
 	}
 
-	const onScroll = () => {
-		const currentPath = window.location.pathname;
-
-		sessionStorage.setItem(
-			currentPath,
-			JSON.stringify({
-				scrollX: window.scrollX,
-				scrollY: window.scrollY,
-			}),
-		);
-	};
+	const onScroll = makeOnScroll();
 
 	onMount(() => {
-		const currentPath = window.location.pathname;
-
-		const savedScroll = sessionStorage.getItem(currentPath)
-			? JSON.parse(sessionStorage.getItem(currentPath) as string)
-			: null;
-
-		if (savedScroll) {
-			window.scrollTo({
-				left: savedScroll.scrollX,
-				top: savedScroll.scrollY,
-			});
-		}
+		restoreScroll();
 
 		window.addEventListener("scroll", onScroll);
 	});
