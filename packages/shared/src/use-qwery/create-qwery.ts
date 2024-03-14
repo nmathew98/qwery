@@ -105,7 +105,7 @@ export const createQwery = ({
 			// In this case `onChange` will not be triggered,
 			// so if `broadcast` is true then we will have to trigger it
 			// after `dispatch`ing
-			if (options?.isPersisted && options?.isBroadcasted && broadcast) {
+			if (options?.isPersisted && !options?.isBroadcasted && broadcast) {
 				channel?.postMessage({
 					id,
 					next: result,
