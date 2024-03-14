@@ -2,9 +2,11 @@ import { NetworkMode, type UseNetworkModeOptions } from "@b.s/qwery-shared";
 import { beforeUpdate, onDestroy, onMount } from "svelte";
 import { derived, writable } from "svelte/store";
 
-export const useNetworkMode = ({
-	ping = "https://captive.apple.com/hotspot-detect.html",
-}: UseNetworkModeOptions) => {
+export const useNetworkMode = (
+	{
+		ping = "https://captive.apple.com/hotspot-detect.html",
+	}: UseNetworkModeOptions = Object.create(null),
+) => {
 	const isConnected = writable(true);
 
 	const isOnline = () => isConnected.set(true);

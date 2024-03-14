@@ -19,6 +19,8 @@ const STORAGE = createStorage();
 const THREADS = prefixStorage(STORAGE, "threads");
 
 export const getAllThreads = async (): Promise<Thread[]> => {
+	await sleep(500);
+
 	const keys = await THREADS.getKeys();
 
 	return Promise.all(keys.map(getThread)) as Promise<Thread[]>;
@@ -67,6 +69,8 @@ export const upsertThread = async (
 
 	return next;
 };
+
+const sleep = (ms?: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const setup = () => {
 	const createCompleteThread = (
