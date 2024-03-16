@@ -52,7 +52,7 @@
 		"pack": "pnpm pack"
 	},
 	"dependencies": {
-		"@b.s/incremental": "^2.1.7",
+		"@b.s/incremental": "^2.1.8",
 		"@b.s/txn": "^1.0.4"
 	},
 	"peerDependencies": {

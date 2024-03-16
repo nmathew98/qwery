@@ -106,20 +106,19 @@ const Thread = ({ initialValue, dispatch: landingDispatch }) => {
 
 			return result;
 		},
-		onSuccess: (next: Thread, _previous: Thread, result) =>
-			({
-				...next,
-				children: next.children!.map(child => {
-					if (!child.uuid) {
-						return {
-							...child,
-							...(result as Omit<Thread, "children">),
-						};
-					}
+		onSuccess: (next, _previous, result: Omit<Thread, "children">) => ({
+			...next,
+			children: next.children!.map(child => {
+				if (!child.uuid) {
+					return {
+						...child,
+						...result,
+					};
+				}
 
-					return child;
-				}),
-			}) as Thread,
+				return child;
+			}),
+		}),
 		broadcast: true,
 	});
 
