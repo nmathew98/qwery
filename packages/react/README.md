@@ -4,11 +4,9 @@
 
 Asynchronous state management in React made simple.
 
-Most of the use cases of [React Query](https://tanstack.com/query/latest/) are covered with a similar API while being 65% lighter.
+Qwery provides the structure required to manage and build relationships between asynchronous state while taking care of stabilizing object references and keeping the cache (if any) up to date.
 
-React Query bundle size: [56.6 kB minified](https://bundlephobia.com/package/@tanstack/react-query)
-
-React Qwery bundle size: [19.7 kB minified](https://bundlephobia.com/package/@b.s/react-qwery)
+It also enables an environment agnostic approach to managing asynchronous state allowing simpler migrations between different frontend frameworks and backend architectural styles such as monolith to microservices and REST to GraphQL.
 
 Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
 
