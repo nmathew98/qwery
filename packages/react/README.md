@@ -8,6 +8,8 @@ Qwery provides the structure required to manage and build relationships between 
 
 It also enables an environment agnostic approach to managing asynchronous state allowing simpler migrations between different frontend frameworks and backend architectural styles such as monolith to microservices and REST to GraphQL.
 
+Size: [Bundlephobia](https://bundlephobia.com/package/@b.s/react-qwery)
+
 Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
 
 Try it out: [StackBlitz](https://stackblitz.com/edit/react-qwery-threads?file=README.md)
