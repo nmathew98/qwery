@@ -1,7 +1,7 @@
 {
 	"name": "@b.s/qwery-example-vue",
 	"private": true,
-	"version": "0.0.0",
+	"version": "1.5.6",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
