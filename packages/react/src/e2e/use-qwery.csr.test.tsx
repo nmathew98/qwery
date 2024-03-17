@@ -356,8 +356,7 @@ describe("useQwery csr", () => {
 				expect(screen.getByText("true")).toBeTruthy();
 				// 1: initial render
 				// 2: data resolves
-				// 3: dispatch update
-				// 4: `onChange` rerender
+				// 4: `onChange` rerender (x2)
 				expect(rerenders).toBe(4);
 			});
 		});
@@ -426,8 +425,8 @@ describe("useQwery csr", () => {
 				expect(screen.getByText("true")).toBeTruthy();
 				// 1: initial render
 				// 2: data resolves
-				// 3: dispatch update
-				expect(rerenders).toBe(3);
+				// 4: persisted dispatch rerender (x2)
+				expect(rerenders).toBe(4);
 			});
 		});
 	});
