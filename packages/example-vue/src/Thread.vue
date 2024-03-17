@@ -2,7 +2,7 @@
 import { Thread, upsertThread } from "@b.s/qwery-example-api";
 import { useQwery } from "@b.s/vue-qwery";
 import { faker } from "@faker-js/faker";
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import {
 	Dialog,
 	DialogContent,
@@ -32,15 +32,11 @@ const props = defineProps<{
 }>();
 
 const name = faker.person.fullName();
-const currentThread = ref(props.initialValue);
+
 const content = ref("");
 const replyTo = ref<any>(null);
 
 const rerenders = ref(0);
-
-watch(currentThread, () => {
-	rerenders.value = rerenders.value + 1 * 50;
-});
 
 const { data, dispatch } = useQwery({
 	queryKey: `threads-${props.initialValue.uuid}`,
@@ -72,7 +68,11 @@ const { data, dispatch } = useQwery({
 	broadcast: true,
 });
 
-const findDeep = (uuid: string, thread: Thread) => {
+const findDeep = (uuid: string, thread?: Thread) => {
+	if (!thread) {
+		return null;
+	}
+
 	if (thread.uuid === uuid) {
 		return thread;
 	}
@@ -89,6 +89,15 @@ const findDeep = (uuid: string, thread: Thread) => {
 		}
 	}
 };
+
+const currentThreadUuid = ref(props.initialValue.uuid);
+const currentThread = computed(() =>
+	findDeep(currentThreadUuid.value, data.value as Thread),
+);
+
+watch(currentThread, () => {
+	rerenders.value = rerenders.value + 1 * 50;
+});
 
 const replyToMainThread = () => {
 	replyTo.value = null;
@@ -131,7 +140,6 @@ const onSubmitNewThread = async () => {
 			{ isPersisted: true },
 		);
 
-		currentThread.value = findDeep(currentThread.value.uuid, latest);
 		content.value = "";
 
 		return;
@@ -145,14 +153,13 @@ const onSubmitNewThread = async () => {
 	};
 
 	// `dispatch` returns a `Promise` here since the global `onChange` is triggered
-	const latest = (await dispatch(thread => {
+	await dispatch(thread => {
 		thread.children ??= [];
 
 		thread.children.unshift(newThread as Thread);
-	})) as Thread;
+	});
 
 	content.value = "";
-	currentThread.value = latest;
 };
 
 const onPressEnter = () => {
@@ -173,10 +180,10 @@ const makeOnClickReply = child => (event: MouseEvent) => {
 	replyTo.value = child;
 };
 const makeOnClickExpandThread = child => () => {
-	currentThread.value = child;
+	currentThreadUuid.value = child.uuid;
 };
 const onClickReturnToMainThread = () => {
-	currentThread.value = data.value as Thread;
+	currentThreadUuid.value = props.initialValue.uuid;
 	replyTo.value = null;
 };
 </script>
