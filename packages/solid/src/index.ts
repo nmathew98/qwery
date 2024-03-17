@@ -12,6 +12,7 @@ export {
 	type MakeMonitoredParameters,
 	diff,
 	type CacheStore,
+	type Dispatch,
 } from "@b.s/incremental";
 
 export { isBrowser, mapReduceMaybePromise } from "@b.s/qwery-shared";

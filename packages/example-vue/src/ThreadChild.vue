@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Thread } from "@b.s/qwery-example-api";
+import type { Thread } from "@b.s/qwery-example-api";
 import {
 	Card,
 	CardContent,

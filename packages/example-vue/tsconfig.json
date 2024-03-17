@@ -21,6 +21,7 @@
 		"noFallthroughCasesInSwitch": true,
 		"baseUrl": ".",
 		"noImplicitAny": false,
+		"verbatimModuleSyntax": true,
 
 		/* shadcn/ui */
 		"paths": {

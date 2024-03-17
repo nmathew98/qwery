@@ -12,6 +12,8 @@ Size: [Bundlephobia](https://bundlephobia.com/package/@b.s/vue-qwery)
 
 Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
 
+Try it out: [StackBlitz](https://stackblitz.com/edit/vue-qwery-threads?file=README.md)
+
 ## Features
 
 -   CJS + ESM ✅

@@ -12,6 +12,7 @@ export {
 	type MakeMonitoredParameters,
 	diff,
 	type CacheStore,
+	type Dispatch,
 } from "@b.s/incremental";
 
 export { isBrowser, mapReduceMaybePromise } from "@b.s/qwery-shared";
@@ -20,5 +21,5 @@ export * from "./context";
 export * from "./use-monitored-fetch";
 export * from "./use-network-mode";
 export * from "./use-qwery";
-export * from "@b.s/qwery-shared";
+export * from "./use-qwery/types";
 export * from "./use-remember-scroll";
