@@ -32,7 +32,6 @@ const onSubmitNewThread = () => {
 };
 
 const onKeyDownEnter = event => {
-	console.log(content.value);
 	event.preventDefault();
 	return onSubmitNewThread();
 };

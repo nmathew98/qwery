@@ -41,7 +41,7 @@ const rerenders = ref(0);
 const { data, dispatch } = useQwery({
 	queryKey: `threads-${props.initialValue.uuid}`,
 	initialValue: props.initialValue as Thread,
-	onChange: async (next: Thread) => {
+	onChange: async next => {
 		const newItem = next.children?.find(thread => !thread.uuid);
 
 		if (!newItem) {
@@ -237,7 +237,7 @@ const onClickReturnToMainThread = () => {
 			<div class="flex-col space-y-2">
 				<Input
 					type="text"
-					v-model="content"
+					v-model.trim="content"
 					@keydown.enter="onPressEnter"
 					@keydown.backspace="onPressBackspace"
 					:placeholder="
