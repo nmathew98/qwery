@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Thread, upsertThread } from "@b.s/qwery-example-api";
-import { useQwery } from "@b.s/vue-qwery";
+import { Dispatch, useQwery } from "@b.s/vue-qwery";
 import { faker } from "@faker-js/faker";
 import { computed, ref, watch } from "vue";
 import {
@@ -28,7 +28,7 @@ import { Icon } from "@iconify/vue";
 
 const props = defineProps<{
 	initialValue: Thread;
-	dispatch: any;
+	dispatch: Dispatch<Thread[]>;
 }>();
 
 const name = faker.person.fullName();
@@ -133,7 +133,7 @@ const onSubmitNewThread = async () => {
 			allThreads => {
 				const currentThread = allThreads.find(
 					thread => thread.uuid === latest.uuid,
-				);
+				) as Thread;
 
 				currentThread.children = latest.children;
 			},

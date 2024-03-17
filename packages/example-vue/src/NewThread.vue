@@ -10,9 +10,11 @@ import {
 import { faker } from "@faker-js/faker";
 import { Textarea } from "./components/ui/textarea";
 import { Button } from "./components/ui/button";
+import { Dispatch } from "@b.s/vue-qwery";
+import { Thread } from "@b.s/qwery-example-api";
 
 const props = defineProps<{
-	dispatch: any;
+	dispatch: Dispatch<Thread[]>;
 }>();
 
 const name = faker.person.fullName();
@@ -23,7 +25,7 @@ const onSubmitNewThread = () => {
 		createdBy: name,
 		content: content.value,
 		likes: 0,
-	};
+	} as Thread;
 
 	// Dispatch and create a new `Thread`
 	props.dispatch(allThreads => void allThreads.unshift(newThread));
