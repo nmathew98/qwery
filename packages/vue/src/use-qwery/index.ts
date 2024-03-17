@@ -42,8 +42,10 @@ export const useQwery = <
 
 	// With Vue, things behave like in React, ref reference
 	// changes and it causes a rerender
-	const rerender = (value?: ReturnType<typeof createQwery> | null) => {
-		qwery.value = { ...(value ?? qwery.value ?? Object.create(null)) };
+	const rerender = () => {
+		qweryPromise.then(result => {
+			qwery.value = { ...(result ?? Object.create(null)) };
+		});
 	};
 
 	const create = async () => {
@@ -75,14 +77,14 @@ export const useQwery = <
 		return qwery;
 	};
 
-	const assign = async (qwery: ReturnType<typeof create>) => {
-		const awaitedQwery = await qwery;
+	const assign = async (value: ReturnType<typeof create>) => {
+		const awaitedQwery = await value;
 
 		if (!awaitedQwery) {
 			return;
 		}
 
-		rerender(awaitedQwery);
+		qwery.value = awaitedQwery;
 
 		return awaitedQwery;
 	};

@@ -1,10 +1,10 @@
 {
 	"name": "@b.s/qwery-shared",
-	"version": "1.5.5",
+	"version": "1.5.6",
 	"private": true,
 	"type": "module",
 	"devDependencies": {
-		"@b.s/incremental": "^2.1.7",
+		"@b.s/incremental": "^2.1.8",
 		"acorn": "^8.11.3",
 		"esbuild": "^0.20.0",
 		"eslint": "^8.57.0",

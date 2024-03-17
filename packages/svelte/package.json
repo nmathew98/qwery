@@ -1,6 +1,6 @@
 {
 	"name": "@b.s/svelte-qwery",
-	"version": "1.5.5",
+	"version": "1.5.6",
 	"type": "module",
 	"repository": {
 		"type": "git",
@@ -52,7 +52,7 @@
 		"pack": "pnpm pack"
 	},
 	"dependencies": {
-		"@b.s/incremental": "^2.1.7",
+		"@b.s/incremental": "^2.1.8",
 		"@b.s/txn": "^1.0.4"
 	},
 	"peerDependencies": {

@@ -112,6 +112,15 @@ export const createQwery = ({
 				});
 			}
 
+			// `onChange` will not be triggered so we have to force a rerender here
+			if (options?.isPersisted) {
+				if (queryKey) {
+					cache?.makeOnChange?.(queryKey)(result);
+				}
+
+				rerender();
+			}
+
 			return result;
 		},
 	});

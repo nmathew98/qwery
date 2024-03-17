@@ -5,30 +5,11 @@ import type {
 } from "@b.s/incremental";
 import type { BaseUseQweryOptions } from "./base";
 
-export type UseQweryUntaggedOptions<
-	I extends InitialValue,
-	S extends boolean | undefined,
-	DInferred extends Data = I extends () => Promise<
-		infer DInferred extends Data
-	>
-		? DInferred
-		: I,
-> = BaseUseQweryOptions<S, DInferred> &
-	Pick<
-		CreateCRDTParameters<DInferred>,
-		"onChange" | "onSuccess" | "onError"
-	> & {
-		initialValue: I;
-		subscribe?: (
-			dispatch: Dispatch<DInferred>,
-		) => Promise<(() => void) | void> | (() => void) | void;
-	};
-
 export interface DispatchOptionsInternal extends DispatchOptions {
 	isBroadcasted?: boolean;
 }
 
-export type UseQweryTaggedOptions<
+export type UseQweryOptions<
 	I extends InitialValue,
 	S extends boolean | undefined,
 	DInferred extends Data = I extends () => Promise<
@@ -36,9 +17,13 @@ export type UseQweryTaggedOptions<
 	>
 		? DInferred
 		: I,
+	C extends (next: DInferred, previousValue: DInferred) => any = (
+		next: DInferred,
+		previous: DInferred,
+	) => any,
 > = BaseUseQweryOptions<S, DInferred> &
 	Pick<
-		CreateCRDTParameters<DInferred>,
+		CreateCRDTParameters<DInferred, C>,
 		"onChange" | "onSuccess" | "onError"
 	> & {
 		initialValue?: I;
@@ -46,11 +31,6 @@ export type UseQweryTaggedOptions<
 			dispatch: Dispatch<DInferred>,
 		) => Promise<(() => void) | void> | (() => void) | void;
 	};
-
-export type UseQweryOptions<
-	I extends InitialValue,
-	S extends boolean | undefined,
-> = UseQweryUntaggedOptions<I, S> | UseQweryTaggedOptions<I, S>;
 
 export type Data = Record<string | number | symbol, any> | Array<any>;
 

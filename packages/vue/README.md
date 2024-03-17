@@ -4,13 +4,15 @@
 
 Asynchronous state management in Vue made simple.
 
-Most of the use cases of [Vue Query](https://tanstack.com/query/latest/) are covered with a similar API while being 65% lighter.
+Qwery provides the structure required to manage and build relationships between asynchronous state while taking care of stabilizing object references and keeping the cache (if any) up to date.
 
-Vue Query bundle size: [56.6 kB minified](https://bundlephobia.com/package/@tanstack/vue-query)
+It also enables an environment agnostic approach to managing asynchronous state allowing simpler migrations between different frontend frameworks and backend architectural styles such as monolith to microservices and REST to GraphQL.
 
-Vue Qwery bundle size: [19.7 kB minified](https://bundlephobia.com/package/@b.s/vue-qwery)
+Size: [Bundlephobia](https://bundlephobia.com/package/@b.s/vue-qwery)
 
 Documentation: [Wiki](https://github.com/nmathew98/qwery/wiki/1.-Introduction)
+
+Try it out: [StackBlitz](https://stackblitz.com/edit/vue-qwery-threads?file=README.md)
 
 ## Features
 

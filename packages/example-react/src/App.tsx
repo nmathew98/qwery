@@ -1,4 +1,7 @@
-import React, { ChangeEventHandler, KeyboardEventHandler } from "react";
+import React, {
+	type ChangeEventHandler,
+	type KeyboardEventHandler,
+} from "react";
 import {
 	Card,
 	CardContent,
@@ -106,20 +109,19 @@ const Thread = ({ initialValue, dispatch: landingDispatch }) => {
 
 			return result;
 		},
-		onSuccess: (next: Thread, _previous: Thread, result) =>
-			({
-				...next,
-				children: next.children!.map(child => {
-					if (!child.uuid) {
-						return {
-							...child,
-							...(result as Omit<Thread, "children">),
-						};
-					}
+		onSuccess: (next, _previous, result: Omit<Thread, "children">) => ({
+			...next,
+			children: next.children!.map(child => {
+				if (!child.uuid) {
+					return {
+						...child,
+						...result,
+					};
+				}
 
-					return child;
-				}),
-			}) as Thread,
+				return child;
+			}),
+		}),
 		broadcast: true,
 	});
 
@@ -213,7 +215,7 @@ const Thread = ({ initialValue, dispatch: landingDispatch }) => {
 			return onSubmitNewThread();
 		}
 
-		if (event.key === "Backspace" && !setContent) {
+		if (event.key === "Backspace" && !content) {
 			replyToMainThread();
 		}
 	};
