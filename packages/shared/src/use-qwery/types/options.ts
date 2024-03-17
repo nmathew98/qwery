@@ -17,9 +17,13 @@ export type UseQweryOptions<
 	>
 		? DInferred
 		: I,
+	C extends (next: DInferred, previousValue: DInferred) => any = (
+		next: DInferred,
+		previous: DInferred,
+	) => any,
 > = BaseUseQweryOptions<S, DInferred> &
 	Pick<
-		CreateCRDTParameters<DInferred, any>,
+		CreateCRDTParameters<DInferred, C>,
 		"onChange" | "onSuccess" | "onError"
 	> & {
 		initialValue?: I;
