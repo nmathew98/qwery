@@ -10,8 +10,8 @@ import {
 import { faker } from "@faker-js/faker";
 import { Textarea } from "./components/ui/textarea";
 import { Button } from "./components/ui/button";
-import { Dispatch } from "@b.s/vue-qwery";
-import { Thread } from "@b.s/qwery-example-api";
+import type { Dispatch } from "@b.s/vue-qwery";
+import type { Thread } from "@b.s/qwery-example-api";
 
 const props = defineProps<{
 	dispatch: Dispatch<Thread[]>;

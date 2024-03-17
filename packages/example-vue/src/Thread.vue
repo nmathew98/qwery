@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Thread, upsertThread } from "@b.s/qwery-example-api";
-import { Dispatch, useQwery } from "@b.s/vue-qwery";
+import { type Thread, upsertThread } from "@b.s/qwery-example-api";
+import { type Dispatch, useQwery } from "@b.s/vue-qwery";
 import { faker } from "@faker-js/faker";
 import { computed, ref, watch } from "vue";
 import {

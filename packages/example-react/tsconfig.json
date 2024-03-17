@@ -20,6 +20,7 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitAny": false,
+		"verbatimModuleSyntax": true,
 
 		/* shadcn */
 		"baseUrl": ".",

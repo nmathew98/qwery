@@ -1,4 +1,7 @@
-import React, { ChangeEventHandler, KeyboardEventHandler } from "react";
+import React, {
+	type ChangeEventHandler,
+	type KeyboardEventHandler,
+} from "react";
 import {
 	Card,
 	CardContent,
