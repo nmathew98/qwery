@@ -212,7 +212,7 @@ const Thread = ({ initialValue, dispatch: landingDispatch }) => {
 			return onSubmitNewThread();
 		}
 
-		if (event.key === "Backspace" && !setContent) {
+		if (event.key === "Backspace" && !content) {
 			replyToMainThread();
 		}
 	};
