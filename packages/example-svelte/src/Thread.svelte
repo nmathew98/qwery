@@ -95,6 +95,14 @@
 	);
 
 	$: if ($currentThread) {
+		// TODO: Think bug with Svelte:
+		// - Have a Thread open
+		// - Share a thought
+		// - Reply to the child
+		// - Share a thought
+		// - View whole thread the child previously replied to
+		// - Result: Error but $currentThread not null or undefined
+		// console.log($currentThread);
 		rerenders = rerenders + 1 * 50;
 	}
 
@@ -245,7 +253,7 @@
 						A reactive expression is reevaluated correctly, just the children are not
 						rerendered in the `each` block
 					-->
-					{#each $currentThread.children as child (child.uuid)}
+					{#each $currentThread?.children as child (child.uuid)}
 						<ThreadChild
 							uuid={child.uuid}
 							{currentThread}
