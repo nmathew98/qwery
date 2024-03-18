@@ -243,7 +243,7 @@
 						updated
 
 						A reactive expression is reevaluated correctly, just the children are not
-						updated
+						rerendered in the `each` block
 					-->
 					{#each $currentThread.children as child (child.uuid)}
 						<ThreadChild
