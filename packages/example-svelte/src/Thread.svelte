@@ -24,6 +24,7 @@
 	import { Input } from "$lib/components/ui/input";
 	import ThreadChild from "./ThreadChild.svelte";
 	import { StarFilled } from "svelte-radix";
+	import { writable, derived } from "svelte/store";
 
 	export let initialValue: Thread;
 	export let landingDispatch: Dispatch<Thread[]>;
@@ -87,9 +88,13 @@
 		}
 	};
 
-	let currentThreadUuid = initialValue.uuid;
-	$: currentThread = findDeep(currentThreadUuid, $data) as Thread;
-	$: if (currentThread) {
+	const currentThreadUuid = writable(initialValue.uuid);
+	const currentThread = derived(
+		[data, currentThreadUuid],
+		([$data, $currentThreadUuid]) => findDeep($currentThreadUuid, $data),
+	);
+
+	$: if ($currentThread) {
 		rerenders = rerenders + 1 * 50;
 	}
 
@@ -145,7 +150,7 @@
 		const newThread = {
 			createdBy: name,
 			content: content,
-			parent: currentThread.uuid,
+			parent: $currentThread.uuid,
 			likes: 0,
 		};
 
@@ -179,10 +184,10 @@
 		replyTo = child;
 	};
 	const makeOnClickExpandThread = child => () => {
-		currentThreadUuid = child.uuid;
+		currentThreadUuid.set(child.uuid);
 	};
 	const onClickReturnToMainThread = () => {
-		currentThreadUuid = initialValue.uuid;
+		currentThreadUuid.set(initialValue.uuid);
 		replyTo = null;
 	};
 </script>
@@ -220,20 +225,45 @@
 			<DialogHeader>
 				<DialogTitle>View whole thread</DialogTitle>
 				<DialogDescription>
-					{currentThread.content}
+					{$currentThread.content}
 				</DialogDescription>
 			</DialogHeader>
-			{#if currentThread.children}
+			{#if $currentThread.children}
 				<div class="max-h-[50dvh] overflow-scroll flex-col space-y-8">
-					{#each currentThread.children as child (child.uuid)}
+					<!--
+						We can't just pass the child, `ThreadChild` will not rerender.
+						See:
+						- https://stackoverflow.com/a/63372198
+						- https://github.com/sveltejs/svelte/issues/3212#issuecomment-510263274
+
+						Having a separate derived store or reactive variable for the children
+						does not seem to work either
+
+						It also means every child will be rerendered since the store has been
+						updated
+
+						A reactive expression is reevaluated correctly, just the children are not
+						updated
+					-->
+					{#each $currentThread.children as child (child.uuid)}
 						<ThreadChild
-							{child}
+							uuid={child.uuid}
+							{currentThread}
 							onClickExpand={makeOnClickExpandThread}
 							onClickReply={makeOnClickReply} />
 					{/each}
 				</div>
 			{/if}
 			<div class="flex-col space-y-2">
+				<!--
+					TODO: when replying to a child, `content` does not get cleared even though
+					it is reassigned, unsure why
+
+					reassigning `replyTo` and `content` also does not to work
+
+					Unsure if this is a bug with Svelte or something wrong with the implementation,
+					when not replying, `content` is cleared correctly
+				-->
 				<Input
 					type="text"
 					bind:value={content}
@@ -251,7 +281,7 @@
 				{/if}
 			</div>
 			<DialogFooter>
-				{#if currentThread.uuid !== initialValue.uuid}
+				{#if $currentThread.uuid !== initialValue.uuid}
 					<Button
 						on:click={onClickReturnToMainThread}
 						variant="secondary"

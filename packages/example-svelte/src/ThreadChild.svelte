@@ -11,16 +11,42 @@
 	import { P } from "$lib/components/ui/typography";
 	import { Button } from "$lib/components/ui/button";
 	import { StarFilled } from "svelte-radix";
+	import type { Readable } from "svelte/store";
 
-	export let child: Thread;
+	export let uuid: string;
 	export let onClickReply: any;
 	export let onClickExpand: any;
+	export let currentThread: Readable<Thread>;
 
+	const findDeep = (uuid: string, thread?: Thread) => {
+		if (!thread) {
+			return null;
+		}
+
+		if (thread.uuid === uuid) {
+			return thread;
+		}
+
+		if (!thread.children) {
+			return null;
+		}
+
+		for (let i = 0; i < thread.children.length; i++) {
+			const result = findDeep(uuid, thread.children[i]);
+
+			if (result) {
+				return result;
+			}
+		}
+	};
+
+	$: child = findDeep(uuid, $currentThread);
 	let rerenders = 0;
 
 	$: if (child) {
 		rerenders = rerenders + 1 * 50;
 	}
+
 	$: onExpand = onClickExpand(child);
 	$: onReply = onClickReply(child);
 </script>
